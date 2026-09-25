@@ -1,0 +1,2103 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ගලපිටියාගම සණස සමුපකාර සමිතිය - Smart HRMS Dashboard</title>
+
+  <!-- Offline & GitHub Pages Ready Stylesheets -->
+  <link rel="stylesheet" href="css/fontawesome.min.css">
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Offline & GitHub Pages Ready Libraries -->
+  <script src="js/chart.min.js"></script>
+  <script src="js/qrcode.min.js"></script>
+  <script src="js/translations.js"></script>
+</head>
+<body>
+
+  <!-- MASTER APP CONTAINER WINDOW (Matching the Reference UI) -->
+  <div class="app-window">
+    
+    <!-- LEFT SIDEBAR -->
+    <aside class="app-sidebar">
+      
+      <!-- Brand Logo Emblem -->
+      <div class="sidebar-brand" style="display:flex; align-items:center; gap:12px; margin-bottom:24px; padding-left:2px;">
+        <div style="width:78px; height:50px; background:#ffffff; border:1.5px solid #e2e8f0; border-radius:14px; padding:5px 8px; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(0,0,0,0.04); flex-shrink:0;">
+          <img src="images/gscs_logo.png" alt="GSCS Logo" style="width:100%; height:100%; object-fit:contain;">
+        </div>
+        <div class="brand-text">
+          <h2 style="font-size:15px; font-weight:800; color:#1e1b4b; line-height:1.25; margin:0 0 2px 0;">ගලපිටියාගම සණස</h2>
+          <span style="font-size:11.5px; color:#7c3aed; font-weight:600;">Cooperative HRMS</span>
+        </div>
+      </div>
+
+      <!-- Navigation Menu -->
+      <nav class="sidebar-menu">
+        <div class="menu-label">WORKSPACE</div>
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:7px 12px; display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; font-size:12px; font-weight:700; color:#1e1b4b;">
+          <span><i class="fa-solid fa-people-roof" style="color:#7c3aed; margin-right:6px;"></i> Sanasa Management</span>
+          <i class="fa-solid fa-angle-down" style="font-size:10px; color:#94a3b8;"></i>
+        </div>
+
+        <div class="menu-label">GENERAL</div>
+
+        <a class="menu-item active" data-target="dashboard">
+          <i class="fa-solid fa-shapes"></i>
+          <span>Dashboard (පාලක පුවරුව)</span>
+        </a>
+
+        <a class="menu-item" data-target="employees">
+          <i class="fa-solid fa-users"></i>
+          <span>Employees (සේවක මණ්ඩලය)</span>
+        </a>
+
+        <a class="menu-item" data-target="projects">
+          <i class="fa-solid fa-list-check"></i>
+          <span>Work Progress (ව්‍යාපෘති)</span>
+        </a>
+
+        <a class="menu-item" data-target="meetings">
+          <i class="fa-solid fa-calendar-days"></i>
+          <span>Upcoming Meetings (රැස්වීම්)</span>
+        </a>
+
+        <a class="menu-item" data-target="skills">
+          <i class="fa-solid fa-graduation-cap"></i>
+          <span data-i18n="navSkills">නිපුණතා, පුහුණු හා ස්මාර්ට් රාජකාරි</span>
+        </a>
+
+        <a class="menu-item" data-target="grievance">
+          <i class="fa-solid fa-qrcode"></i>
+          <span>Board QR Portal (ගැටළු/යෝජනා)</span>
+          <span class="menu-badge" id="badge-grv-count">0</span>
+        </a>
+
+        <a class="menu-item" data-target="member-feedback">
+          <i class="fa-solid fa-comments"></i>
+          <span>Member Feedback QR</span>
+        </a>
+
+        <div class="menu-label">FINANCE & HR</div>
+
+        <a class="menu-item" data-target="payroll">
+          <i class="fa-solid fa-file-invoice-dollar"></i>
+          <span>Payroll & EPF/ETF (වැටුප්)</span>
+        </a>
+
+        <a class="menu-item" data-target="appraisals">
+          <i class="fa-solid fa-award"></i>
+          <span>Appraisals (කාර්යසාධනය)</span>
+        </a>
+
+        <a class="menu-item" data-target="satisfaction">
+          <i class="fa-solid fa-heart-pulse"></i>
+          <span>Wellbeing (සේවක තෘප්තිය)</span>
+        </a>
+
+        <a class="menu-item" data-target="posters">
+          <i class="fa-solid fa-print"></i>
+          <span>Print QR Posters (පෝස්ටර්)</span>
+        </a>
+
+        <div class="menu-label">SYSTEM & SECURITY</div>
+
+        <a class="menu-item" data-target="admin-panel">
+          <i class="fa-solid fa-user-shield"></i>
+          <span>Admin Panel (පරිපාලක පාලනය)</span>
+        </a>
+      </nav>
+
+      <!-- Glowing CTA Action Button (As in Reference UI) -->
+      <button class="sidebar-cta-btn" onclick="openAddEmployeeModal()">
+        <i class="fa-solid fa-circle-plus"></i>
+        <span>+ Add New Task / Staff</span>
+      </button>
+
+      <!-- User Profile Pill at Bottom -->
+      <div class="user-profile-pill">
+        <div class="user-avatar" id="sidebar-user-avatar">ස</div>
+        <div class="user-meta">
+          <div class="name" id="sidebar-user-name">ගරු දයාරත්න බණ්ඩා</div>
+          <div class="role" id="sidebar-user-role">සභාපතිතුමා / Board</div>
+        </div>
+        <button class="user-logout-btn" onclick="handleLogout()" title="Logout / නික්මෙන්න">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- MAIN VIEWPORT -->
+    <main class="app-main">
+      
+      <!-- TOP BAR -->
+      <header class="top-bar">
+        <div class="top-bar-left">
+          <h1>Dashboard</h1>
+          <span class="live-date" id="header-live-date">24 Sep 2026</span>
+        </div>
+
+        <div class="top-bar-center">
+          <div class="search-pill-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="global-search-input" placeholder="Search employees, duties, skills, or records...">
+          </div>
+        </div>
+
+        <div class="top-bar-right">
+          <!-- Print A4 Official Report Button -->
+          <button class="btn-smart btn-smart-light no-print" onclick="window.print()" title="Print A4 Black & White Official Report" style="padding:6px 12px; font-size:12px; border:1px solid #cbd5e1; background:#ffffff;">
+            <i class="fa-solid fa-print" style="color:#10b981;"></i> 🖨️ A4 නිල වාර්තාව
+          </button>
+
+          <!-- Cloud / Online QR Status Pill (No Wi-Fi needed!) -->
+          <div class="online-pill" id="online-status-pill" onclick="openSmartModal('modal-online-settings')" title="Click to configure online GitHub Pages URL">
+            <span class="status-dot"></span> Online QR 100%
+          </div>
+
+          <!-- Bilingual Toggle Pill -->
+          <div class="lang-toggle-pill">
+            <button class="lang-toggle-btn active" id="lang-btn-si">සිංහල</button>
+            <button class="lang-toggle-btn" id="lang-btn-en">English</button>
+          </div>
+
+          <!-- Date Pill Button -->
+          <div class="date-pill-btn">
+            <i class="fa-regular fa-calendar" style="color:#7c3aed;"></i>
+            <span>2026 Sep</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- SCROLLABLE BODY AREA -->
+      <div class="viewport-scroll">
+        
+        <!-- ============================================== -->
+        <!-- VIEW 1: DASHBOARD (MATCHING REFERENCE IMAGE)   -->
+        <!-- ============================================== -->
+        <!-- ============================================== -->
+        <!-- VIEW 1: DASHBOARD (EXACT MATCH TO MOCKUP UI)   -->
+        <!-- ============================================== -->
+        <section class="view-section active" id="view-dashboard">
+          
+          <!-- TOP ROW: Greeting Banner + 3 Stat Metric Boxes + Team Performance Chart + Total Employee Ring Chart -->
+          <div style="display:grid; grid-template-columns: 240px 1fr 280px; gap:16px; margin-bottom:20px; align-items:stretch;">
+            
+            <!-- 1. GREETING HERO BANNER (MOCKUP ITEM 1) -->
+            <div class="card-box" style="background:#e6f4ea; border:1px solid #a7f3d0; padding:20px; display:flex; flex-direction:column; justify-content:space-between; border-radius:18px;">
+              <div>
+                <div style="width:44px; height:44px; background:#059669; color:#fff; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:14px; box-shadow:0 4px 12px rgba(5,150,105,0.25);">
+                  <i class="fa-solid fa-user-gear"></i>
+                </div>
+                <h3 style="font-size:15px; font-weight:800; color:#064e3b; margin-bottom:6px;">HELLO SCARLETTE !</h3>
+                <p style="font-size:11.5px; color:#047857; line-height:1.45; margin-bottom:14px;">
+                  Good morning! You have active HR operations &amp; staff applications today. So let's get started.
+                </p>
+              </div>
+              <button class="btn-smart" onclick="switchView('employees')" style="background:#059669; color:#fff; border:none; padding:8px 16px; font-size:12px; font-weight:700; width:100%; border-radius:10px;">
+                Review it &rarr;
+              </button>
+            </div>
+
+            <!-- 2. TOP 3 METRIC BOXES + TEAM PERFORMANCE CHART -->
+            <div style="display:flex; flex-direction:column; gap:14px;">
+              <!-- 3 Top Metric Counters (Mockup Top Row) -->
+              <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+                <div class="card-box" style="padding:14px 16px; display:flex; align-items:center; justify-content:space-between; border-radius:16px;">
+                  <div>
+                    <div style="font-size:22px; font-weight:900; color:#111827;" id="stat-pill-total-present">99</div>
+                    <div style="font-size:11px; color:#6b7280; font-weight:600;">Total Present</div>
+                  </div>
+                  <div style="width:36px; height:36px; background:#f3f4f6; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#4b5563;">
+                    <i class="fa-solid fa-user-check"></i>
+                  </div>
+                </div>
+
+                <div class="card-box" style="padding:14px 16px; display:flex; align-items:center; justify-content:space-between; border-radius:16px;">
+                  <div>
+                    <div style="font-size:22px; font-weight:900; color:#111827;" id="stat-pill-total-absent">15</div>
+                    <div style="font-size:11px; color:#6b7280; font-weight:600;">Total Absent</div>
+                  </div>
+                  <div style="width:36px; height:36px; background:#f3f4f6; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#4b5563;">
+                    <i class="fa-solid fa-user-xmark"></i>
+                  </div>
+                </div>
+
+                <div class="card-box" style="padding:14px 16px; display:flex; align-items:center; justify-content:space-between; border-radius:16px;">
+                  <div>
+                    <div style="font-size:22px; font-weight:900; color:#111827;" id="stat-pill-total-leave">06</div>
+                    <div style="font-size:11px; color:#6b7280; font-weight:600;">Total On Leave</div>
+                  </div>
+                  <div style="width:36px; height:36px; background:#f3f4f6; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#4b5563;">
+                    <i class="fa-solid fa-user-clock"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Team Performance Smooth Curve Chart -->
+              <div class="card-box" style="flex:1; border-radius:16px; padding:14px 16px; display:flex; flex-direction:column; justify-content:space-between;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <div>
+                    <h3 style="font-size:14px; font-weight:800; color:#111827;">Team Performance</h3>
+                    <div style="font-size:11px; color:#6b7280; display:flex; gap:12px; margin-top:2px;">
+                      <span><span style="color:#059669;">●</span> Designer Team</span>
+                      <span><span style="color:#6b7280;">●</span> Developer Team</span>
+                    </div>
+                  </div>
+                  <select class="form-input-pill" style="padding:4px 8px; font-size:11px; width:auto;">
+                    <option>Last year</option>
+                    <option>This year</option>
+                  </select>
+                </div>
+                <div style="height:120px; position:relative;">
+                  <canvas id="chart-total-work"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. TOTAL EMPLOYEE DONUT CHART (MOCKUP ITEM RIGHT) -->
+            <div class="card-box" style="border-radius:18px; padding:16px; display:flex; flex-direction:column; justify-content:space-between;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 style="font-size:14px; font-weight:800; color:#111827;">Total Employee</h3>
+                <span class="badge-pill badge-green" style="font-size:10px;">Staff Breakdown</span>
+              </div>
+              <div style="height:120px; position:relative; margin-bottom:8px;">
+                <canvas id="chart-task-percentage"></canvas>
+              </div>
+              <div style="font-size:11px; color:#374151; display:flex; flex-direction:column; gap:4px;">
+                <div style="display:flex; justify-content:space-between;"><span><span style="color:#059669;">■</span> Software engineer</span> <strong>50</strong></div>
+                <div style="display:flex; justify-content:space-between;"><span><span style="color:#10b981;">■</span> UI/UX Designer</span> <strong>28</strong></div>
+                <div style="display:flex; justify-content:space-between;"><span><span style="color:#34d399;">■</span> Data Analyst</span> <strong>25</strong></div>
+                <div style="display:flex; justify-content:space-between;"><span><span style="color:#6ee7b7;">■</span> Mobile Development</span> <strong>10</strong></div>
+                <div style="display:flex; justify-content:space-between;"><span><span style="color:#a7f3d0;">■</span> Project Manager</span> <strong>7</strong></div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- BOTTOM ROW: Employee Status Table (Left) + Events & Meetings (Middle) + Birthdays (Right) -->
+          <div style="display:grid; grid-template-columns: 1.5fr 1fr 1fr; gap:16px;">
+            
+            <!-- COLUMN 1: EMPLOYEE STATUS TABLE -->
+            <div class="card-box" style="padding:16px; border-radius:18px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                <h3 style="font-size:15px; font-weight:800; color:#111827;">Employee Status</h3>
+                <div style="display:flex; gap:6px;">
+                  <input type="text" id="dashboard-emp-search" placeholder="Search..." class="form-input-pill" style="padding:4px 10px; font-size:11.5px; width:130px;">
+                  <button class="btn-smart btn-smart-light" style="padding:4px 8px; font-size:11px;"><i class="fa-solid fa-sliders"></i> Sort &amp; Filter</button>
+                </div>
+              </div>
+              <div class="data-table-container" style="padding:0;">
+                <table class="smart-table">
+                  <thead>
+                    <tr>
+                      <th>ID ↓</th>
+                      <th>Name ↓</th>
+                      <th>Job role</th>
+                      <th>Status</th>
+                      <th>TL</th>
+                      <th>View</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashboard-emp-status-body">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- COLUMN 2: EVENTS AND MEETINGS -->
+            <div class="card-box" style="padding:16px; border-radius:18px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="font-size:15px; font-weight:800; color:#111827;">Events and Meetings</h3>
+                <button class="btn-smart btn-smart-light" onclick="openAddMeetingModal()" style="padding:4px 10px; font-size:11px;">+ Add</button>
+              </div>
+              <div id="dashboard-events-meetings-list" style="display:flex; flex-direction:column; gap:10px;">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+            <!-- COLUMN 3: BIRTHDAYS & CELEBRATIONS -->
+            <div class="card-box" style="padding:16px; border-radius:18px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="font-size:15px; font-weight:800; color:#111827;">Birthdays</h3>
+                <select class="form-input-pill" style="padding:3px 8px; font-size:11px; width:auto;">
+                  <option>This month</option>
+                  <option>Next month</option>
+                </select>
+              </div>
+              <div id="dashboard-birthdays-list" style="display:flex; flex-direction:column; gap:10px;">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- ============================================== -->
+        <!-- VIEW 2: EMPLOYEES                              -->
+        <!-- ============================================== -->
+        <section class="view-section" id="view-employees">
+          <div class="card-box" style="margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;">සේවක නාමාවලිය සහ ඩිජිටල් පැතිකඩ</h2>
+                <p style="font-size:12.5px; color:#64748b;">ගලපිටියාගම සණස සමුපකාර සමිතියේ සියලුම සේවකයින්ගේ විස්තර</p>
+              </div>
+              <button class="btn-smart btn-smart-primary" onclick="openAddEmployeeModal()">
+                <i class="fa-solid fa-user-plus"></i> + නව සේවකයෙකු ලියාපදිංචි කිරීම
+              </button>
+            </div>
+
+            <div style="display:flex; gap:14px; margin-top:16px;">
+              <input type="text" id="search-employee-input" class="form-input-pill" placeholder="නම, සේවක අංකය, තනතුර හෝ NIC අනුව සොයන්න..." style="flex:1;">
+              <select id="filter-employee-dept" class="form-input-pill" style="width:250px;">
+                <option value="ALL">සියලු අංශ (All Departments)</option>
+                <option value="ණය සහ ක්ෂුද්‍ර මූල්‍ය අංශය">ණය සහ ක්ෂුද්‍ර මූල්‍ය</option>
+                <option value="ගිණුම් හා විගණන අංශය">ගිණුම් හා විගණන</option>
+                <option value="ක්ෂේත්‍ර අංශය">ක්ෂේත්‍ර අංශය (Field)</option>
+                <option value="සාමාජික සේවා හා සංවර්ධන">සාමාජික සේවා</option>
+                <option value="පරිපාලන හා මෙහෙයුම්">පරිපාලන හා මෙහෙයුම්</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="card-box data-table-container" style="padding:0;">
+            <table class="smart-table">
+              <thead>
+                <tr>
+                  <th>අංකය</th>
+                  <th>සම්පූර්ණ නම / NIC</th>
+                  <th>තනතුර සහ අංශය</th>
+                  <th>දුරකථනය</th>
+                  <th>සේවා තත්වය</th>
+                  <th>ක්‍රියාමාර්ග</th>
+                </tr>
+              </thead>
+              <tbody id="table-employees-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- VIEW 3: COMPETENCY MANAGEMENT & TRAINING      -->
+        <!-- ============================================== -->
+        <section class="view-section" id="view-skills">
+          <div class="card-box" style="margin-bottom:20px; border-left: 4px solid #7c3aed;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+              <div>
+                <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;" data-i18n="skillsMatrixTitle">නිපුණතා කළමනාකරණය, පුහුණු හා ස්මාර්ට් රාජකාරි අනුයුක්තය</h2>
+                <p style="font-size:12.5px; color:#64748b;" data-i18n="skillsMatrixDesc">සේවක නිපුණතා ඇගයීම (1-5), පුහුණු අවශ්‍යතා හඳුනා ගැනීම (TNA) සහ AI පදනම් කරගත් ස්මාර්ට් රාජකාරි ගැළපීම</p>
+              </div>
+              <span class="badge-pill badge-purple"><i class="fa-solid fa-graduation-cap"></i> Competency &amp; TNA System</span>
+            </div>
+
+            <!-- Sub Navigation Tabs for Skills & Training View -->
+            <div style="display:flex; gap:10px; margin-top:16px; border-top:1px solid #f1f5f9; padding-top:16px; flex-wrap:wrap;">
+              <button class="btn-smart btn-smart-primary skills-subtab-btn" id="subtab-btn-matrix" onclick="switchSkillsSubTab('matrix')">
+                <i class="fa-solid fa-chart-pie"></i> 1. නිපුණතා ඇගයීම් න්‍යාසය (Skills Matrix)
+              </button>
+              <button class="btn-smart btn-smart-light skills-subtab-btn" id="subtab-btn-training" onclick="switchSkillsSubTab('training')">
+                <i class="fa-solid fa-user-graduate"></i> 2. පුහුණු අවශ්‍යතා හා යොමු කිරීම (TNA &amp; Nominations)
+              </button>
+              <button class="btn-smart btn-smart-light skills-subtab-btn" id="subtab-btn-allocator" onclick="switchSkillsSubTab('allocator')">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> 3. ස්මාර්ට් රාජකාරි අනුයුක්තය (Smart Allocation)
+              </button>
+            </div>
+          </div>
+
+          <!-- SUBTAB 1: SKILLS MATRIX -->
+          <div id="subtab-panel-matrix" class="skills-subtab-panel">
+            <div class="card-box data-table-container" style="padding:0; margin-bottom:20px;">
+              <div style="padding:16px 20px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="font-size:15px; font-weight:800; color:#1e1b4b;">කාර්ය මණ්ඩල නිපුණතා ලකුණු මට්ටම් (1-5 Ratings)</h3>
+                <span style="font-size:12px; color:#64748b;">★ ලකුණු 1 (ආරම්භක) සිට 5 (විශිෂ්ට) දක්වා</span>
+              </div>
+              <table class="smart-table">
+                <thead>
+                  <tr>
+                    <th>සේවක නම</th>
+                    <th>අධ්‍යාපනය</th>
+                    <th>ක්ෂුද්‍ර මූල්‍ය</th>
+                    <th>ණය තක්සේරු</th>
+                    <th>ගිණුම්කරණය</th>
+                    <th>බැංකු MIS</th>
+                    <th>Excel / IT</th>
+                    <th>නායකත්වය</th>
+                    <th>සාමාජික සත්කාරය</th>
+                    <th>වෙනස්කම්</th>
+                  </tr>
+                </thead>
+                <tbody id="table-skills-body"></tbody>
+              </table>
+            </div>
+
+            <div class="card-box" style="height:350px;">
+              <canvas id="chart-skills-radar-full"></canvas>
+            </div>
+          </div>
+
+          <!-- SUBTAB 2: TRAINING NEEDS ANALYSIS (TNA) & NOMINATIONS -->
+          <div id="subtab-panel-training" class="skills-subtab-panel" style="display:none;">
+            <div class="card-box" style="margin-bottom:20px; background:linear-gradient(135deg, #ffffff 0%, #fffbebe6 100%); border-left:4px solid #f59e0b;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="font-size:15px; font-weight:800; color:#1e1b4b;">
+                  <i class="fa-solid fa-triangle-exclamation" style="color:#d97706; margin-right:6px;"></i>
+                  ස්වයංක්‍රීය පුහුණු අවශ්‍යතා හඳුනාගැනීම (Auto Skill Gap Detection - TNA)
+                </h3>
+                <span class="badge-pill badge-warning">TNA Engine Active</span>
+              </div>
+              <p style="font-size:12.5px; color:#64748b; margin-bottom:16px;">
+                නිපුණතා ලකුණු 3/5 ට වඩා අඩු (Skill Score &lt; 3) කාර්ය මණ්ඩල සාමාජිකයන් සහ ඔවුන්ට අවශ්‍ය නිර්දේශිත පුහුණු පාඨමාලා පහත දැක්වේ.
+              </p>
+              <div id="tna-recommendations-list"></div>
+            </div>
+
+            <div class="card-box data-table-container" style="padding:0;">
+              <div style="padding:16px 20px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="font-size:15px; font-weight:800; color:#1e1b4b;">
+                  <i class="fa-solid fa-award" style="color:#7c3aed; margin-right:6px;"></i>
+                  ලියාපදිංචි පුහුණු නාමාවලිය සහ ලොගය (Training Nominations Log)
+                </h3>
+              </div>
+              <table class="smart-table">
+                <thead>
+                  <tr>
+                    <th>සේවක නම</th>
+                    <th>නිර්දේශිත පුහුණුව / පාඨමාලාව</th>
+                    <th>අඩු නිපුණතාවය</th>
+                    <th>ප්‍රමුඛතාවය</th>
+                    <th>යොමු කළ දිනය</th>
+                    <th>තත්වය</th>
+                    <th>ක්‍රියාමාර්ග</th>
+                  </tr>
+                </thead>
+                <tbody id="table-training-log-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- SUBTAB 3: SMART DUTY ALLOCATION -->
+          <div id="subtab-panel-allocator" class="skills-subtab-panel" style="display:none;">
+            <div class="card-box" style="margin-bottom:20px; border-left: 4px solid #7c3aed;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div>
+                  <h3 style="font-size:16px; font-weight:800; color:#1e1b4b;">බුද්ධිමත් රාජකාරි අනුයුක්ත යෝජකය (Smart Duty Allocator)</h3>
+                  <p style="font-size:12.5px; color:#64748b;">ව්‍යාපෘතියේ / රාජකාරියේ අවශ්‍යතාවලට වඩාත්ම ගැළපෙන සේවකයින් AI තාක්ෂණයෙන් ශ්‍රේණිගත කෙරේ.</p>
+                </div>
+                <div style="display:flex; gap:8px;">
+                  <button class="btn-smart btn-smart-primary" onclick="openAddProjectModal()" style="font-size:12px; padding:8px 14px;">
+                    <i class="fa-solid fa-plus"></i> + නව රාජකාරියක් එක් කරන්න
+                  </button>
+                  <button class="btn-smart" onclick="deleteCurrentSelectedTask()" style="font-size:12px; padding:8px 14px; background:#ef4444; color:#fff; border:none;">
+                    <i class="fa-solid fa-trash"></i> රාජකාරිය ඉවත් කරන්න
+                  </button>
+                </div>
+              </div>
+
+              <div style="margin-top:16px; background:#f8fafc; padding:16px; border-radius:14px; border:1px solid #e2e8f0;">
+                <label style="font-size:13px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:6px;">රාජකාරිය / ව්‍යාපෘතිය තෝරන්න (Select Duty/Project):</label>
+                <select id="smart-task-select" onchange="calculateTaskMatching()" class="form-input-pill" style="width:100%; max-width:650px; font-weight:700; color:#7c3aed; font-size:13.5px;"></select>
+                <div id="smart-task-desc" style="margin-top:10px; font-size:12px; color:#475569; background:#ffffff; padding:10px 14px; border-radius:10px; border:1px solid #cbd5e1;"></div>
+              </div>
+
+              <div style="margin-top:16px;">
+                <h4 style="font-size:13.5px; font-weight:700; color:#1e1b4b; margin-bottom:10px;">වඩාත්ම ගැළපෙන සේවකයින් (Ranked Matches):</h4>
+                <div id="smart-matching-results"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- VIEW 4: BOARD QR GRIEVANCE PORTAL              -->
+        <!-- ============================================== -->
+        <section class="view-section" id="view-grievance">
+          <div class="card-box" style="margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;">සභාපති හා අධ්‍යක්ෂ මණ්ඩල QR ගැටළු හා යෝජනා පද්ධතිය</h2>
+                <p style="font-size:12.5px; color:#64748b;">සේවකයින්ට නාමිකව හෝ 100% නිර්නාමිකව (Anonymous) ගරු සභාපතිතුමා වෙත සෘජුවම යොමු කළ හැක.</p>
+              </div>
+              <a href="grievance.html" target="_blank" class="btn-smart btn-smart-primary">
+                <i class="fa-solid fa-mobile-screen"></i> ජංගම පෝරමය විවෘත කරන්න
+              </a>
+            </div>
+
+            <!-- Online QR Display Card (No Wi-Fi Needed) -->
+            <div style="margin-top:20px; background:linear-gradient(135deg, #ffffff 0%, #faf5ff 100%); border:1px solid #ede9fe; border-radius:18px; padding:24px; display:flex; gap:28px; align-items:center;">
+              <div style="background:#fff; padding:12px; border-radius:14px; box-shadow:0 4px 14px rgba(124, 58, 237, 0.15); text-align:center;">
+                <div id="qr-online-grievance" style="width:180px; height:180px; margin:0 auto 8px;"></div>
+                <div style="font-size:10px; font-family:monospace; color:#7c3aed; word-break:break-all;" id="qr-online-grievance-url">Loading...</div>
+              </div>
+              <div>
+                <span class="badge-pill badge-purple" style="margin-bottom:8px;">Cloud Hosted Online QR</span>
+                <h3 style="font-size:16px; font-weight:800; color:#1e1b4b; margin-bottom:6px;">ස්මාර්ට් දුරකථනයෙන් ස්කෑන් කර අදහස් යොමු කරන්න</h3>
+                <p style="font-size:13px; color:#64748b; line-height:1.6; max-width:650px;">
+                  මෙම QR කේතය අන්තර්ජාලය (Online) හරහා කෙලින්ම ක්‍රියාත්මක වේ. සේවකයින්ට කාර්යාලයේ හෝ නිවසේ සිට 4G/5G මගින් ස්කෑන් කර නාමිකව හෝ නිර්නාමිකව 
+                  ගැටළු, සුභසාධන ඉල්ලීම් හා සංවර්ධන යෝජනා ගරු සභාපතිතුමා වෙත යොමු කළ හැක.
+                </p>
+                <div style="margin-top:12px; display:flex; gap:10px;">
+                  <button class="btn-smart btn-smart-light" onclick="switchView('posters')"><i class="fa-solid fa-print"></i> A4 පෝස්ටරය මුද්‍රණය</button>
+                  <button class="btn-smart btn-smart-light" onclick="openSmartModal('modal-online-settings')"><i class="fa-solid fa-gear"></i> Online URL වෙනස් කරන්න</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-box data-table-container" style="padding:0;">
+            <div style="padding:16px 20px; border-bottom:1px solid #f1f5f9;">
+              <h3 style="font-size:15px; font-weight:800; color:#1e1b4b;">සභාපති හා අධ්‍යක්ෂ මණ්ඩල සමාලෝචන ලේඛනය</h3>
+            </div>
+            <table class="smart-table">
+              <thead>
+                <tr>
+                  <th>අංකය</th>
+                  <th>දිනය</th>
+                  <th>ඉදිරිපත් කළේ</th>
+                  <th>යොමු කළේ</th>
+                  <th>ශීර්ෂය හා විස්තරය</th>
+                  <th>තත්වය</th>
+                  <th>ක්‍රියාමාර්ග</th>
+                </tr>
+              </thead>
+              <tbody id="table-grievance-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- VIEW 5: MEMBER FEEDBACK QR PORTAL              -->
+        <!-- ============================================== -->
+        <section class="view-section" id="view-member-feedback">
+          <div class="card-box" style="margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;">සාමාජික අදහස් විමසීම් Online QR පද්ධතිය</h2>
+                <p style="font-size:12.5px; color:#64748b;">සමුපකාර සාමාජිකයින්ට කවුන්ටරයේදී හෝ නිවසේ සිට සභාපතිතුමා වෙත අදහස් යොමු කළ හැක.</p>
+              </div>
+              <a href="feedback.html" target="_blank" class="btn-smart btn-smart-primary" style="background:#059669;">
+                <i class="fa-solid fa-mobile-screen"></i> සාමාජික පෝරමය විවෘත කරන්න
+              </a>
+            </div>
+
+            <!-- Online QR Display -->
+            <div style="margin-top:20px; background:linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%); border:1px solid #bbf7d0; border-radius:18px; padding:24px; display:flex; gap:28px; align-items:center;">
+              <div style="background:#fff; padding:12px; border-radius:14px; box-shadow:0 4px 14px rgba(5, 150, 105, 0.15); text-align:center;">
+                <div id="qr-online-member" style="width:180px; height:180px; margin:0 auto 8px;"></div>
+                <div style="font-size:10px; font-family:monospace; color:#059669; word-break:break-all;" id="qr-online-member-url">Loading...</div>
+              </div>
+              <div>
+                <span class="badge-pill badge-green" style="margin-bottom:8px;">Online Member Portal</span>
+                <h3 style="font-size:16px; font-weight:800; color:#1e1b4b; margin-bottom:6px;">ශාඛා කවුන්ටර සහ පොරොත්තු ශාලා සඳහා QR කේතය</h3>
+                <p style="font-size:13px; color:#64748b; line-height:1.6; max-width:650px;">
+                  ණය හා තැන්පතු සේවා වේගය, කාර්ය මණ්ඩල සුහදශීලීත්වය හා ශාඛාවේ පිරිසිදුකම පිළිබඳ සාමාජික අදහස් සහ තරු ලකුණු ඇගයීම් සභාපතිතුමාගේ සෘජු අවධානයට ලැබේ.
+                </p>
+                <div style="margin-top:12px; display:flex; gap:10px;">
+                  <button class="btn-smart btn-smart-light" onclick="switchView('posters')"><i class="fa-solid fa-print"></i> කවුන්ටර පෝස්ටරය මුද්‍රණය</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-box data-table-container" style="padding:0;">
+            <div style="padding:16px 20px; border-bottom:1px solid #f1f5f9;">
+              <h3 style="font-size:15px; font-weight:800; color:#1e1b4b;">ලැබී ඇති සාමාජික ප්‍රතිචාර ලේඛනය</h3>
+            </div>
+            <table class="smart-table">
+              <thead>
+                <tr>
+                  <th>අංකය</th>
+                  <th>දිනය</th>
+                  <th>සාමාජිකයා</th>
+                  <th>ශාඛාව</th>
+                  <th>ඇගයීම</th>
+                  <th>අදහස</th>
+                  <th>තත්වය</th>
+                </tr>
+              </thead>
+              <tbody id="table-member-feedback-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- VIEW 6: PAYROLL & EPF/ETF (FORM 1 & FORM 2)     -->
+        <!-- ============================================== -->
+        <section class="view-section" id="view-payroll">
+          <!-- Official Sanasa Header Card & Policy Notice -->
+          <div class="card-box" style="margin-bottom:20px; border-left:5px solid #7c3aed;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+              <div style="display:flex; align-items:center; gap:16px;">
+                <div style="background:#ffffff; border:1.5px solid #e2e8f0; border-radius:14px; padding:6px 12px; width:130px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+                  <img src="images/gscs_logo.png" alt="GSCS Logo" style="width:100%; height:auto; display:block;">
+                </div>
+                <div>
+                  <h2 style="font-size:18px; font-weight:800; color:#1e1b4b; margin-bottom:2px;">මාසික වැටුප්, EPF/ETF හා නිල පඩිපත් කළමනාකරණය</h2>
+                  <p style="font-size:12.5px; color:#64748b; margin-bottom:4px;">සීමා රහිත ගලපිටියාගම සකසුරුවම් හා ණය ගනුදෙනු පිළිබඳ සමුපකාර සමිතිය (කුලි/395)</p>
+                  <div style="font-size:11.5px; color:#7c3aed; font-weight:700;">
+                    <i class="fa-solid fa-scale-balanced" style="margin-right:4px;"></i> 8% සේවක EPF | 12% සේවායෝජක EPF | 3% ETF | 2.5% + 5% විශ්‍රාම අරමුදල
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Policy Schedule Notice Badge Box -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:14px;">
+              <div style="display:flex; gap:10px; align-items:flex-start;">
+                <div style="background:#dcfce7; color:#16a34a; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; flex-shrink:0;">25</div>
+                <div>
+                  <strong style="color:#166534; font-size:13px;">ස්ථිර සේවකයින් (Permanent Staff)</strong>
+                  <div style="font-size:12px; color:#475569; margin-top:2px;">
+                    • <strong>සෑම මසකම 25 වන දින:</strong> මූලික වැටුප්, EPF/ETF හා විශ්‍රාම අරමුදල් පත්‍රිකාව (Form 1)<br>
+                    • <strong>සෑම මසකම 10 වන දින:</strong> සේවක දිරි දීමනා නිර්ණායක පත්‍රිකාව (Form 2)
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex; gap:10px; align-items:flex-start;">
+                <div style="background:#fef3c7; color:#d97706; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; flex-shrink:0;">10</div>
+                <div>
+                  <strong style="color:#92400e; font-size:13px;">ස්ථිර නොවන සේවකයින් (Probation / Contract)</strong>
+                  <div style="font-size:12px; color:#475569; margin-top:2px;">
+                    • <strong>සෑම මසකම 10 වන දින:</strong> මාසික වැටුප් පත්‍රිකාව (Form 1)<br>
+                    • <em>(දිරි දීමනා පත්‍රිකාව අදාළ නොවේ)</em>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sub Tabs Switcher -->
+            <div style="display:flex; gap:12px; margin-top:20px; border-top:1px solid #f1f5f9; padding-top:16px; flex-wrap:wrap;">
+              <button class="payroll-subtab-btn active" id="btn-tab-payroll-form1" onclick="switchPayrollSubTab('form1')">
+                <i class="fa-solid fa-file-invoice-dollar"></i> ප්‍රධාන වැටුප් ලේඛනය (Form 1 - මාසික වැටුප්)
+              </button>
+              <button class="payroll-subtab-btn" id="btn-tab-payroll-form2" onclick="switchPayrollSubTab('form2')">
+                <i class="fa-solid fa-award"></i> සේවක දිරි දීමනා පත්‍රිකාව (Form 2 - ස්ථිර සේවක දිරි දීමනා)
+              </button>
+              <button class="payroll-subtab-btn" id="btn-tab-payroll-epf" onclick="switchPayrollSubTab('epf')">
+                <i class="fa-solid fa-file-shield"></i> EPF / ETF ගිණුම් හා ගෙවීම් පාලනය (Remittance Tracker)
+              </button>
+            </div>
+          </div>
+
+          <!-- ========================================================= -->
+          <!-- SUB-TAB 1: FORM 1 - MAIN PAYROLL SHEET                    -->
+          <!-- ========================================================= -->
+          <div id="payroll-panel-form1">
+            <!-- Controls & Summary Box -->
+            <div class="card-box" style="margin-bottom:18px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                  <label style="font-size:12.5px; font-weight:700; color:#1e1b4b;"><i class="fa-solid fa-calendar"></i> අදාළ මාසය:</label>
+                  <select id="payroll-month-select" class="form-input-pill" style="width:160px; padding:6px 12px; font-size:12.5px;" onchange="renderPayrollModule()">
+                    <option value="2026-09" selected>2026 සැප්තැම්බර්</option>
+                    <option value="2026-10">2026 ඔක්තෝබර්</option>
+                    <option value="2026-11">2026 නොවැම්බර්</option>
+                    <option value="2026-12">2026 දෙසැම්බර්</option>
+                  </select>
+
+                  <div style="display:inline-flex; background:#f1f5f9; border-radius:10px; padding:3px; gap:4px; margin-left:6px;">
+                    <button class="btn-smart btn-smart-light" id="btn-filter-pay-all" onclick="filterPayrollSchedule('all')" style="padding:4px 10px; font-size:11.5px; background:#fff; font-weight:700;">සියලු සේවකයින්</button>
+                    <button class="btn-smart btn-smart-light" id="btn-filter-pay-perm" onclick="filterPayrollSchedule('perm')" style="padding:4px 10px; font-size:11.5px;">ස්ථිර (25 වන දින)</button>
+                    <button class="btn-smart btn-smart-light" id="btn-filter-pay-nonperm" onclick="filterPayrollSchedule('nonperm')" style="padding:4px 10px; font-size:11.5px;">ස්ථිර නොවන (10 වන දින)</button>
+                  </div>
+                </div>
+
+                <div style="display:flex; gap:10px;">
+                  <button class="btn-smart btn-smart-primary" onclick="openAddPayrollEntryModal()">
+                    <i class="fa-solid fa-pen-to-square"></i> + වැටුප් දත්ත ඇතුළත් කරන්න
+                  </button>
+                  <button class="btn-smart btn-smart-light" onclick="printForm1OfficialSheet()">
+                    <i class="fa-solid fa-print"></i> Form 1 මුද්‍රණය
+                  </button>
+                </div>
+              </div>
+
+              <!-- 6 Stats for Payroll -->
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px; margin-top:16px;">
+                <div style="background:#f8fafc; padding:12px; border-radius:12px; border:1px solid #e2e8f0;">
+                  <div style="font-size:11px; color:#64748b;">මුළු මූලික වැටුප් (Basic)</div>
+                  <strong id="payroll-stat-basic" style="font-size:14px; color:#1e1b4b;">රු. 0</strong>
+                </div>
+                <div style="background:#f0fdf4; padding:12px; border-radius:12px; border:1px solid #bbf7d0;">
+                  <div style="font-size:11px; color:#166534;">මුළු උපැයීම (Gross Total)</div>
+                  <strong id="payroll-stat-gross" style="font-size:14px; color:#166534;">රු. 0</strong>
+                </div>
+                <div style="background:#fee2e2; padding:12px; border-radius:12px; border:1px solid #fecaca;">
+                  <div style="font-size:11px; color:#dc2626;">සේවක EPF (8%)</div>
+                  <strong id="payroll-stat-epf8" style="font-size:14px; color:#dc2626;">රු. 0</strong>
+                </div>
+                <div style="background:#dcfce7; padding:12px; border-radius:12px; border:1px solid #bbf7d0;">
+                  <div style="font-size:11px; color:#16a34a;">සණස EPF (12%)</div>
+                  <strong id="payroll-stat-epf12" style="font-size:14px; color:#16a34a;">රු. 0</strong>
+                </div>
+                <div style="background:#fef3c7; padding:12px; border-radius:12px; border:1px solid #fde68a;">
+                  <div style="font-size:11px; color:#d97706;">විශ්‍රාම (2.5% + 5%)</div>
+                  <strong id="payroll-stat-pension" style="font-size:14px; color:#d97706;">රු. 0</strong>
+                </div>
+                <div style="background:#ede9fe; padding:12px; border-radius:12px; border:1px solid #ddd6fe;">
+                  <div style="font-size:11px; color:#7c3aed;">ශුද්ධ වැටුප (Net Payable)</div>
+                  <strong id="payroll-stat-net" style="font-size:14px; color:#7c3aed;">රු. 0</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form 1 Official Table -->
+            <div class="card-box data-table-container" style="padding:0; overflow-x:auto;">
+              <table class="smart-table" style="font-size:11.5px; min-width:1300px;">
+                <thead>
+                  <tr style="background:#f8fafc;">
+                    <th style="width:70px;">සේවා අංකය</th>
+                    <th>සම්පූර්ණ නම & තනතුර</th>
+                    <th>සේවා තත්වය (ගෙවීම් දිනය)</th>
+                    <th>මූලික වැටුප</th>
+                    <th>පැමිණීමේ දීමනාව</th>
+                    <th>දීමනා</th>
+                    <th style="background:#ede9fe; color:#7c3aed;">එකතුව</th>
+                    <th>අර්ථසාධක 20%</th>
+                    <th>EPF 12% (සමිතිය)</th>
+                    <th style="color:#dc2626;">EPF 8% (සේවක)</th>
+                    <th>විශ්‍රාම 2.5%</th>
+                    <th style="color:#dc2626;">විශ්‍රාම 5%</th>
+                    <th>ETF 3%</th>
+                    <th>අත්තිකාරම්</th>
+                    <th>වෙනත් අඩු</th>
+                    <th style="color:#dc2626;">අඩුකිරීම් එකතුව</th>
+                    <th>වෙනත් දීමනා</th>
+                    <th style="background:#dcfce7; color:#15803d; font-size:12px;">ශුද්ධ වැටුප</th>
+                    <th style="text-align:center;">ක්‍රියාමාර්ග</th>
+                  </tr>
+                </thead>
+                <tbody id="table-payroll-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ========================================================= -->
+          <!-- SUB-TAB 2: FORM 2 - INCENTIVE ALLOWANCE CRITERIA SHEET    -->
+          <!-- ========================================================= -->
+          <div id="payroll-panel-form2" style="display:none;">
+            <!-- Controls Box -->
+            <div class="card-box" style="margin-bottom:18px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                  <label style="font-size:12.5px; font-weight:700; color:#1e1b4b;"><i class="fa-solid fa-calendar"></i> අදාළ මාසය:</label>
+                  <select id="incentive-month-select" class="form-input-pill" style="width:160px; padding:6px 12px; font-size:12.5px;" onchange="renderIncentivesTable()">
+                    <option value="2026-09" selected>2026 සැප්තැම්බර්</option>
+                    <option value="2026-10">2026 ඔක්තෝබර්</option>
+                    <option value="2026-11">2026 නොවැම්බර්</option>
+                    <option value="2026-12">2026 දෙසැම්බර්</option>
+                  </select>
+                  <span class="badge-pill badge-purple" style="font-size:11.5px;">
+                    <i class="fa-solid fa-clock"></i> සෑම මසකම 10 වන දින ගණනය කෙරේ
+                  </span>
+                </div>
+
+                <div style="display:flex; gap:10px;">
+                  <button class="btn-smart btn-smart-primary" onclick="openAddIncentiveEntryModal()">
+                    <i class="fa-solid fa-award"></i> + දිරි දීමනා ඇතුළත් කරන්න
+                  </button>
+                  <button class="btn-smart btn-smart-light" onclick="printForm2OfficialSheet()">
+                    <i class="fa-solid fa-print"></i> Form 2 මුද්‍රණය
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form 2 Criteria Matrix Table -->
+            <div class="card-box" style="padding:0; overflow-x:auto;">
+              <div id="incentive-table-wrapper" style="min-width:900px; padding:16px;">
+                <!-- Populated dynamically matching Form 2 criteria matrix -->
+              </div>
+            </div>
+          </div>
+
+          <!-- ========================================================= -->
+          <!-- SUB-TAB 3: EPF / ETF REMITTANCE & PAYMENT TRACKER         -->
+          <!-- ========================================================= -->
+          <div id="payroll-panel-epf" style="display:none;">
+            <!-- Alert Banner & Overview -->
+            <div class="card-box" style="margin-bottom:18px;">
+              <div id="epf-alert-box" style="background:#fee2e2; border:1.5px solid #ef4444; border-radius:12px; padding:14px 18px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <i class="fa-solid fa-triangle-exclamation" style="font-size:24px; color:#dc2626;"></i>
+                  <div>
+                    <strong style="color:#991b1b; font-size:13.5px;">EPF / ETF ගෙවීම් පාලන අනතුරු ඇඟවීම (Payment Alert)</strong>
+                    <div id="epf-alert-msg" style="font-size:12px; color:#b91c1c; margin-top:2px;">
+                      මෙම මස සඳහා EPF / ETF නොයැවූ සේවකයින් සිටීදැයි පහත ලැයිස්තුවෙන් පරීක්ෂා කරන්න.
+                    </div>
+                  </div>
+                </div>
+                <div style="display:flex; gap:10px;">
+                  <span id="badge-epf-pending-count" class="badge-pill badge-red" style="font-size:12px; padding:6px 14px;">නොයැවූ: 0</span>
+                  <span id="badge-epf-paid-count" class="badge-pill badge-green" style="font-size:12px; padding:6px 14px;">යවන ලද: 0</span>
+                </div>
+              </div>
+
+              <!-- Controls -->
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                  <label style="font-size:12.5px; font-weight:700; color:#1e1b4b;"><i class="fa-solid fa-calendar"></i> අදාළ මාසය:</label>
+                  <select id="epf-month-select" class="form-input-pill" style="width:160px; padding:6px 12px; font-size:12.5px;" onchange="renderEpfTrackerModule()">
+                    <option value="2026-09" selected>2026 සැප්තැම්බර්</option>
+                    <option value="2026-10">2026 ඔක්තෝබර්</option>
+                    <option value="2026-11">2026 නොවැම්බර්</option>
+                    <option value="2026-12">2026 දෙසැම්බර්</option>
+                  </select>
+
+                  <div style="display:inline-flex; background:#f1f5f9; border-radius:10px; padding:3px; gap:4px;">
+                    <button class="btn-smart btn-smart-light" id="btn-filter-epf-all" onclick="filterEpfStatus('all')" style="padding:4px 10px; font-size:11.5px; background:#fff; font-weight:700;">සියලුම සේවකයින්</button>
+                    <button class="btn-smart btn-smart-light" id="btn-filter-epf-pending" onclick="filterEpfStatus('pending')" style="padding:4px 10px; font-size:11.5px; color:#dc2626;">🔴 නොයැවූ පමණක්</button>
+                    <button class="btn-smart btn-smart-light" id="btn-filter-epf-paid" onclick="filterEpfStatus('paid')" style="padding:4px 10px; font-size:11.5px; color:#16a34a;">🟢 යවන ලද පමණක්</button>
+                  </div>
+                </div>
+
+                <div style="display:flex; gap:10px;">
+                  <button class="btn-smart btn-smart-primary" onclick="openEpfPaymentModal()">
+                    <i class="fa-solid fa-file-invoice"></i> + ගෙවීම් වාර්තාවක් එක් කරන්න
+                  </button>
+                  <button class="btn-smart btn-smart-light" onclick="printEpfMonthlySummary()">
+                    <i class="fa-solid fa-print"></i> මාසික C-Form සාරාංශය
+                  </button>
+                </div>
+              </div>
+
+              <!-- 4 Summary Stats -->
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px; margin-top:16px;">
+                <div style="background:#f8fafc; padding:12px; border-radius:12px; border:1px solid #e2e8f0;">
+                  <div style="font-size:11px; color:#64748b;">මුළු සේවක 8% EPF</div>
+                  <strong id="epf-stat-tot8" style="font-size:14px; color:#dc2626;">රු. 0</strong>
+                </div>
+                <div style="background:#f0fdf4; padding:12px; border-radius:12px; border:1px solid #bbf7d0;">
+                  <div style="font-size:11px; color:#166534;">සණස 12% EPF</div>
+                  <strong id="epf-stat-tot12" style="font-size:14px; color:#16a34a;">රු. 0</strong>
+                </div>
+                <div style="background:#fef3c7; padding:12px; border-radius:12px; border:1px solid #fde68a;">
+                  <div style="font-size:11px; color:#d97706;">සණස 3% ETF</div>
+                  <strong id="epf-stat-tot3" style="font-size:14px; color:#d97706;">රු. 0</strong>
+                </div>
+                <div style="background:#ede9fe; padding:12px; border-radius:12px; border:1px solid #ddd6fe;">
+                  <div style="font-size:11px; color:#7c3aed;">මුළු මුදල (20% + 3%)</div>
+                  <strong id="epf-stat-grand" style="font-size:14px; color:#7c3aed;">රු. 0</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- EPF / ETF Tracker Table -->
+            <div class="card-box data-table-container" style="padding:0; overflow-x:auto;">
+              <table class="smart-table" style="font-size:11.5px; min-width:1100px;">
+                <thead>
+                  <tr style="background:#f8fafc;">
+                    <th>සේවා අංකය</th>
+                    <th>EPF සාමාජික අංකය</th>
+                    <th>සේවක නම & තනතුර</th>
+                    <th>මූලික වැටුප</th>
+                    <th style="color:#dc2626;">සේවක 8%</th>
+                    <th style="color:#16a34a;">සමිතිය 12%</th>
+                    <th style="background:#ede9fe; color:#7c3aed;">මුළු EPF 20%</th>
+                    <th style="color:#0284c7;">සමිතිය ETF 3%</th>
+                    <th style="background:#dcfce7; color:#15803d; font-weight:800;">මුළු දායකත්වය (23%)</th>
+                    <th>ගෙවීම් තත්වය (Status)</th>
+                    <th>ගෙවූ දිනය / Ref අංකය</th>
+                    <th style="text-align:center;">ක්ෂණික පියවර</th>
+                  </tr>
+                </thead>
+                <tbody id="table-epf-tracker-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- VIEW 7: APPRAISALS                             -->
+        <!-- ============================================== -->
+        <!-- ============================================== -->
+        <!-- VIEW 7: APPRAISALS & PERFORMANCE MANAGEMENT   -->
+        <!-- ============================================== -->
+        <section class="view-section" id="view-appraisals">
+          <!-- Main Banner Header -->
+          <div class="card-box" style="margin-bottom:20px; border-left:4px solid #10b981;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+              <div>
+                <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;" data-i18n="appraisalHeader">සේවක කාර්යසාධන ඇගයීම් සහ ලකුණු මට්ටම් (Performance Appraisals)</h2>
+                <p style="font-size:12.5px; color:#64748b;" data-i18n="appraisalSub">රාජකාරි කාර්යක්ෂමතාව, ණය අයවීම්, සාමාජික සත්කාරය සහ ඉලක්ක ජයගැනීමේ KPI ලකුණු මට්ටම්</p>
+              </div>
+              <button class="btn-smart btn-smart-primary" onclick="openAddAppraisalModal()">
+                <i class="fa-solid fa-award"></i> + නව කාර්යසාධන ඇගයීමක් සිදු කරන්න
+              </button>
+            </div>
+          </div>
+
+          <!-- KPI Analytics Summary Widgets -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:20px;">
+            <div class="card-box" style="padding:16px; border-top:3px solid #7c3aed;">
+              <div style="font-size:11.5px; font-weight:700; color:#64748b; text-transform:uppercase;">සම්පූර්ණ කළ ඇගයීම්</div>
+              <div style="font-size:24px; font-weight:900; color:#1e1b4b; margin-top:4px;" id="stat-appraisal-total">0</div>
+              <div style="font-size:11px; color:#10b981; margin-top:4px;"><i class="fa-solid fa-check-double"></i> 100% Verified KPI</div>
+            </div>
+
+            <div class="card-box" style="padding:16px; border-top:3px solid #10b981;">
+              <div style="font-size:11.5px; font-weight:700; color:#64748b; text-transform:uppercase;">Grade A - විශිෂ්ට (85 - 100%)</div>
+              <div style="font-size:24px; font-weight:900; color:#10b981; margin-top:4px;" id="stat-appraisal-grade-a">0</div>
+              <div style="font-size:11px; color:#64748b; margin-top:4px;">ඉහළම ඵලදායීතා මට්ටම</div>
+            </div>
+
+            <div class="card-box" style="padding:16px; border-top:3px solid #3b82f6;">
+              <div style="font-size:11.5px; font-weight:700; color:#64748b; text-transform:uppercase;">Grade B - ඉතා හොඳයි (70 - 84%)</div>
+              <div style="font-size:24px; font-weight:900; color:#3b82f6; margin-top:4px;" id="stat-appraisal-grade-b">0</div>
+              <div style="font-size:11px; color:#64748b; margin-top:4px;">යහපත් කාර්යසාධනය</div>
+            </div>
+
+            <div class="card-box" style="padding:16px; border-top:3px solid #f59e0b;">
+              <div style="font-size:11.5px; font-weight:700; color:#64748b; text-transform:uppercase;">වැටුප් වර්ධක නිර්දේශිතයි</div>
+              <div style="font-size:24px; font-weight:900; color:#d97706; margin-top:4px;" id="stat-appraisal-increments">0</div>
+              <div style="font-size:11px; color:#d97706; margin-top:4px;"><i class="fa-solid fa-circle-check"></i> Increment Approved</div>
+            </div>
+          </div>
+
+          <!-- Appraisal Data Table -->
+          <div class="card-box data-table-container" style="padding:0;">
+            <div style="padding:16px 20px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+              <h3 style="font-size:15px; font-weight:800; color:#1e1b4b;">සේවක කාර්යසාධන ඇගයීම් වාර්තා ලේඛනය</h3>
+              <div style="display:flex; gap:8px;">
+                <button class="btn-smart btn-smart-light" onclick="renderAppraisalModule()" style="font-size:11.5px; padding:6px 12px;">
+                  <i class="fa-solid fa-arrows-rotate"></i> යාවත්කාලීන කරන්න
+                </button>
+              </div>
+            </div>
+            <table class="smart-table">
+              <thead>
+                <tr>
+                  <th>ඇගයීම් අංකය</th>
+                  <th>සේවක නම සහ තනතුර</th>
+                  <th>ඇගයීම් කාලසීමාව</th>
+                  <th>දිනය</th>
+                  <th>KPI ලකුණු (100)</th>
+                  <th>ශ්‍රේණිය</th>
+                  <th>වැටුප් වර්ධකය</th>
+                  <th>කළමනාකාරීත්ව සටහන</th>
+                  <th>ක්‍රියාමාර්ග</th>
+                </tr>
+              </thead>
+              <tbody id="table-appraisal-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- VIEW 8: SATISFACTION & WELLBEING               -->
+        <!-- ============================================== -->
+        <section class="view-section" id="view-satisfaction">
+          <div class="card-box" style="margin-bottom:20px;">
+            <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;">සේවක තෘප්තිමත්භාවය හා සුවතාවය (Employee Wellbeing)</h2>
+            <p style="font-size:12.5px; color:#64748b;">වැඩ පරිසරය, කළමනාකාරීත්ව සහයෝගය හා වැටුප් සාධාරණත්වය පිළිබඳ ප්‍රතිචාර</p>
+          </div>
+
+          <div class="card-box data-table-container" style="padding:0;">
+            <table class="smart-table">
+              <thead>
+                <tr>
+                  <th>අංකය</th>
+                  <th>දිනය</th>
+                  <th>වැඩ පරිසරය</th>
+                  <th>කළමනාකාරීත්වය</th>
+                  <th>වැටුප්</th>
+                  <th>දියුණුව</th>
+                  <th>සේවක අදහස</th>
+                </tr>
+              </thead>
+              <tbody id="table-survey-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- VIEW 9: PRINTABLE POSTERS                      -->
+        <!-- ============================================== -->
+        <section class="view-section" id="view-posters">
+          <div class="card-box" style="margin-bottom:20px;">
+            <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;">මුද්‍රණය කළ හැකි නිල QR පෝස්ටර් (Print-Ready)</h2>
+            <p style="font-size:12.5px; color:#64748b;">ශාඛා කාර්යාල දැන්වීම් පුවරු, සේවක මේස හා කවුන්ටර සඳහා A4 පෝස්ටර්</p>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+            <!-- Poster 1: Grievance -->
+            <div class="card-box" style="text-align:center; padding:30px; border:2px dashed #7c3aed;">
+              <div style="background:#ffffff; border:1.5px solid #e2e8f0; border-radius:14px; padding:6px 12px; width:170px; margin:0 auto 12px; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(0,0,0,0.04);">
+                <img src="images/gscs_logo.png" alt="GSCS Logo" style="width:100%; height:auto; display:block;">
+              </div>
+              <h3 style="color:#7c3aed; font-size:18px; font-weight:800;">ගලපිටියාගම සණස සමුපකාර සමිතිය</h3>
+              <p style="font-size:13px; font-weight:700; margin:6px 0 16px;">සේවක ගැටළු හා යෝජනා ගරු සභාපතිතුමා වෙත යොමු කිරීමේ ද්වාරය</p>
+              <div id="poster-qr-grievance-area" style="width:200px; height:200px; margin:0 auto 16px;"></div>
+              <p style="font-size:12px; color:#64748b; margin-bottom:16px;">
+                ඔබේ ජංගම දුරකථනයෙන් QR කේතය ස්කෑන් කර <strong>100% නිර්නාමිකව</strong> හෝ නාමිකව යොමු කරන්න.
+              </p>
+              <button class="btn-smart btn-smart-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> මුද්‍රණය කරන්න (Print A4)</button>
+            </div>
+
+            <!-- Poster 2: Member Feedback -->
+            <div class="card-box" style="text-align:center; padding:30px; border:2px dashed #059669;">
+              <div style="background:#ffffff; border:1.5px solid #e2e8f0; border-radius:14px; padding:6px 12px; width:170px; margin:0 auto 12px; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(0,0,0,0.04);">
+                <img src="images/gscs_logo.png" alt="GSCS Logo" style="width:100%; height:auto; display:block;">
+              </div>
+              <h3 style="color:#059669; font-size:18px; font-weight:800;">ගලපිටියාගම සණස සමුපකාර සමිතිය</h3>
+              <p style="font-size:13px; font-weight:700; margin:6px 0 16px;">සාමාජික අදහස් හා ඇගයීම් සභාපතිතුමා වෙත යොමු කිරීමේ ද්වාරය</p>
+              <div id="poster-qr-feedback-area" style="width:200px; height:200px; margin:0 auto 16px;"></div>
+              <p style="font-size:12px; color:#64748b; margin-bottom:16px;">
+                ඔබේ වටිනා අදහස් හා තරු ලකුණු අපට දන්වා සේවාව තවදුරටත් උසස් කිරීමට දායක වන්න.
+              </p>
+              <button class="btn-smart btn-smart-primary" style="background:#059669;" onclick="window.print()"><i class="fa-solid fa-print"></i> මුද්‍රණය කරන්න (Print A4)</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- VIEW 10: WORK PROGRESS & PROJECTS              -->
+        <!-- ============================================== -->
+        <section class="view-section" id="view-projects">
+          <div class="card-box" style="margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+              <div>
+                <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;">ක්‍රියාත්මක ව්‍යාපෘති සහ රාජකාරි ප්‍රගතිය (Work Progress)</h2>
+                <p style="font-size:12.5px; color:#64748b;">සමිතියේ විශේෂ ව්‍යාපෘති, ක්ෂේත්‍ර ඉලක්ක සහ අංශ අනුව ප්‍රගතිය කළමනාකරණය</p>
+              </div>
+              <button class="btn-smart btn-smart-primary" onclick="openAddProjectModal()">
+                <i class="fa-solid fa-plus"></i> + නව ව්‍යාපෘතියක් එක් කරන්න
+              </button>
+            </div>
+          </div>
+
+          <div class="card-box" id="projects-container">
+            <!-- Dynamically populated projects list or empty state -->
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- VIEW 11: UPCOMING MEETINGS                     -->
+        <!-- ============================================== -->
+        <section class="view-section" id="view-meetings">
+          <div class="card-box" style="margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+              <div>
+                <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;">නිල රැස්වීම් සහ දින දර්ශනය (Upcoming Meetings)</h2>
+                <p style="font-size:12.5px; color:#64748b;">අධ්‍යක්ෂ මණ්ඩල, ණය කමිටු, සහ කාර්ය මණ්ඩල රැස්වීම් සැලසුම් කිරීම</p>
+              </div>
+              <button class="btn-smart btn-smart-primary" onclick="openAddMeetingModal()">
+                <i class="fa-solid fa-calendar-plus"></i> + නව රැස්වීමක් සැලසුම් කරන්න
+              </button>
+            </div>
+          </div>
+
+          <div class="card-box" id="meetings-container">
+            <!-- Dynamically populated meetings list or empty state -->
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- VIEW 12: ADMIN PANEL                           -->
+        <!-- ============================================== -->
+        <section class="view-section" id="view-admin-panel">
+          <div class="card-box" style="margin-bottom:20px;">
+            <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;">පරිපාලක පාලන මැදිරිය (Admin Security & Settings)</h2>
+            <p style="font-size:12.5px; color:#64748b;">පරිශීලක ගිණුම්, මුරපද වෙනස් කිරීම් සහ පද්ධති ප්‍රවේශ පාලනය</p>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px;">
+            <!-- Admin Profile & Name Change -->
+            <div class="card-box">
+              <h3 style="font-size:15px; font-weight:800; color:#1e1b4b; margin-bottom:14px;">
+                <i class="fa-solid fa-user-pen" style="color:#7c3aed; margin-right:8px;"></i> පරිපාලක නාමය වෙනස් කිරීම (Admin Profile)
+              </h3>
+              <form id="form-admin-profile">
+                <div style="margin-bottom:12px;">
+                  <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:4px;">දැනට භාවිත වන පරිශීලක නාමය (Username)</label>
+                  <input type="text" id="admin-profile-username" class="form-input-pill" value="admin" readonly style="background:#f8fafc;">
+                </div>
+                <div style="margin-bottom:12px;">
+                  <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:4px;">පරිපාලක පූර්ණ නම (Display Full Name)</label>
+                  <input type="text" id="admin-profile-name" class="form-input-pill" required placeholder="ප්‍රධාන පරිපාලක">
+                </div>
+                <div style="margin-bottom:16px;">
+                  <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:4px;">තනතුර / භූමිකාව (Role Title)</label>
+                  <input type="text" id="admin-profile-role" class="form-input-pill" required placeholder="සණස ප්‍රධාන පරිපාලක">
+                </div>
+                <button type="submit" class="btn-smart btn-smart-primary">
+                  <i class="fa-solid fa-check"></i> තොරතුරු සුරකින්න (Save Profile)
+                </button>
+              </form>
+            </div>
+
+            <!-- Password Change -->
+            <div class="card-box">
+              <h3 style="font-size:15px; font-weight:800; color:#1e1b4b; margin-bottom:14px;">
+                <i class="fa-solid fa-key" style="color:#ea580c; margin-right:8px;"></i> මුරපදය වෙනස් කිරීම (Change Password)
+              </h3>
+              <form id="form-admin-password">
+                <div style="margin-bottom:12px;">
+                  <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:4px;">වත්මන් මුරපදය (Current Password)</label>
+                  <input type="password" id="admin-current-pwd" class="form-input-pill" required placeholder="••••••••">
+                </div>
+                <div style="margin-bottom:12px;">
+                  <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:4px;">නව මුරපදය (New Password)</label>
+                  <input type="password" id="admin-new-pwd" class="form-input-pill" required placeholder="••••••••">
+                </div>
+                <div style="margin-bottom:16px;">
+                  <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:4px;">නව මුරපදය තහවුරු කරන්න (Confirm New Password)</label>
+                  <input type="password" id="admin-confirm-pwd" class="form-input-pill" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-smart btn-smart-primary" style="background:#ea580c;">
+                  <i class="fa-solid fa-lock"></i> මුරපදය යාවත්කාලීන කරන්න (Update Password)
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- User Management Table -->
+          <div class="card-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <h3 style="font-size:15px; font-weight:800; color:#1e1b4b;">
+                <i class="fa-solid fa-users-gear" style="color:#0284c7; margin-right:8px;"></i> පද්ධති පරිශීලකයින් (System Users)
+              </h3>
+              <button class="btn-smart btn-smart-primary" onclick="openAddUserModal()">
+                <i class="fa-solid fa-user-plus"></i> + නව පරිශීලකයෙකු එක් කරන්න (Add User)
+              </button>
+            </div>
+
+            <div class="data-table-container" style="padding:0;">
+              <table class="smart-table">
+                <thead>
+                  <tr>
+                    <th>පරිශීලක නාමය (Username)</th>
+                    <th>නම (Full Name)</th>
+                    <th>භූමිකාව (Role)</th>
+                    <th>තත්වය (Status)</th>
+                    <th>ක්‍රියාමාර්ග (Actions)</th>
+                  </tr>
+                </thead>
+                <tbody id="table-users-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: LOGIN / AUTHENTICATION (ADMIN ONLY)     -->
+  <!-- ============================================== -->
+  <div class="login-overlay" id="login-modal-overlay" style="display:none;">
+    <div class="login-card">
+      <div class="login-emblem" style="background:#ffffff; border:1.5px solid #e2e8f0; border-radius:18px; padding:10px 16px; width:180px; height:auto; margin:0 auto 18px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 18px rgba(0,0,0,0.06);">
+        <img src="images/gscs_logo.png" alt="GSCS Logo" style="width:100%; height:auto; display:block;">
+      </div>
+      <h2 style="color:#1e3a6e;">ගලපිටියාගම සණස HRMS</h2>
+      <p style="color:#881337; font-weight:700; font-size:13px; margin-bottom:4px;">පරිපාලක පිවිසුම (Admin Login)</p>
+      <p style="margin-bottom:16px;">පද්ධතිය කළමනාකරණය සඳහා කරුණාකර පරිපාලක ගිණුමෙන් පිවිසෙන්න.</p>
+
+      <!-- Admin Credentials Info Pill -->
+      <div style="background:#eef2ff; border:1px solid #c7d2fe; border-radius:14px; padding:10px 14px; margin-bottom:18px; text-align:left; display:flex; align-items:center; gap:12px;">
+        <i class="fa-solid fa-shield-halved" style="color:#1e3a6e; font-size:22px;"></i>
+        <div>
+          <div style="font-size:12px; font-weight:700; color:#1e3a6e;">පෙරනිමි පරිපාලක ගිණුම (Default Admin)</div>
+          <div style="font-size:11px; color:#881337; font-family:monospace;">Username: <strong>admin</strong> | Password: <strong>admin123</strong></div>
+        </div>
+      </div>
+
+      <form id="smart-login-form">
+        <div style="margin-bottom:12px; text-align:left;">
+          <label style="font-size:11.5px; font-weight:700; color:#1e3a6e; display:block; margin-bottom:5px;">පරිශීලක නාමය (Username)</label>
+          <input type="text" id="login-username" class="form-input-pill" value="admin" required placeholder="admin">
+        </div>
+        <div style="margin-bottom:18px; text-align:left;">
+          <label style="font-size:11.5px; font-weight:700; color:#1e3a6e; display:block; margin-bottom:5px;">මුරපදය (Password)</label>
+          <div style="position:relative;">
+            <input type="password" id="login-password" class="form-input-pill" value="admin123" required placeholder="••••••••">
+            <i class="fa-solid fa-eye" id="toggle-pwd-btn" style="position:absolute; right:14px; top:12px; color:#94a3b8; cursor:pointer;" onclick="togglePasswordVisibility()"></i>
+          </div>
+        </div>
+        <button type="submit" class="btn-smart btn-smart-primary" style="width:100%; padding:13px; font-size:14px; font-weight:700; background:linear-gradient(135deg,#1e3a6e,#881337);">
+          <i class="fa-solid fa-lock-open"></i> පරිපාලක ලෙස පිවිසෙන්න (Sign In as Admin)
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: ONLINE CLOUD QR SETTINGS                -->
+  <!-- ============================================== -->
+  <div class="smart-modal-overlay" id="modal-online-settings">
+    <div class="smart-modal-box">
+      <div class="smart-modal-header">
+        <h3><i class="fa-solid fa-cloud" style="color:#7c3aed;"></i> Online Hosted URL Configuration</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-online-settings')">&times;</button>
+      </div>
+      <div class="smart-modal-body">
+        <p style="font-size:13px; color:#64748b; margin-bottom:14px; line-height:1.5;">
+          ඔබ මෙම HRMS පද්ධතිය GitHub Pages (උදා: <code>https://username.github.io/HRMS</code>) හෝ වෙනත් ඕනෑම වෙබ් සර්වර් එකක host කරන විට,
+          එම සජීවී online ලිපිනය මෙහි ඇතුළත් කළ හැක. එවිට QR කේත ස්වයංක්‍රීයව එම Online URL එකට යොමු වේ (Wi-Fi අවශ්‍ය නොවේ).
+        </p>
+        <label style="font-size:12.5px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:6px;">Current Online Base URL:</label>
+        <input type="text" id="custom-online-url-input" class="form-input-pill" placeholder="https://username.github.io/HRMS">
+      </div>
+      <div class="smart-modal-footer">
+        <button class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-online-settings')">අවලංගු කරන්න</button>
+        <button class="btn-smart btn-smart-primary" onclick="saveCustomOnlineUrl()"><i class="fa-solid fa-check"></i> යාවත්කාලීන කරන්න</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- OTHER SMART MODALS (Employee, Profile, Review) -->
+  <!-- ============================================== -->
+
+  <!-- Add/Edit Employee -->
+  <div class="smart-modal-overlay" id="modal-smart-employee">
+    <div class="smart-modal-box large">
+      <div class="smart-modal-header">
+        <h3><i class="fa-solid fa-user-plus" style="color:#7c3aed;"></i> සේවක තොරතුරු ලියාපදිංචිය</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-smart-employee')">&times;</button>
+      </div>
+      <form id="form-smart-employee">
+        <div class="smart-modal-body">
+          <input type="hidden" id="emp-mode" value="create">
+          <input type="hidden" id="emp-photo-data" value="">
+          
+          <!-- Staff Photo Upload Box -->
+          <div style="margin-bottom:14px; background:#f8fafc; padding:12px; border-radius:14px; border:1px solid #e2e8f0; display:flex; align-items:center; gap:16px;">
+            <div style="width:60px; height:60px; border-radius:50%; background:#e2e8f0; display:flex; align-items:center; justify-content:center; overflow:hidden; border:2px solid #7c3aed; flex-shrink:0;">
+              <img id="emp-photo-preview" src="" style="width:100%; height:100%; object-fit:cover; display:none;">
+              <i id="emp-photo-placeholder-icon" class="fa-solid fa-user" style="font-size:26px; color:#94a3b8;"></i>
+            </div>
+            <div style="flex:1;">
+              <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:4px;">
+                <i class="fa-solid fa-camera" style="color:#7c3aed;"></i> සේවක ඡායාරූපය (Staff Photo):
+              </label>
+              <input type="file" id="emp-photo-file-input" accept="image/*" class="form-input-pill" onchange="handleStaffPhotoUpload(event)" style="padding:4px 10px; font-size:12px;">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">සේවක අංකය (EMP ID)</label>
+              <input type="text" id="emp-id-input" class="form-input-pill" required>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">ජා.හැ. අංකය (NIC)</label>
+              <input type="text" id="emp-nic" class="form-input-pill" required placeholder="199012345678">
+            </div>
+            <div style="grid-column:span 2;">
+              <label style="font-size:12px; font-weight:700;">සම්පූර්ණ නම (Full Name)</label>
+              <input type="text" id="emp-full-name" class="form-input-pill" required>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">ව්‍යවහාර නම (Calling Name)</label>
+              <input type="text" id="emp-calling-name" class="form-input-pill">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">ස්ත්‍රී/පුරුෂ භාවය</label>
+              <select id="emp-gender" class="form-input-pill">
+                <option value="Female">ස්ත්‍රී (Female)</option>
+                <option value="Male">පුරුෂ (Male)</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">උපන් දිනය</label>
+              <input type="date" id="emp-dob" class="form-input-pill" value="1992-05-15">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">දුරකථනය</label>
+              <input type="text" id="emp-phone" class="form-input-pill" placeholder="077-1234567">
+            </div>
+            <div style="grid-column:span 2;">
+              <label style="font-size:12px; font-weight:700;">ලිපිනය</label>
+              <input type="text" id="emp-address" class="form-input-pill" placeholder="ලිපිනය">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">තනතුර</label>
+              <input type="text" id="emp-designation" class="form-input-pill" required placeholder="තනතුර">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">අංශය (Department)</label>
+              <select id="emp-department" class="form-input-pill">
+                <option value="ණය සහ ක්ෂුද්‍ර මූල්‍ය අංශය">ණය සහ ක්ෂුද්‍ර මූල්‍ය අංශය</option>
+                <option value="ගිණුම් හා විගණන අංශය">ගිණුම් හා විගණන අංශය</option>
+                <option value="ක්ෂේත්‍ර අංශය">ක්ෂේත්‍ර අංශය (Field Department)</option>
+                <option value="සාමාජික සේවා හා සංවර්ධන">සාමාජික සේවා හා සංවර්ධන</option>
+                <option value="පරිපාලන හා මෙහෙයුම්">පරිපාලන හා මෙහෙයුම්</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">මූලික වැටුප (රු.)</label>
+              <input type="number" id="emp-basic-salary" class="form-input-pill" value="55000">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">පත්වීම් දිනය</label>
+              <input type="date" id="emp-appointment-date" class="form-input-pill" value="2020-01-01">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">සේවා තත්වය</label>
+              <select id="emp-type" class="form-input-pill">
+                <option value="ස්ථිර (Permanent)">ස්ථිර (Permanent)</option>
+                <option value="පරිවාස (Probationary)">පරිවාස (Probationary)</option>
+                <option value="කොන්ත්‍රාත් (Contract)">කොන්ත්‍රාත් (Contract)</option>
+              </select>
+            </div>
+            <div style="grid-column:span 2;">
+              <label style="font-size:12px; font-weight:700;">බැංකු ගිණුම් අංකය (Bank Account No.)</label>
+              <input type="text" id="emp-acc-no" class="form-input-pill" placeholder="බැංකු ගිණුම් අංකය">
+            </div>
+          </div>
+        </div>
+        <div class="smart-modal-footer">
+          <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-employee')">අවලංගු කරන්න</button>
+          <button type="submit" class="btn-smart btn-smart-primary"><i class="fa-solid fa-save"></i> සුරකින්න</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Profile Viewer -->
+  <div class="smart-modal-overlay" id="modal-smart-profile">
+    <div class="smart-modal-box">
+      <div class="smart-modal-header">
+        <h3><i class="fa-solid fa-id-card" style="color:#7c3aed;"></i> සේවක පැතිකඩ (Profile)</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-smart-profile')">&times;</button>
+      </div>
+      <div class="smart-modal-body" id="profile-view-body"></div>
+      <div class="smart-modal-footer">
+        <button class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-profile')">වසන්න</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Skills Edit Modal -->
+  <div class="smart-modal-overlay" id="modal-smart-skills-edit">
+    <div class="smart-modal-box">
+      <div class="smart-modal-header">
+        <h3><i class="fa-solid fa-sliders" style="color:#7c3aed;"></i> Skills Matrix මට්ටම් (1-5) වෙනස් කිරීම</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-smart-skills-edit')">&times;</button>
+      </div>
+      <form id="form-smart-skills-edit">
+        <div class="smart-modal-body">
+          <input type="hidden" id="skill-edit-emp-id">
+          <strong id="skill-edit-emp-name" style="color:#7c3aed; font-size:14px; display:block; margin-bottom:12px;"></strong>
+          
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div><label style="font-size:11.5px; font-weight:700;">අධ්‍යාපනය (1-5)</label><input type="number" id="skill-val-educationLevel" class="form-input-pill" min="1" max="5"></div>
+            <div><label style="font-size:11.5px; font-weight:700;">ක්ෂුද්‍ර මූල්‍ය (1-5)</label><input type="number" id="skill-val-microfinance" class="form-input-pill" min="1" max="5"></div>
+            <div><label style="font-size:11.5px; font-weight:700;">ණය තක්සේරු (1-5)</label><input type="number" id="skill-val-creditAppraisal" class="form-input-pill" min="1" max="5"></div>
+            <div><label style="font-size:11.5px; font-weight:700;">ගිණුම්කරණය (1-5)</label><input type="number" id="skill-val-accounting" class="form-input-pill" min="1" max="5"></div>
+            <div><label style="font-size:11.5px; font-weight:700;">විගණනය (1-5)</label><input type="number" id="skill-val-audit" class="form-input-pill" min="1" max="5"></div>
+            <div><label style="font-size:11.5px; font-weight:700;">බැංකු MIS (1-5)</label><input type="number" id="skill-val-bankingSoftware" class="form-input-pill" min="1" max="5"></div>
+            <div><label style="font-size:11.5px; font-weight:700;">Excel / IT (1-5)</label><input type="number" id="skill-val-excel" class="form-input-pill" min="1" max="5"></div>
+            <div><label style="font-size:11.5px; font-weight:700;">නායකත්වය (1-5)</label><input type="number" id="skill-val-teamLeadership" class="form-input-pill" min="1" max="5"></div>
+            <div><label style="font-size:11.5px; font-weight:700;">සාමාජික සත්කාරය (1-5)</label><input type="number" id="skill-val-customerCare" class="form-input-pill" min="1" max="5"></div>
+            <div><label style="font-size:11.5px; font-weight:700;">නීතිමය/අයකරගැනීම් (1-5)</label><input type="number" id="skill-val-legalRecovery" class="form-input-pill" min="1" max="5"></div>
+          </div>
+        </div>
+        <div class="smart-modal-footer">
+          <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-skills-edit')">අවලංගු කරන්න</button>
+          <button type="submit" class="btn-smart btn-smart-primary"><i class="fa-solid fa-save"></i> සුරකින්න</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Grievance Review Modal -->
+  <div class="smart-modal-overlay" id="modal-smart-grievance-review">
+    <div class="smart-modal-box">
+      <div class="smart-modal-header">
+        <h3 id="review-grv-title"><i class="fa-solid fa-gavel" style="color:#7c3aed;"></i> අධ්‍යක්ෂ මණ්ඩල සමාලෝචනය</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-smart-grievance-review')">&times;</button>
+      </div>
+      <form id="form-smart-grievance-review">
+        <div class="smart-modal-body">
+          <input type="hidden" id="review-grv-id">
+          <div style="background:#f8fafc; padding:12px; border-radius:10px; margin-bottom:12px; font-size:12px;">
+            <p><strong>ඉදිරිපත් කළේ:</strong> <span id="review-grv-sender" style="color:#7c3aed; font-weight:700;"></span></p>
+            <p><strong>යොමු කළේ:</strong> <span id="review-grv-target" class="badge-pill badge-purple"></span></p>
+            <div style="margin-top:6px; border-top:1px solid #e2e8f0; padding-top:6px;">
+              <p id="review-grv-desc" style="line-height:1.5; color:#1e1b4b;"></p>
+            </div>
+          </div>
+
+          <div style="margin-bottom:10px;">
+            <label style="font-size:12px; font-weight:700;">විසඳුම් තත්වය (Status)</label>
+            <select id="review-grv-status" class="form-input-pill">
+              <option value="නව (New)">නව (New)</option>
+              <option value="සලකා බලමින් (Under Review)">සලකා බලමින් (Under Review)</option>
+              <option value="විසඳුම් ලබාදුන් (Approved/Resolved)">විසඳුම් ලබාදුන් (Approved/Resolved)</option>
+              <option value="ප්‍රතික්ෂේපිත (Rejected)">ප්‍රතික්ෂේපිත (Rejected)</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size:12px; font-weight:700;">ගරු සභාපති / අධ්‍යක්ෂ මණ්ඩල සටහන (Board Notes)</label>
+            <textarea id="review-grv-notes" class="form-input-pill" rows="3" placeholder="මණ්ඩල තීරණය මෙහි සටහන් කරන්න..."></textarea>
+          </div>
+        </div>
+        <div class="smart-modal-footer">
+          <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-grievance-review')">වසන්න</button>
+          <button type="submit" class="btn-smart btn-smart-primary"><i class="fa-solid fa-check"></i> තීරණය සුරකින්න</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Payslip Viewer Modal -->
+  <div class="smart-modal-overlay" id="modal-smart-payslip">
+    <div class="smart-modal-box large">
+      <div class="smart-modal-header">
+        <h3><i class="fa-solid fa-file-invoice-dollar" style="color:#7c3aed;"></i> නිල වැටුප් පත්‍රිකාව (Official Payslip)</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-smart-payslip')">&times;</button>
+      </div>
+      <div class="smart-modal-body" id="payslip-modal-content"></div>
+      <div class="smart-modal-footer">
+        <button class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-payslip')">වසන්න</button>
+        <button class="btn-smart btn-smart-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> මුද්‍රණය කරන්න</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Project Modal -->
+  <div class="smart-modal-overlay" id="modal-smart-project">
+    <div class="smart-modal-box">
+      <div class="smart-modal-header">
+        <h3><i class="fa-solid fa-list-check" style="color:#7c3aed;"></i> ව්‍යාපෘතියක් / රාජකාරියක් එක් කිරීම</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-smart-project')">&times;</button>
+      </div>
+      <form id="form-smart-project">
+        <div class="smart-modal-body">
+          <input type="hidden" id="proj-id" value="">
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px; font-weight:700;">ව්‍යාපෘතියේ / රාජකාරියේ නම (Project Title)</label>
+            <input type="text" id="proj-title" class="form-input-pill" required placeholder="උදා: වාර්ෂික ගිණුම් විගණනය">
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px; font-weight:700;">වගකිවයුතු සේවකයා (Assigned Staff)</label>
+            <select id="proj-assigned-staff" class="form-input-pill">
+              <option value="">-- සේවකයෙකු තෝරන්න --</option>
+            </select>
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px; font-weight:700;">අංශය (Department)</label>
+            <select id="proj-dept" class="form-input-pill">
+              <option value="ණය සහ ක්ෂුද්‍ර මූල්‍ය අංශය">ණය සහ ක්ෂුද්‍ර මූල්‍ය අංශය</option>
+              <option value="ගිණුම් හා විගණන අංශය">ගිණුම් හා විගණන අංශය</option>
+              <option value="ක්ෂේත්‍ර අංශය">ක්ෂේත්‍ර අංශය</option>
+              <option value="සාමාජික සේවා හා සංවර්ධන">සාමාජික සේවා හා සංවර්ධන</option>
+              <option value="පරිපාලන හා මෙහෙයුම්">පරිපාලන හා මෙහෙයුම්</option>
+            </select>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">ඉලක්කගත දිනය (Target Date)</label>
+              <input type="date" id="proj-due-date" class="form-input-pill" required>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">ප්‍රගතිය (Progress %)</label>
+              <input type="number" id="proj-progress" class="form-input-pill" min="0" max="100" value="0" required>
+            </div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px; font-weight:700;">විස්තර / අරමුණ (Notes)</label>
+            <textarea id="proj-desc" class="form-input-pill" rows="2" placeholder="ව්‍යාපෘතිය පිළිබඳ කෙටි විස්තරයක්..."></textarea>
+          </div>
+          
+          <div style="margin-top:14px; background:#f8fafc; padding:12px; border-radius:12px; border:1px solid #e2e8f0;">
+            <label style="font-size:12px; font-weight:800; color:#7c3aed; display:block; margin-bottom:8px;">
+              <i class="fa-solid fa-sliders"></i> මෙම රාජකාරියට අවශ්‍ය ප්‍රධාන නිපුණතාවයන් (Skill Requirements 1-5):
+            </label>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+              <div>
+                <span style="font-size:11px; font-weight:600;">ක්ෂුද්‍ර මූල්‍ය:</span>
+                <select id="proj-req-microfinance" class="form-input-pill" style="padding:4px 8px; font-size:11.5px;">
+                  <option value="1">1 (ආරම්භක)</option><option value="2">2</option><option value="3">3</option><option value="4" selected>4 (ඉහළ)</option><option value="5">5 (විශිෂ්ට)</option>
+                </select>
+              </div>
+              <div>
+                <span style="font-size:11px; font-weight:600;">ණය තක්සේරුව:</span>
+                <select id="proj-req-creditAppraisal" class="form-input-pill" style="padding:4px 8px; font-size:11.5px;">
+                  <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option>
+                </select>
+              </div>
+              <div>
+                <span style="font-size:11px; font-weight:600;">ගිණුම්කරණය:</span>
+                <select id="proj-req-accounting" class="form-input-pill" style="padding:4px 8px; font-size:11.5px;">
+                  <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+                </select>
+              </div>
+              <div>
+                <span style="font-size:11px; font-weight:600;">Excel / IT:</span>
+                <select id="proj-req-excel" class="form-input-pill" style="padding:4px 8px; font-size:11.5px;">
+                  <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="smart-modal-footer">
+          <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-project')">අවලංගු කරන්න</button>
+          <button type="submit" class="btn-smart btn-smart-primary"><i class="fa-solid fa-save"></i> සුරකින්න</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD PERFORMANCE APPRAISAL -->
+  <div class="smart-modal-overlay" id="modal-smart-appraisal">
+    <div class="smart-modal-box" style="max-width:650px;">
+      <div class="smart-modal-header">
+        <h3><i class="fa-solid fa-award" style="color:#10b981;"></i> නව කාර්යසාධන ඇගයීමක් එක් කිරීම (Performance Appraisal)</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-smart-appraisal')">&times;</button>
+      </div>
+      <form id="form-smart-appraisal" onsubmit="saveAppraisalForm(event)">
+        <div class="smart-modal-body" style="max-height:75vh; overflow-y:auto;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">ඇගයීමට ලක්කරන සේවකයා (Employee):</label>
+              <select id="appraisal-emp-select" class="form-input-pill" required></select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">ඇගයීම් කාලසීමාව (Period):</label>
+              <select id="appraisal-period" class="form-input-pill" required>
+                <option value="2025/2026 වාර්ෂික ඇගයීම">2025/2026 වාර්ෂික ඇගයීම</option>
+                <option value="2026 ප්‍රථම අර්ධ වසරික">2026 ප්‍රථම අර්ධ වසරික</option>
+                <option value="2026 දෙවන අර්ධ වසරික">2026 දෙවන අර්ධ වසරික</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px; font-weight:700;">ඇගයීම් දිනය (Appraisal Date):</label>
+            <input type="date" id="appraisal-date" class="form-input-pill" required>
+          </div>
+
+          <!-- KPI Scoring Section -->
+          <div style="background:#f8fafc; padding:14px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:12px;">
+            <div style="font-size:13px; font-weight:800; color:#1e1b4b; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+              <span><i class="fa-solid fa-list-check" style="color:#7c3aed;"></i> KPI ලකුණු මට්ටම් ගණනය කිරීම</span>
+              <span id="appraisal-live-score-badge" class="badge-pill badge-purple" style="font-size:11.5px;">මුළු ලකුණු: 85/100</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <div>
+                <label style="font-size:11.5px; font-weight:700; color:#475569; display:block;">1. රාජකාරි කාර්යක්ෂමතාව (Max 25):</label>
+                <input type="number" id="appr-kpi-task" class="form-input-pill" min="0" max="25" value="22" onchange="calculateLiveAppraisalScore()" required>
+              </div>
+
+              <div>
+                <label style="font-size:11.5px; font-weight:700; color:#475569; display:block;">2. ණය අයකරගැනීම/මූල්‍ය විනය (Max 25):</label>
+                <input type="number" id="appr-kpi-credit" class="form-input-pill" min="0" max="25" value="21" onchange="calculateLiveAppraisalScore()" required>
+              </div>
+
+              <div>
+                <label style="font-size:11.5px; font-weight:700; color:#475569; display:block;">3. සාමාජික සත්කාරය (Max 20):</label>
+                <input type="number" id="appr-kpi-service" class="form-input-pill" min="0" max="20" value="17" onchange="calculateLiveAppraisalScore()" required>
+              </div>
+
+              <div>
+                <label style="font-size:11.5px; font-weight:700; color:#475569; display:block;">4. කණ්ඩායම් හැඟීම &amp; නායකත්වය (Max 15):</label>
+                <input type="number" id="appr-kpi-team" class="form-input-pill" min="0" max="15" value="12" onchange="calculateLiveAppraisalScore()" required>
+              </div>
+            </div>
+
+            <div style="margin-top:10px;">
+              <label style="font-size:11.5px; font-weight:700; color:#475569; display:block;">5. පැමිණීම &amp; වේලාවට වැඩ කිරීම (Max 15):</label>
+              <input type="number" id="appr-kpi-attendance" class="form-input-pill" min="0" max="15" value="13" onchange="calculateLiveAppraisalScore()" required style="max-width:250px;">
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#f0fdf4; padding:12px; border-radius:12px; border:1px solid #bbf7d0; margin-bottom:12px;">
+            <div>
+              <div style="font-size:12px; font-weight:800; color:#166534;">වැටුප් වර්ධක නිර්දේශය (Increment Recommendation)</div>
+              <div style="font-size:11px; color:#15803d;">Grade A හෝ B ලබාගන්නා සේවකයින් සඳහා නිර්දේශ කෙරේ.</div>
+            </div>
+            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:700; color:#166534;">
+              <input type="checkbox" id="appraisal-increment-check" checked style="width:18px; height:18px;">
+              නිර්දේශිතයි (Approved)
+            </label>
+          </div>
+
+          <div>
+            <label style="font-size:12px; font-weight:700;">කළමනාකාරීත්ව සටහන / ප්‍රතිචාර (Manager Remarks):</label>
+            <textarea id="appraisal-remarks" class="form-input-pill" rows="2" placeholder="සේවකයාගේ කාර්යසාධනය පිළිබඳ සමස්ත ඇගයීම් සටහන..."></textarea>
+          </div>
+        </div>
+
+        <div class="smart-modal-footer">
+          <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-appraisal')">අවලංගු කරන්න</button>
+          <button type="submit" class="btn-smart btn-smart-primary"><i class="fa-solid fa-check"></i> ඇගයීම සුරකින්න</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Meeting Modal -->
+  <div class="smart-modal-overlay" id="modal-smart-meeting">
+    <div class="smart-modal-box">
+      <div class="smart-modal-header">
+        <h3><i class="fa-solid fa-calendar-plus" style="color:#7c3aed;"></i> නව රැස්වීමක් සැලසුම් කිරීම</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-smart-meeting')">&times;</button>
+      </div>
+      <form id="form-smart-meeting">
+        <div class="smart-modal-body">
+          <input type="hidden" id="meet-id" value="">
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px; font-weight:700;">රැස්වීමේ නම (Meeting Title)</label>
+            <input type="text" id="meet-title" class="form-input-pill" required placeholder="උදා: අධ්‍යක්ෂ මණ්ඩල මාසික රැස්වීම">
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">දිනය (Date)</label>
+              <input type="date" id="meet-date" class="form-input-pill" required>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">වේලාව (Time)</label>
+              <input type="text" id="meet-time" class="form-input-pill" placeholder="උදා: 10:00 AM - 11:30 AM" required>
+            </div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px; font-weight:700;">ප්‍රධානත්වය / කැඳවුම්කරු (Chair / Lead)</label>
+            <input type="text" id="meet-chair" class="form-input-pill" placeholder="ගරු සභාපතිතුමා">
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px; font-weight:700;">ස්ථානය (Venue)</label>
+            <input type="text" id="meet-venue" class="form-input-pill" placeholder="ප්‍රධාන රැස්වීම් ශාලාව">
+          </div>
+          <div>
+            <label style="font-size:12px; font-weight:700;">න්‍යාය පත්‍රය / අරමුණ (Agenda)</label>
+            <textarea id="meet-agenda" class="form-input-pill" rows="3" placeholder="සාකච්ඡා කරනු ලබන කරුණු..."></textarea>
+          </div>
+        </div>
+        <div class="smart-modal-footer">
+          <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-meeting')">අවලංගු කරන්න</button>
+          <button type="submit" class="btn-smart btn-smart-primary"><i class="fa-solid fa-save"></i> සැලසුම් කරන්න</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add User Modal (Admin Panel) -->
+  <div class="smart-modal-overlay" id="modal-smart-user">
+    <div class="smart-modal-box">
+      <div class="smart-modal-header">
+        <h3><i class="fa-solid fa-user-plus" style="color:#7c3aed;"></i> නව පද්ධති පරිශීලකයෙකු එක් කිරීම</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-smart-user')">&times;</button>
+      </div>
+      <form id="form-smart-user">
+        <div class="smart-modal-body">
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px; font-weight:700;">පරිශීලක නාමය (Username)</label>
+            <input type="text" id="user-new-username" class="form-input-pill" required placeholder="manager / officer">
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px; font-weight:700;">සම්පූර්ණ නම (Full Name)</label>
+            <input type="text" id="user-new-fullname" class="form-input-pill" required placeholder="කේ. ආර්. විජේසුන්දර">
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px; font-weight:700;">මුරපදය (Password)</label>
+            <input type="password" id="user-new-password" class="form-input-pill" required placeholder="••••••••">
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px; font-weight:700;">භූමිකාව සහ ප්‍රවේශ මට්ටම (Role)</label>
+            <select id="user-new-role" class="form-input-pill">
+              <option value="admin">ප්‍රධාන පරිපාලක (Full Admin Access)</option>
+              <option value="manager">කළමනාකරු (Manager Access)</option>
+              <option value="officer">නිලධාරී (Officer Access)</option>
+            </select>
+          </div>
+        </div>
+        <div class="smart-modal-footer">
+          <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-user')">අවලංගු කරන්න</button>
+          <button type="submit" class="btn-smart btn-smart-primary"><i class="fa-solid fa-user-check"></i> පරිශීලකයා එක් කරන්න</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Form 1 Payroll Entry -->
+  <div class="smart-modal-overlay" id="modal-smart-payroll-entry">
+    <div class="smart-modal-box large">
+      <div class="smart-modal-header">
+        <h3><i class="fa-solid fa-file-invoice-dollar" style="color:#7c3aed;"></i> මාසික වැටුප් දත්ත ඇතුළත් කිරීම (Form 1)</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-smart-payroll-entry')">&times;</button>
+      </div>
+      <form id="form-smart-payroll-entry" onsubmit="savePayrollEntry(event)">
+        <div class="smart-modal-body">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">සේවකයා තෝරන්න (හෝ අලුතින් ටයිප් කරන්න) *</label>
+              <select id="pay-entry-emp" class="form-input-pill" required onchange="onPayrollEntryEmpChange()">
+                <option value="">-- සේවකයෙකු තෝරන්න --</option>
+                <option value="NEW_MANUAL" style="font-weight:bold; color:#7c3aed;">➕ නව සේවකයෙකු අතින් ඇතුළත් කරන්න (Manual Staff Entry)</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">අදාළ මාසය (Month) *</label>
+              <input type="month" id="pay-entry-month" class="form-input-pill" value="2026-09" required onchange="recalculatePayrollForm1()">
+            </div>
+          </div>
+
+          <!-- Manual Employee Input Row (Shown if NEW_MANUAL) -->
+          <div id="pay-manual-emp-row" style="display:none; background:#f5f3ff; border:1.5px dashed #7c3aed; border-radius:12px; padding:12px; margin-bottom:14px;">
+            <div style="font-size:12px; font-weight:800; color:#6d28d9; margin-bottom:8px;">
+              <i class="fa-solid fa-user-plus"></i> නව සේවක විස්තර සෘජුවම ඇතුළත් කරන්න:
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px;">
+              <div>
+                <label style="font-size:11px; font-weight:700;">සේවා අංකය (ID) *</label>
+                <input type="text" id="pay-manual-id" class="form-input-pill" placeholder="උදා: GSCS-001">
+              </div>
+              <div>
+                <label style="font-size:11px; font-weight:700;">සම්පූර්ණ නම *</label>
+                <input type="text" id="pay-manual-name" class="form-input-pill" placeholder="සේවක නම">
+              </div>
+              <div>
+                <label style="font-size:11px; font-weight:700;">තනතුර *</label>
+                <input type="text" id="pay-manual-desig" class="form-input-pill" placeholder="උදා: ණය නිලධාරී">
+              </div>
+              <div>
+                <label style="font-size:11px; font-weight:700;">සේවා තත්වය *</label>
+                <select id="pay-manual-type" class="form-input-pill" onchange="onManualEmpTypeChange()">
+                  <option value="ස්ථිර (Permanent)">ස්ථිර (25 වන දින)</option>
+                  <option value="පරිවාස (Probationary)">පරිවාස (10 වන දින)</option>
+                  <option value="කොන්ත්‍රාත් (Contract)">කොන්ත්‍රාත් (10 වන දින)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div id="pay-entry-policy-notice" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 14px; margin-bottom:14px; font-size:12px; color:#475569;">
+            කරුණාකර සේවකයෙකු තෝරන්න හෝ අලුතින් ටයිප් කරන්න.
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-bottom:16px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">මූලික වැටුප (Basic Salary) *</label>
+              <input type="number" id="pay-entry-basic" class="form-input-pill" required min="0" value="0" oninput="recalculatePayrollForm1()">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">පැමිණීමේ දීමනාව (Attendance)</label>
+              <input type="number" id="pay-entry-att" class="form-input-pill" min="0" value="0" oninput="recalculatePayrollForm1()">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">සාමාන්‍ය දීමනා (Allowances)</label>
+              <input type="number" id="pay-entry-allowances" class="form-input-pill" min="0" value="0" oninput="recalculatePayrollForm1()">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">අත්තිකාරම් (Advance)</label>
+              <input type="number" id="pay-entry-advance" class="form-input-pill" min="0" value="0" oninput="recalculatePayrollForm1()">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">වෙනත් අඩුකිරීම් 1 (Other Ded 1)</label>
+              <input type="number" id="pay-entry-ded1" class="form-input-pill" min="0" value="0" oninput="recalculatePayrollForm1()">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">වෙනත් අඩුකිරීම් 2 (Other Ded 2)</label>
+              <input type="number" id="pay-entry-ded2" class="form-input-pill" min="0" value="0" oninput="recalculatePayrollForm1()">
+            </div>
+            <div style="grid-column:span 3;">
+              <label style="font-size:12px; font-weight:700;">වෙනත් එකතු කිරීම් / දීමනා (Other Additions)</label>
+              <input type="number" id="pay-entry-other-add" class="form-input-pill" min="0" value="0" oninput="recalculatePayrollForm1()">
+            </div>
+          </div>
+
+          <div style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:14px; padding:16px;">
+            <div style="font-size:12px; font-weight:800; color:#1e1b4b; margin-bottom:10px; display:flex; justify-content:space-between;">
+              <span>ස්වයංක්‍රීයව ගණනය වන අගයන් (Live Automatic Calculation):</span>
+              <span id="pay-entry-calc-date" class="badge-pill badge-green">ගෙවීම් දිනය: 25 වන දින</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; font-size:12px;">
+              <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:8px 10px;">
+                <div style="color:#64748b; font-size:11px;">මුළු උපැයීම (Gross):</div>
+                <strong id="pay-calc-gross" style="color:#166534; font-size:13.5px;">රු. 0</strong>
+              </div>
+              <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:8px 10px;">
+                <div style="color:#64748b; font-size:11px;">අර්ථසාධක 20% (Total):</div>
+                <strong id="pay-calc-epf20" style="color:#7c3aed; font-size:13.5px;">රු. 0</strong>
+              </div>
+              <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:8px 10px;">
+                <div style="color:#64748b; font-size:11px;">සමිතිය 12% EPF:</div>
+                <strong id="pay-calc-epf12" style="color:#16a34a; font-size:13.5px;">රු. 0</strong>
+              </div>
+              <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:8px 10px;">
+                <div style="color:#64748b; font-size:11px;">සේවක 8% EPF:</div>
+                <strong id="pay-calc-epf8" style="color:#dc2626; font-size:13.5px;">රු. 0</strong>
+              </div>
+              <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:8px 10px;">
+                <div style="color:#64748b; font-size:11px;">විශ්‍රාම 2.5%:</div>
+                <strong id="pay-calc-pen25" style="color:#d97706; font-size:13.5px;">රු. 0</strong>
+              </div>
+              <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:8px 10px;">
+                <div style="color:#64748b; font-size:11px;">විශ්‍රාම 5%:</div>
+                <strong id="pay-calc-pen5" style="color:#dc2626; font-size:13.5px;">රු. 0</strong>
+              </div>
+              <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:8px 10px;">
+                <div style="color:#64748b; font-size:11px;">සේවක භාරකාර ETF 3%:</div>
+                <strong id="pay-calc-etf3" style="color:#0284c7; font-size:13.5px;">රු. 0</strong>
+              </div>
+              <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:8px 10px;">
+                <div style="color:#64748b; font-size:11px;">අඩුකිරීම් එකතුව:</div>
+                <strong id="pay-calc-tot-ded" style="color:#dc2626; font-size:13.5px;">රු. 0</strong>
+              </div>
+            </div>
+            <div style="margin-top:12px; padding-top:10px; border-top:1px dashed #cbd5e1; display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:800; font-size:14px; color:#1e1b4b;">ශුද්ධ වැටුප (Net Payable to Staff):</span>
+              <strong id="pay-calc-net" style="font-size:18px; color:#16a34a; font-family:monospace;">රු. 0</strong>
+            </div>
+          </div>
+        </div>
+        <div class="smart-modal-footer">
+          <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-payroll-entry')">අවලංගු කරන්න</button>
+          <button type="submit" class="btn-smart btn-smart-primary"><i class="fa-solid fa-save"></i> වැටුප් දත්ත සුරකින්න</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Form 2 Incentive Criteria Entry -->
+  <div class="smart-modal-overlay" id="modal-smart-incentive-entry">
+    <div class="smart-modal-box large">
+      <div class="smart-modal-header">
+        <h3><i class="fa-solid fa-award" style="color:#7c3aed;"></i> සේවක දිරි දීමනා නිර්ණායක ඇතුළත් කිරීම (Form 2)</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-smart-incentive-entry')">&times;</button>
+      </div>
+      <form id="form-smart-incentive-entry" onsubmit="saveIncentiveEntry(event)">
+        <div class="smart-modal-body">
+          <div style="background:#ede9fe; border:1px solid #ddd6fe; border-radius:10px; padding:10px 14px; margin-bottom:14px; font-size:12px; color:#5b21b6;">
+            <strong><i class="fa-solid fa-circle-info"></i> ස්ථිර සේවකයින් සඳහා පමණි:</strong> සෑම මසකම 10 වන දින මෙම නිර්ණායක 14 යටතේ දිරි දීමනා ගණනය කෙරේ.
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">ස්ථිර සේවකයා තෝරන්න (හෝ අලුතින් ටයිප් කරන්න) *</label>
+              <select id="inc-entry-emp" class="form-input-pill" required onchange="onIncentiveEmpChange()">
+                <option value="">-- ස්ථිර සේවකයෙකු තෝරන්න --</option>
+                <option value="NEW_MANUAL" style="font-weight:bold; color:#7c3aed;">➕ නව ස්ථිර සේවකයෙකු අතින් ඇතුළත් කරන්න (Manual Staff)</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">අදාළ මාසය (Month) *</label>
+              <input type="month" id="inc-entry-month" class="form-input-pill" value="2026-09" required onchange="onIncentiveEmpChange()">
+            </div>
+          </div>
+
+          <!-- Manual Employee Input Row for Incentives -->
+          <div id="inc-manual-emp-row" style="display:none; background:#f5f3ff; border:1.5px dashed #7c3aed; border-radius:12px; padding:12px; margin-bottom:14px;">
+            <div style="font-size:12px; font-weight:800; color:#6d28d9; margin-bottom:8px;">
+              <i class="fa-solid fa-user-plus"></i> නව ස්ථිර සේවක විස්තර සෘජුවම ඇතුළත් කරන්න:
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
+              <div>
+                <label style="font-size:11px; font-weight:700;">සේවා අංකය (ID) *</label>
+                <input type="text" id="inc-manual-id" class="form-input-pill" placeholder="උදා: GSCS-001">
+              </div>
+              <div>
+                <label style="font-size:11px; font-weight:700;">සම්පූර්ණ නම *</label>
+                <input type="text" id="inc-manual-name" class="form-input-pill" placeholder="සේවක නම">
+              </div>
+              <div>
+                <label style="font-size:11px; font-weight:700;">තනතුර *</label>
+                <input type="text" id="inc-manual-desig" class="form-input-pill" placeholder="උදා: කළමනාකරු">
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; background:#f8fafc; padding:12px; border-radius:10px;">
+            <div>
+              <label style="font-size:11.5px; font-weight:700;">මාසික ලාභය සටහන (රු.):</label>
+              <input type="text" id="inc-meta-profit" class="form-input-pill" placeholder="උදා: රු. 850,000">
+            </div>
+            <div>
+              <label style="font-size:11.5px; font-weight:700;">කල්පසු ණය ප්‍රතිශතය (%):</label>
+              <input type="text" id="inc-meta-recovery" class="form-input-pill" placeholder="උදා: 4.5%">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:12px;">
+            <div>
+              <label style="font-weight:700;">01. මාසික ලාභය දීමනාව</label>
+              <input type="number" id="inc-c1" class="form-input-pill" min="0" value="0" oninput="recalculateIncentiveTotal()">
+            </div>
+            <div>
+              <label style="font-weight:700;">02. උපරිම සේවා කාලය</label>
+              <input type="number" id="inc-c2" class="form-input-pill" min="0" value="0" oninput="recalculateIncentiveTotal()">
+            </div>
+            <div>
+              <label style="font-weight:700;">03. දෛනික දීමනා</label>
+              <input type="number" id="inc-c3" class="form-input-pill" min="0" value="0" oninput="recalculateIncentiveTotal()">
+            </div>
+            <div>
+              <label style="font-weight:700;">04. කල්පසු ණය ක්‍රියා මාර්ග</label>
+              <input type="number" id="inc-c4" class="form-input-pill" min="0" value="0" oninput="recalculateIncentiveTotal()">
+            </div>
+            <div>
+              <label style="font-weight:700;">05. යතුරු ධාරණය</label>
+              <input type="number" id="inc-c5" class="form-input-pill" min="0" value="0" oninput="recalculateIncentiveTotal()">
+            </div>
+            <div>
+              <label style="font-weight:700;">06. කාරක සභා තීරණ ක්‍රියාත්මක කිරීම</label>
+              <input type="number" id="inc-c6" class="form-input-pill" min="0" value="0" oninput="recalculateIncentiveTotal()">
+            </div>
+            <div>
+              <label style="font-weight:700;">07. පිරිසිදු කිරීමේ දීමනා</label>
+              <input type="number" id="inc-c7" class="form-input-pill" min="0" value="0" oninput="recalculateIncentiveTotal()">
+            </div>
+            <div>
+              <label style="font-weight:700;">08. ලිපිගොනු පවත්වාගෙන යාමේ දීමනා</label>
+              <input type="number" id="inc-c8" class="form-input-pill" min="0" value="0" oninput="recalculateIncentiveTotal()">
+            </div>
+            <div>
+              <label style="font-weight:700;">09. උපකරණ භාරකාරීත්වය හා නඩත්තුව</label>
+              <input type="number" id="inc-c9" class="form-input-pill" min="0" value="0" oninput="recalculateIncentiveTotal()">
+            </div>
+            <div>
+              <label style="font-weight:700;">10. නිල ඇඳුම් භාවිතය</label>
+              <input type="number" id="inc-c10" class="form-input-pill" min="0" value="0" oninput="recalculateIncentiveTotal()">
+            </div>
+            <div>
+              <label style="font-weight:700;">11. ප්‍රමාද නොවීම්</label>
+              <input type="number" id="inc-c11" class="form-input-pill" min="0" value="0" oninput="recalculateIncentiveTotal()">
+            </div>
+            <div>
+              <label style="font-weight:700;">12. විශේෂිත දිනයන්හි පැමිණීමේ දීමනා</label>
+              <input type="number" id="inc-c12" class="form-input-pill" min="0" value="0" oninput="recalculateIncentiveTotal()">
+            </div>
+            <div>
+              <label style="font-weight:700;">13. අමතර නිර්ණායක 1</label>
+              <input type="number" id="inc-c13" class="form-input-pill" min="0" value="0" oninput="recalculateIncentiveTotal()">
+            </div>
+            <div>
+              <label style="font-weight:700;">14. අමතර නිර්ණායක 2</label>
+              <input type="number" id="inc-c14" class="form-input-pill" min="0" value="0" oninput="recalculateIncentiveTotal()">
+            </div>
+          </div>
+
+          <div style="background:#f0fdf4; border:1.5px solid #86efac; border-radius:12px; padding:14px 18px; margin-top:16px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:800; font-size:14px; color:#166534;">දීමනා එකතුව (Total Incentive Allowance):</span>
+            <strong id="inc-calc-total" style="font-size:20px; color:#15803d; font-family:monospace;">රු. 0</strong>
+          </div>
+        </div>
+        <div class="smart-modal-footer">
+          <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-incentive-entry')">අවලංගු කරන්න</button>
+          <button type="submit" class="btn-smart btn-smart-primary"><i class="fa-solid fa-save"></i> දිරි දීමනා සුරකින්න</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Official Sheet Print Preview (Form 1 / Form 2) -->
+  <div class="smart-modal-overlay" id="modal-smart-sheet-print">
+    <div class="smart-modal-box extra-large">
+      <div class="smart-modal-header">
+        <h3 id="sheet-print-title"><i class="fa-solid fa-print" style="color:#7c3aed;"></i> නිල ලේඛන මුද්‍රණය</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-smart-sheet-print')">&times;</button>
+      </div>
+      <div class="smart-modal-body" id="sheet-print-content" style="padding:20px; overflow-x:auto;"></div>
+      <div class="smart-modal-footer">
+        <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-sheet-print')">වසන්න</button>
+        <button type="button" class="btn-smart btn-smart-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> මුද්‍රණය කරන්න (Print A4)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: EPF / ETF Remittance Payment Entry -->
+  <div class="smart-modal-overlay" id="modal-smart-epf-payment">
+    <div class="smart-modal-box">
+      <div class="smart-modal-header">
+        <h3><i class="fa-solid fa-file-shield" style="color:#7c3aed;"></i> EPF / ETF ගෙවීම් වාර්තාවක් ඇතුළත් කිරීම</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-smart-epf-payment')">&times;</button>
+      </div>
+      <form id="form-smart-epf-payment" onsubmit="saveEpfPayment(event)">
+        <div class="smart-modal-body">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">සේවකයා තෝරන්න *</label>
+              <select id="epf-pay-emp" class="form-input-pill" required onchange="onEpfPayEmpChange()">
+                <option value="">-- සේවකයෙකු තෝරන්න --</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">අදාළ මාසය *</label>
+              <input type="month" id="epf-pay-month" class="form-input-pill" value="2026-09" required onchange="onEpfPayEmpChange()">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">EPF සාමාජික අංකය</label>
+              <input type="text" id="epf-pay-no" class="form-input-pill" placeholder="උදා: EPF-001">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">මූලික වැටුප (රු.) *</label>
+              <input type="number" id="epf-pay-basic" class="form-input-pill" required min="0" oninput="recalcEpfPayAmounts()">
+            </div>
+          </div>
+
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:14px; font-size:12px;">
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; text-align:center;">
+              <div><span>සේවක 8%:</span><br><strong id="epf-pay-val8" style="color:#dc2626;">රු. 0</strong></div>
+              <div><span>සමිතිය 12%:</span><br><strong id="epf-pay-val12" style="color:#16a34a;">රු. 0</strong></div>
+              <div><span>මුළු EPF 20%:</span><br><strong id="epf-pay-val20" style="color:#7c3aed;">රු. 0</strong></div>
+              <div><span>සමිතිය ETF 3%:</span><br><strong id="epf-pay-val3" style="color:#0284c7;">රු. 0</strong></div>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">ගෙවීම් තත්වය (Status) *</label>
+              <select id="epf-pay-status" class="form-input-pill" required>
+                <option value="paid">🟢 යවන ලදී / ගෙවන ලදී (Remitted)</option>
+                <option value="pending">🔴 නොයැවූ / හිඟ (Pending)</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">ගෙවූ දිනය (Remitted Date)</label>
+              <input type="date" id="epf-pay-date" class="form-input-pill">
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px; font-weight:700;">චෙක්පත් / බැංකු / C-Form රිසිට් අංකය (Ref No)</label>
+            <input type="text" id="epf-pay-ref" class="form-input-pill" placeholder="උදා: CHQ-882194 / CB-CF-2026-09">
+          </div>
+
+          <div>
+            <label style="font-size:12px; font-weight:700;">සටහන් (Notes)</label>
+            <textarea id="epf-pay-notes" class="form-input-pill" rows="2" placeholder="අමතර විස්තර..."></textarea>
+          </div>
+        </div>
+        <div class="smart-modal-footer">
+          <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-epf-payment')">අවලංගු කරන්න</button>
+          <button type="submit" class="btn-smart btn-smart-primary"><i class="fa-solid fa-save"></i> වාර්තාව සුරකින්න</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Employee EPF / ETF Annual Passbook / Statement -->
+  <div class="smart-modal-overlay" id="modal-smart-epf-passbook">
+    <div class="smart-modal-box extra-large">
+      <div class="smart-modal-header">
+        <h3 id="epf-passbook-title"><i class="fa-solid fa-book" style="color:#7c3aed;"></i> සේවක EPF / ETF වාර්ෂික ගිණුම් ප්‍රකාශනය</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-smart-epf-passbook')">&times;</button>
+      </div>
+      <div class="smart-modal-body" id="epf-passbook-content" style="padding:20px; overflow-x:auto;"></div>
+      <div class="smart-modal-footer">
+        <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-epf-passbook')">වසන්න</button>
+        <button type="button" class="btn-smart btn-smart-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> මුද්‍රණය කරන්න (Print Passbook)</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js?v=5.7"></script>
+</body>
+</html>

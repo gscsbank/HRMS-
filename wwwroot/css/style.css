@@ -1,0 +1,1421 @@
+/* =========================================================================
+   Galapitiyagama Sanasa HRMS - Ultra Modern Smart Dashboard UI
+   Aesthetic inspired by Modern Neumorphic / Glassmorphic Card UI
+   ========================================================================= */
+
+:root {
+  /* Brand & Mint Emerald Accents */
+  --primary: #059669;
+  --primary-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --primary-light: #e6f4ea;
+  --primary-glow: rgba(16, 185, 129, 0.25);
+  
+  --sanasa-maroon: #881337;
+  --sanasa-gold: #f59e0b;
+
+  --accent-orange: #f97316;
+  --accent-orange-bg: #fff7ed;
+  --accent-orange-gradient: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+
+  --accent-blue: #0284c7;
+  --accent-blue-bg: #f0f9ff;
+  --accent-blue-gradient: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+
+  --accent-green: #059669;
+  --accent-green-bg: #e6f4ea;
+  --accent-green-gradient: linear-gradient(135deg, #34d399 0%, #059669 100%);
+
+  /* Neutrals & Surfaces */
+  --bg-ambient: linear-gradient(135deg, #059669 0%, #10b981 50%, #047857 100%);
+  --surface-canvas: #ffffff;
+  --surface-card: #ffffff;
+  --surface-subtle: #f8fafc;
+  --surface-hover: #f1f5f9;
+
+  --text-main: #111827;
+  --text-muted: #6b7280;
+  --text-light: #9ca3af;
+
+  --border-light: #f3f4f6;
+  --border-card: rgba(229, 231, 235, 0.85);
+
+  --shadow-ambient: 0 30px 70px -15px rgba(4, 120, 87, 0.35);
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.03);
+  --shadow-pill: 0 4px 12px rgba(5, 150, 105, 0.15);
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+
+  --font-sans: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Iskoola Pota', 'Noto Sans Sinhala', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--surface-canvas);
+  color: var(--text-main);
+  min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Master App Container Window */
+.app-window {
+  width: 100vw;
+  max-width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  background: var(--surface-canvas);
+  border-radius: 0;
+  box-shadow: none;
+  border: none;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+/* =========================================================================
+   SIDEBAR
+   ========================================================================= */
+.app-sidebar {
+  width: 260px;
+  background: #ffffff;
+  border-right: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  padding: 24px 18px;
+  z-index: 20;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-left: 6px;
+}
+
+.brand-emblem {
+  width: 44px;
+  height: 44px;
+  background: var(--primary-gradient);
+  border-radius: 14px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  box-shadow: 0 8px 16px rgba(124, 58, 237, 0.35);
+}
+
+.brand-text h2 {
+  font-size: 15px;
+  font-weight: 800;
+  color: #1e1b4b;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+
+.brand-text span {
+  font-size: 11px;
+  color: #8b5cf6;
+  font-weight: 600;
+}
+
+.sidebar-menu {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-right: 4px;
+}
+
+.menu-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #94a3b8;
+  font-weight: 700;
+  padding: 12px 12px 4px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  color: #64748b;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+}
+
+.menu-item i {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.menu-item:hover {
+  background: #f8fafc;
+  color: #1e1b4b;
+}
+
+.menu-item:hover i {
+  transform: scale(1.1);
+}
+
+.menu-item.active {
+  background: #f5f3ff;
+  color: #7c3aed;
+  font-weight: 700;
+}
+
+.menu-item.active i {
+  color: #7c3aed;
+}
+
+.menu-badge {
+  margin-left: auto;
+  background: #ede9fe;
+  color: #7c3aed;
+  font-size: 10.5px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-weight: 800;
+}
+
+/* Sidebar Glowing Action Button (Add New Task) */
+.sidebar-cta-btn {
+  background: var(--primary-gradient);
+  border-radius: 18px;
+  padding: 14px 16px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(124, 58, 237, 0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin: 14px 0;
+  border: none;
+  width: 100%;
+}
+
+.sidebar-cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 26px rgba(124, 58, 237, 0.45);
+}
+
+/* User Profile Pill at Bottom */
+.user-profile-pill {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+
+.user-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 800;
+  box-shadow: 0 4px 8px rgba(245, 158, 11, 0.25);
+  flex-shrink: 0;
+}
+
+.user-meta {
+  flex: 1;
+  overflow: hidden;
+  line-height: 1.2;
+}
+
+.user-meta .name {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #1e1b4b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-meta .role {
+  font-size: 10.5px;
+  color: #64748b;
+}
+
+.user-logout-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  transition: all 0.15s;
+}
+
+.user-logout-btn:hover {
+  color: #ef4444;
+  background: #fee2e2;
+}
+
+/* =========================================================================
+   MAIN VIEWPORT & HEADER
+   ========================================================================= */
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fafbfd;
+}
+
+.top-bar {
+  padding: 18px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.top-bar-left {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.top-bar-left h1 {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1e1b4b;
+  letter-spacing: -0.5px;
+}
+
+.top-bar-left .live-date {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.top-bar-center {
+  flex: 1;
+  max-width: 400px;
+  margin: 0 24px;
+}
+
+.search-pill-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 30px;
+  padding: 8px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s;
+}
+
+.search-pill-box:focus-within {
+  background: #fff;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
+.search-pill-box i {
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.search-pill-box input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-size: 12.5px;
+  color: #1e1b4b;
+  outline: none;
+  font-family: inherit;
+}
+
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Online QR Cloud Status Pill */
+.online-pill {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.online-pill:hover {
+  background: #d1fae5;
+}
+
+.online-pill .status-dot {
+  width: 7px;
+  height: 7px;
+  background: #10b981;
+  border-radius: 50%;
+  animation: pulse-dot 1.8s infinite;
+}
+
+@keyframes pulse-dot {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.8; }
+}
+
+/* Language Toggle Switch */
+.lang-toggle-pill {
+  display: flex;
+  background: #f1f5f9;
+  border-radius: 20px;
+  padding: 3px;
+  border: 1px solid #e2e8f0;
+}
+
+.lang-toggle-btn {
+  border: none;
+  background: transparent;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 16px;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.lang-toggle-btn.active {
+  background: #7c3aed;
+  color: #fff;
+  box-shadow: 0 2px 5px rgba(124, 58, 237, 0.25);
+}
+
+/* Date Pill Button */
+.date-pill-btn {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* =========================================================================
+   SCROLLABLE VIEWPORT CONTAINER
+   ========================================================================= */
+.viewport-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 28px;
+}
+
+.view-section {
+  display: none;
+}
+
+.view-section.active {
+  display: block;
+  animation: viewFade 0.25s ease-out;
+}
+
+@keyframes viewFade {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================================================
+   DASHBOARD LAYOUT (MATCHING REFERENCE IMAGE)
+   ========================================================================= */
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+}
+
+.dashboard-main-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dashboard-side-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 1. Welcome Hero Banner */
+.welcome-hero-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 22px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #f1f5f9;
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+}
+
+.welcome-hero-card::before {
+  content: "";
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.welcome-content h2 {
+  font-size: 19px;
+  font-weight: 800;
+  color: #1e1b4b;
+  margin-bottom: 6px;
+  letter-spacing: -0.3px;
+}
+
+.welcome-content p {
+  font-size: 13px;
+  color: #64748b;
+  max-width: 580px;
+  line-height: 1.5;
+}
+
+.welcome-badge-tag {
+  background: #ede9fe;
+  color: #7c3aed;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.welcome-illustration {
+  width: 120px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+  color: #7c3aed;
+  opacity: 0.85;
+}
+
+/* 2. Four Vibrant Horizontal Stat Pills (As in Reference Image) */
+.stat-pills-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.stat-pill-card {
+  border-radius: 18px;
+  padding: 16px 20px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--shadow-pill);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-pill-card:hover {
+  transform: translateY(-3px);
+}
+
+.stat-pill-card.purple {
+  background: var(--primary-gradient);
+}
+
+.stat-pill-card.orange {
+  background: var(--accent-orange-gradient);
+}
+
+.stat-pill-card.blue {
+  background: var(--accent-blue-gradient);
+}
+
+.stat-pill-card.green {
+  background: var(--accent-green-gradient);
+}
+
+.stat-pill-icon {
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(4px);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.stat-pill-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-pill-info .val {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+
+.stat-pill-info .lbl {
+  font-size: 11.5px;
+  opacity: 0.9;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* 3. Middle Cards (Charts & Gauges) */
+.dashboard-mid-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 20px;
+}
+
+.card-box {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  border: 1px solid #f1f5f9;
+  box-shadow: var(--shadow-card);
+}
+
+.card-box-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.card-box-header h3 {
+  font-size: 15px;
+  font-weight: 800;
+  color: #1e1b4b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-badge-btn {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  cursor: pointer;
+}
+
+/* 4. Bottom Cards Grid (Work Progress & Working Status) */
+.dashboard-lower-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 20px;
+}
+
+.progress-task-card {
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  border: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s;
+}
+
+.progress-task-card:hover {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.task-info-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.task-icon-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #fff;
+}
+
+.task-icon-badge.p1 { background: #8b5cf6; }
+.task-icon-badge.p2 { background: #f97316; }
+.task-icon-badge.p3 { background: #0284c7; }
+
+.task-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e1b4b;
+}
+
+.task-sub {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.task-prog-bar-box {
+  width: 110px;
+  text-align: right;
+}
+
+.prog-bar-track {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.prog-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+}
+
+/* Working Status Circular Gauge (As in Reference Image) */
+.status-gauge-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 10px 0;
+}
+
+.gauge-circle {
+  position: relative;
+  width: 140px;
+  height: 140px;
+}
+
+.gauge-center-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.gauge-center-text .pct {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1e1b4b;
+}
+
+.gauge-center-text .lbl {
+  font-size: 10px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.gauge-legends {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+/* =========================================================================
+   RIGHT SIDEBAR PANEL (CALENDAR & UPCOMING TIMELINE)
+   ========================================================================= */
+.mini-calendar-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  border: 1px solid #f1f5f9;
+  box-shadow: var(--shadow-card);
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.calendar-header h4 {
+  font-size: 14px;
+  font-weight: 800;
+  color: #1e1b4b;
+}
+
+.calendar-arrows {
+  display: flex;
+  gap: 6px;
+}
+
+.cal-arrow-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.cal-grid-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.cal-day-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.cal-grid-dates {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  text-align: center;
+}
+
+.cal-date-cell {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cal-date-cell:hover {
+  background: #f1f5f9;
+}
+
+.cal-date-cell.active-today {
+  background: #7c3aed;
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.35);
+}
+
+/* Upcoming Timeline List */
+.upcoming-timeline-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  border: 1px solid #f1f5f9;
+  box-shadow: var(--shadow-card);
+  flex: 1;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+  position: relative;
+}
+
+.timeline-bar {
+  width: 4px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.timeline-bar.c1 { background: #ec4899; }
+.timeline-bar.c2 { background: #10b981; }
+.timeline-bar.c3 { background: #38bdf8; }
+.timeline-bar.c4 { background: #8b5cf6; }
+
+.timeline-content {
+  background: #f8fafc;
+  padding: 10px 14px;
+  border-radius: 12px;
+  flex: 1;
+}
+
+.timeline-time {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.timeline-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #1e1b4b;
+}
+
+.timeline-desc {
+  font-size: 11px;
+  color: #64748b;
+}
+
+/* =========================================================================
+   AUTHENTICATION / LOGIN MODAL SCREEN
+   ========================================================================= */
+.login-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.login-card {
+  background: #ffffff;
+  border-radius: 28px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 460px;
+  padding: 36px 32px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  position: relative;
+  overflow: hidden;
+  animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.login-emblem {
+  width: 64px;
+  height: 64px;
+  background: var(--primary-gradient);
+  border-radius: 20px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 10px 24px rgba(124, 58, 237, 0.4);
+}
+
+.login-card h2 {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1e1b4b;
+  margin-bottom: 4px;
+}
+
+.login-card p {
+  font-size: 12.5px;
+  color: #64748b;
+  margin-bottom: 22px;
+}
+
+.quick-login-pills {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.quick-role-btn {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.quick-role-btn:hover, .quick-role-btn.selected {
+  border-color: #8b5cf6;
+  background: #f5f3ff;
+}
+
+.quick-role-btn i {
+  font-size: 18px;
+  color: #7c3aed;
+}
+
+.quick-role-btn .role-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #1e1b4b;
+}
+
+.quick-role-btn .role-sub {
+  font-size: 10.5px;
+  color: #64748b;
+}
+
+/* =========================================================================
+   GENERIC UI ELEMENTS (TABLES, BADGES, MODALS)
+   ========================================================================= */
+.data-table-container {
+  overflow-x: auto;
+}
+
+.smart-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+
+.smart-table th {
+  background: #f8fafc;
+  padding: 12px 14px;
+  font-weight: 700;
+  color: #475569;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.smart-table td {
+  padding: 13px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.smart-table tbody tr:hover {
+  background: #fbfbfe;
+}
+
+.badge-pill {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-block;
+}
+
+.badge-purple { background: #ede9fe; color: #7c3aed; }
+.badge-orange { background: #ffedd5; color: #ea580c; }
+.badge-blue { background: #e0f2fe; color: #0284c7; }
+.badge-green { background: #dcfce7; color: #16a34a; }
+.badge-red { background: #fee2e2; color: #dc2626; }
+
+/* Buttons */
+.btn-smart {
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.btn-smart-primary {
+  background: var(--primary-gradient);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+}
+
+.btn-smart-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.35);
+}
+
+.btn-smart-light {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+}
+
+.btn-smart-light:hover {
+  background: #f1f5f9;
+}
+
+/* Modals */
+.smart-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.smart-modal-overlay.active {
+  display: flex;
+}
+
+.smart-modal-box {
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 650px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.smart-modal-box.large {
+  max-width: 900px;
+}
+
+.smart-modal-box.extra-large {
+  max-width: 1150px;
+}
+
+.payroll-subtab-btn {
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  font-weight: 700;
+  font-size: 13.5px;
+  color: #64748b;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.payroll-subtab-btn:hover {
+  background: #f1f5f9;
+  color: #1e1b4b;
+}
+
+.payroll-subtab-btn.active {
+  background: #7c3aed;
+  color: #ffffff;
+  border-color: #7c3aed;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.25);
+}
+
+.smart-modal-header {
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.smart-modal-header h3 {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1e1b4b;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.smart-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.smart-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #f1f5f9;
+  background: #fafafa;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Form inputs */
+.form-input-pill {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  font-size: 13px;
+  font-family: inherit;
+  color: #1e1b4b;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: #fff;
+}
+
+.form-input-pill:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .dashboard-layout {
+    grid-template-columns: 1fr;
+  }
+  .app-window {
+    height: auto;
+    min-height: 100vh;
+    border-radius: 0;
+  }
+  body {
+    padding: 0;
+  }
+}
+
+@media (max-width: 800px) {
+  .app-window {
+    flex-direction: column;
+  }
+  .app-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .stat-pills-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .dashboard-mid-grid, .dashboard-lower-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================================
+   BLACK & WHITE A4 OFFICIAL PRINT STYLES
+   ========================================================================= */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm 15mm 15mm;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-family: 'Segoe UI', 'Iskoola Pota', sans-serif !important;
+    font-size: 11pt !important;
+    line-height: 1.4 !important;
+  }
+
+  /* Hide Non-Printable Elements */
+  .app-sidebar,
+  .app-topbar,
+  .no-print,
+  .btn-smart,
+  .sidebar-cta-btn,
+  .user-profile-pill,
+  .smart-modal-header button,
+  .modal-smart-footer,
+  .smart-modal-overlay:not(.active) {
+    display: none !important;
+  }
+
+  .app-window {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #ffffff !important;
+    border-radius: 0 !important;
+    display: block !important;
+  }
+
+  .app-main-content {
+    padding: 0 !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  .viewport-scroll {
+    overflow: visible !important;
+    height: auto !important;
+    padding: 0 !important;
+  }
+
+  .view-section {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .view-section:not(.active) {
+    display: none !important;
+  }
+
+  /* Black & White Card & Table Styling */
+  .card-box {
+    box-shadow: none !important;
+    border: 1px solid #000000 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    border-radius: 0 !important;
+    margin-bottom: 15px !important;
+    padding: 12px 15px !important;
+    break-inside: avoid;
+  }
+
+  .smart-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-top: 10px !important;
+  }
+
+  .smart-table th,
+  .smart-table td {
+    border: 1px solid #000000 !important;
+    color: #000000 !important;
+    padding: 6px 8px !important;
+    background: #ffffff !important;
+    font-size: 10pt !important;
+  }
+
+  .smart-table th {
+    background: #f0f0f0 !important;
+    font-weight: bold !important;
+    text-transform: uppercase;
+  }
+
+  .badge-pill {
+    border: 1px solid #000000 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-weight: bold !important;
+    padding: 2px 6px !important;
+    font-size: 9pt !important;
+  }
+
+  /* Force pure black text */
+  h1, h2, h3, h4, h5, h6, p, span, div, strong, td, th {
+    color: #000000 !important;
+  }
+
+  /* Letterhead Header & Footer for Official Reports */
+  .view-section::before {
+    content: "ගලපිටියාගම සණස සමුපකාර සමිතිය (වගකීම සීමිත) - මානව සම්පත් කළමනාකරණ පරිගණක පද්ධතිය \A නිල පරිපාලන වාර්තාව (Official Administrative Report) | මුද්‍රිත දිනය: " attr(data-print-date);
+    white-space: pre-wrap;
+    display: block;
+    text-align: center;
+    font-size: 12pt;
+    font-weight: bold;
+    border-bottom: 2px solid #000000;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+  }
+
+  .view-section::after {
+    content: "සකස් කළේ: ___________________                 පරීක්ෂා කළේ: ___________________                 සභාපති/සාමාන්‍යාධිකාරී අනුමැතිය: ___________________";
+    display: block;
+    margin-top: 40px;
+    padding-top: 15px;
+    border-top: 1px dashed #000000;
+    font-size: 9pt;
+    font-weight: bold;
+    text-align: center;
+  }
+}

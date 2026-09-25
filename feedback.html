@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>සාමාජික අදහස් හා ඇගයීම් Online ද්වාරය - ගලපිටියාගම සණස</title>
+  <link rel="stylesheet" href="css/fontawesome.min.css">
+  <style>
+    :root {
+      --primary: #059669;
+      --primary-gradient: linear-gradient(135deg, #10b981 0%, #047857 100%);
+      --bg: radial-gradient(circle at 10% 20%, #ecfdf5 0%, #f0fdf4 40%, #f8fafc 100%);
+      --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); }
+    body {
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .mobile-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 520px;
+      border-radius: 28px;
+      box-shadow: 0 20px 50px rgba(5, 150, 105, 0.12);
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+    .mobile-header {
+      background: var(--primary-gradient);
+      color: #fff;
+      padding: 28px 20px;
+      text-align: center;
+    }
+    .emblem {
+      width: 56px;
+      height: 56px;
+      background: #fff;
+      color: #059669;
+      border-radius: 18px;
+      margin: 0 auto 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      font-weight: 800;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+    }
+    .mobile-header h2 { font-size: 19px; font-weight: 800; margin-bottom: 4px; }
+    .mobile-header p { font-size: 12px; opacity: 0.9; }
+    .mobile-body { padding: 24px 20px; }
+    .star-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .star-stars i {
+      font-size: 22px;
+      color: #cbd5e1;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+    .star-stars i.active { color: #f59e0b; }
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 12px; font-weight: 700; color: #1e1b4b; margin-bottom: 6px; }
+    .form-control {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 12px;
+      border: 1.5px solid #e2e8f0;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-control:focus { border-color: #10b981; }
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary-gradient);
+      color: #fff;
+      border: none;
+      border-radius: 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3);
+      transition: transform 0.2s;
+      margin-top: 10px;
+    }
+    .submit-btn:hover { transform: translateY(-2px); }
+    .success-screen { display: none; text-align: center; padding: 40px 20px; }
+  </style>
+</head>
+<body>
+
+  <div class="mobile-card">
+    <div class="mobile-header">
+      <div class="emblem" style="background:#ffffff; border:1.5px solid #e2e8f0; border-radius:14px; padding:6px 12px; width:160px; height:auto; margin:0 auto 14px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(0,0,0,0.06);">
+        <img src="images/gscs_logo.png" alt="GSCS Logo" style="width:100%; height:auto; display:block;">
+      </div>
+      <h2>ගලපිටියාගම සණස සමුපකාරය</h2>
+      <p>සාමාජික අදහස් හා ඇගයීම් සභාපතිතුමා වෙත යොමු කිරීම (Online)</p>
+    </div>
+
+    <div class="mobile-body" id="form-container">
+      <p style="font-size:13px; color:#64748b; margin-bottom:16px; line-height:1.5;">
+        ගෞරවනීය සාමාජිකතුමනි/සාමාජිකාවනි, අපගේ සේවාවන් තවදුරටත් උසස් කිරීමට ඔබගේ අදහස් සහ තරු ලකුණු ඇගයීම ලබාදෙන්න.
+      </p>
+
+      <form id="mobile-fb-form">
+        <div class="form-group">
+          <label class="form-label">ශාඛාව (Branch)</label>
+          <select id="fb-branch" class="form-control">
+            <option value="ප්‍රධාන කාර්යාලය (Main Branch)">ප්‍රධාන කාර්යාලය (Main Branch)</option>
+            <option value="ගලපිටියාගම උතුර ශාඛාව">ගලපිටියාගම උතුර ශාඛාව</option>
+            <option value="ගලපිටියාගම දකුණ ශාඛාව">ගලපිටියාගම දකුණ ශාඛාව</option>
+            <option value="ක්ෂේත්‍ර සේවා">ක්ෂේත්‍ර සේවා (Field Services)</option>
+          </select>
+        </div>
+
+        <div style="background:#f8fafc; padding:12px; border-radius:14px; margin-bottom:14px; border:1px solid #e2e8f0;">
+          <h4 style="font-size:12.5px; color:#059669; font-weight:800; margin-bottom:6px;">සේවා තත්ත්ව ඇගයීම (තරු 1 සිට 5)</h4>
+          
+          <div class="star-row">
+            <span style="font-size:12.5px; font-weight:600;">සමස්ත සේවා තෘප්තිය</span>
+            <div class="star-stars" id="star-box-overall">
+              <i class="fa-solid fa-star active" data-v="1"></i>
+              <i class="fa-solid fa-star active" data-v="2"></i>
+              <i class="fa-solid fa-star active" data-v="3"></i>
+              <i class="fa-solid fa-star active" data-v="4"></i>
+              <i class="fa-solid fa-star active" data-v="5"></i>
+            </div>
+          </div>
+
+          <div class="star-row">
+            <span style="font-size:12.5px; font-weight:600;">සේවා වේගය (Speed)</span>
+            <div class="star-stars" id="star-box-speed">
+              <i class="fa-solid fa-star active" data-v="1"></i>
+              <i class="fa-solid fa-star active" data-v="2"></i>
+              <i class="fa-solid fa-star active" data-v="3"></i>
+              <i class="fa-solid fa-star active" data-v="4"></i>
+              <i class="fa-solid fa-star active" data-v="5"></i>
+            </div>
+          </div>
+
+          <div class="star-row" style="border-bottom:none;">
+            <span style="font-size:12.5px; font-weight:600;">කාර්ය මණ්ඩල සුහදශීලීත්වය</span>
+            <div class="star-stars" id="star-box-friendly">
+              <i class="fa-solid fa-star active" data-v="1"></i>
+              <i class="fa-solid fa-star active" data-v="2"></i>
+              <i class="fa-solid fa-star active" data-v="3"></i>
+              <i class="fa-solid fa-star active" data-v="4"></i>
+              <i class="fa-solid fa-star active" data-v="5"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">ප්‍රතිචාර වර්ගය</label>
+          <select id="fb-type" class="form-control">
+            <option value="ප්‍රශංසාව (Commendation)">ප්‍රශංසාව (Commendation / හොඳ සේවාවක්)</option>
+            <option value="යෝජනාව (Suggestion)">සංවර්ධන යෝජනාව (Suggestion)</option>
+            <option value="පැමිණිල්ල (Grievance)">අඩුපාඩුවක් / පැමිණිල්ලක් (Complaint)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">ඔබේ වටිනා අදහස (Comments)</label>
+          <textarea id="fb-comments" class="form-control" rows="4" required placeholder="ඔබගේ අදහස මෙහි සටහන් කරන්න..."></textarea>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div class="form-group">
+            <label class="form-label">සාමාජික අංකය / නම</label>
+            <input type="text" id="fb-name" class="form-control" placeholder="අත්‍යවශ්‍ය නොවේ">
+          </div>
+          <div class="form-group">
+            <label class="form-label">දුරකථන අංකය</label>
+            <input type="text" id="fb-phone" class="form-control" placeholder="07X-XXXXXXX">
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn">
+          <i class="fa-solid fa-paper-plane"></i> අදහස සභාපතිතුමා වෙත යොමු කරන්න
+        </button>
+      </form>
+    </div>
+
+    <!-- Success Screen -->
+    <div class="success-screen" id="success-screen">
+      <div style="width:64px; height:64px; background:#ecfdf5; color:#059669; border-radius:50%; margin:0 auto 16px; display:flex; align-items:center; justify-content:center; font-size:28px;">
+        <i class="fa-solid fa-heart"></i>
+      </div>
+      <h3 style="font-size:20px; font-weight:800; color:#1e1b4b;">බොහොමත්ම ස්තූතියි!</h3>
+      <p style="font-size:13px; color:#64748b; margin:8px 0 20px;">
+        ඔබගේ අදහස ගලපිටියාගම සණස සමුපකාර සමිතියේ ගරු සභාපතිතුමා සහ කළමනාකාරීත්වය වෙත සෘජුව ලැබිණි.
+      </p>
+      <div style="background:#f8fafc; padding:12px; border-radius:12px; font-weight:700; color:#059669; margin-bottom:20px; font-size:14px;">
+        ප්‍රතිචාර අංකය: <span id="fb-ref">MFB-2026-000</span>
+      </div>
+      <button class="submit-btn" style="background:#f1f5f9; color:#475569; box-shadow:none;" onclick="resetForm()">නැවත මුල් පිටුවට</button>
+    </div>
+  </div>
+
+  <script>
+    let rateOverall = 5;
+
+    function initStars(id, cb) {
+      const box = document.getElementById(id);
+      const icons = box.querySelectorAll('i');
+      icons.forEach(icon => {
+        icon.addEventListener('click', () => {
+          const val = parseInt(icon.getAttribute('data-v'));
+          cb(val);
+          icons.forEach((ic, i) => ic.classList.toggle('active', i < val));
+        });
+      });
+    }
+
+    initStars('star-box-overall', v => rateOverall = v);
+    initStars('star-box-speed', () => {});
+    initStars('star-box-friendly', () => {});
+
+    document.getElementById('mobile-fb-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const refNo = `MFB-2026-${Math.floor(100 + Math.random() * 900)}`;
+      const now = new Date();
+      const dateStr = now.toISOString().split('T')[0] + ' ' + now.toTimeString().substring(0, 5);
+
+      const payload = {
+        id: refNo,
+        timestamp: dateStr,
+        memberName: document.getElementById('fb-name').value || 'සමුපකාර සාමාජික/ගනුදෙනුකාරභවතා',
+        memberNo: document.getElementById('fb-name').value ? '' : 'Anonymous',
+        branch: document.getElementById('fb-branch').value,
+        phone: document.getElementById('fb-phone').value || '',
+        overallRating: rateOverall,
+        feedbackType: document.getElementById('fb-type').value,
+        comments: document.getElementById('fb-comments').value,
+        status: 'නව (New)'
+      };
+
+      try {
+        await fetch('/api/quick-submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'member_feedback', data: payload })
+        });
+      } catch (err) {}
+
+      try {
+        const stored = localStorage.getItem('galapitiyagama_sanasa_hrms');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          parsed.memberFeedbacks = parsed.memberFeedbacks || [];
+          parsed.memberFeedbacks.unshift(payload);
+          localStorage.setItem('galapitiyagama_sanasa_hrms', JSON.stringify(parsed));
+        }
+      } catch (e) {}
+
+      document.getElementById('fb-ref').textContent = refNo;
+      document.getElementById('form-container').style.display = 'none';
+      document.getElementById('success-screen').style.display = 'block';
+    });
+
+    function resetForm() {
+      document.getElementById('mobile-fb-form').reset();
+      document.getElementById('form-container').style.display = 'block';
+      document.getElementById('success-screen').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
