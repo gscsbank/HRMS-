@@ -130,6 +130,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderMiniCalendar();
   renderAllViews();
   setupEventListeners();
+
+  // Realtime Cloud Sync from Google Sheets
+  if (typeof syncFromCloud === 'function') {
+    setTimeout(() => syncFromCloud(true), 1500);
+    setInterval(() => syncFromCloud(true), 25000);
+  }
 });
 
 // =========================================================================
@@ -222,7 +228,7 @@ function updateUserSidebarUI() {
 }
 
 // =========================================================================
-// ONLINE QR & GITHUB PAGES URL DETECTION (NO WI-FI NEEDED)
+// ONLINE QR & GITHUB PAGES URL DETECTION & GOOGLE CLOUD SYNC
 // =========================================================================
 function setupOnlineUrlDetection() {
   // If hosted online (GitHub Pages or Custom Domain), detect base URL automatically
@@ -235,9 +241,33 @@ function setupOnlineUrlDetection() {
     customOnlineBaseUrl = origin + path;
   }
 
+  // If running locally, attempt to auto-detect LAN Wi-Fi IP from /api/status
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  if (isLocalhost && !savedCustom) {
+    fetch('/api/status')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.localIps && data.localIps.length > 0) {
+          const lanIp = data.localIps[0];
+          customOnlineBaseUrl = `http://${lanIp}:5000`;
+          const urlInput = document.getElementById('custom-online-url-input');
+          if (urlInput) urlInput.value = customOnlineBaseUrl;
+          renderGrievanceQR();
+          renderMemberFeedbackQR();
+          renderPosterQRs();
+        }
+      })
+      .catch(() => {});
+  }
+
   const urlInput = document.getElementById('custom-online-url-input');
   if (urlInput) {
     urlInput.value = customOnlineBaseUrl;
+  }
+
+  const cloudInput = document.getElementById('custom-cloud-sync-url-input');
+  if (cloudInput && typeof getCloudSyncUrl === 'function') {
+    cloudInput.value = getCloudSyncUrl();
   }
 
   updateOnlinePillUI();
@@ -246,29 +276,157 @@ function setupOnlineUrlDetection() {
 function updateOnlinePillUI() {
   const pill = document.getElementById('online-status-pill');
   if (pill) {
-    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    if (isLocalhost && !customOnlineBaseUrl.includes('github.io')) {
-      pill.innerHTML = `<span class="status-dot"></span> Online QR Configured`;
-      pill.title = `Hosted URL: ${customOnlineBaseUrl}. You can set your exact GitHub Pages link anytime.`;
-    } else {
-      pill.innerHTML = `<span class="status-dot"></span> Cloud Online 100%`;
+    const isCloudSynced = typeof getCloudSyncUrl === 'function' && getCloudSyncUrl();
+    const isGithub = customOnlineBaseUrl.includes('github.io');
+    if (isCloudSynced) {
+      pill.innerHTML = `<span class="status-dot" style="background:#10b981;"></span> Cloud Sync Active`;
+      pill.title = `Google Sheet Realtime Sync Active & Hosted at: ${customOnlineBaseUrl}`;
+    } else if (isGithub) {
+      pill.innerHTML = `<span class="status-dot" style="background:#3b82f6;"></span> GitHub Pages Online`;
       pill.title = `Online URL: ${customOnlineBaseUrl}`;
+    } else {
+      pill.innerHTML = `<span class="status-dot"></span> QR Configured`;
+      pill.title = `Target URL: ${customOnlineBaseUrl}`;
     }
   }
 }
 
-function saveCustomOnlineUrl() {
-  const input = document.getElementById('custom-online-url-input');
-  if (input && input.value.trim()) {
-    let url = input.value.trim().replace(/\/$/, '');
+function saveCustomOnlineSettings() {
+  const baseInput = document.getElementById('custom-online-url-input');
+  const cloudInput = document.getElementById('custom-cloud-sync-url-input');
+
+  if (baseInput && baseInput.value.trim()) {
+    let url = baseInput.value.trim().replace(/\/$/, '');
     customOnlineBaseUrl = url;
     localStorage.setItem('sanasa_online_base_url', customOnlineBaseUrl);
-    updateOnlinePillUI();
-    renderGrievanceQR();
-    renderMemberFeedbackQR();
-    renderPosterQRs();
-    closeSmartModal('modal-online-settings');
-    alert(currentLang === 'si' ? 'Online QR වෙබ් ලිපිනය සාර්ථකව යාවත්කාලීන විය!' : 'Online QR URL updated successfully!');
+  }
+
+  if (cloudInput && typeof setCloudSyncUrl === 'function') {
+    setCloudSyncUrl(cloudInput.value.trim());
+  }
+
+  updateOnlinePillUI();
+  renderGrievanceQR();
+  renderMemberFeedbackQR();
+  renderPosterQRs();
+  closeSmartModal('modal-online-settings');
+
+  alert(currentLang === 'si' ? 'Online & Cloud සැකසුම් සාර්ථකව සුරකින ලදී!' : 'Online & Cloud settings saved successfully!');
+
+  if (typeof getCloudSyncUrl === 'function' && getCloudSyncUrl()) {
+    syncFromCloud(false);
+  }
+}
+
+function saveCustomOnlineUrl() {
+  saveCustomOnlineSettings();
+}
+
+async function testCloudSyncConnection() {
+  const input = document.getElementById('custom-cloud-sync-url-input');
+  const statusMsg = document.getElementById('cloud-sync-status-msg');
+  if (!input || !input.value.trim()) {
+    if (statusMsg) {
+      statusMsg.textContent = 'කරුණාකර වලංගු Web App URL එකක් ඇතුළත් කරන්න.';
+      statusMsg.style.color = '#ef4444';
+    }
+    return;
+  }
+  const testUrl = input.value.trim();
+  if (statusMsg) {
+    statusMsg.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> පරීක්ෂා කරමින් පවතී...';
+    statusMsg.style.color = '#7c3aed';
+  }
+
+  try {
+    const res = await fetch(testUrl + (testUrl.includes('?') ? '&' : '?') + 'test=1&t=' + Date.now());
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.status === 'success') {
+        if (statusMsg) {
+          statusMsg.innerHTML = `<i class="fa-solid fa-circle-check"></i> සාර්ථකයි! (Grievances: ${data.totalGrievances || 0}, Feedbacks: ${data.totalFeedbacks || 0})`;
+          statusMsg.style.color = '#16a34a';
+        }
+        return;
+      }
+    }
+    if (statusMsg) {
+      statusMsg.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> දෝෂයක් මතු විය (Not valid JSON output).';
+      statusMsg.style.color = '#ef4444';
+    }
+  } catch (e) {
+    if (statusMsg) {
+      statusMsg.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> සබඳතාව අසාර්ථකයි (URL එක හෝ Access Permissions පරීක්ෂා කරන්න).';
+      statusMsg.style.color = '#ef4444';
+    }
+  }
+}
+
+let isSyncingCloud = false;
+async function syncFromCloud(silent = false) {
+  const cloudUrl = typeof getCloudSyncUrl === 'function' ? getCloudSyncUrl() : '';
+  if (!cloudUrl || isSyncingCloud) return;
+
+  const iconGrv = document.getElementById('sync-icon-grv');
+  const iconFb = document.getElementById('sync-icon-fb');
+  if (iconGrv) iconGrv.classList.add('fa-spin');
+  if (iconFb) iconFb.classList.add('fa-spin');
+  isSyncingCloud = true;
+
+  try {
+    const res = await fetch(cloudUrl + (cloudUrl.includes('?') ? '&' : '?') + 't=' + Date.now());
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.status === 'success') {
+        let newGrievancesCount = 0;
+        let newFeedbacksCount = 0;
+
+        if (Array.isArray(data.grievances) && data.grievances.length > 0) {
+          if (!appData.grievances) appData.grievances = [];
+          const existingIds = new Set(appData.grievances.map(g => g.id));
+          data.grievances.forEach(g => {
+            if (!existingIds.has(g.id)) {
+              appData.grievances.unshift(g);
+              newGrievancesCount++;
+            }
+          });
+        }
+
+        if (Array.isArray(data.memberFeedbacks) && data.memberFeedbacks.length > 0) {
+          if (!appData.memberFeedbacks) appData.memberFeedbacks = [];
+          const existingFbIds = new Set(appData.memberFeedbacks.map(f => f.id));
+          data.memberFeedbacks.forEach(f => {
+            if (!existingFbIds.has(f.id)) {
+              appData.memberFeedbacks.unshift(f);
+              newFeedbacksCount++;
+            }
+          });
+        }
+
+        if (newGrievancesCount > 0 || newFeedbacksCount > 0) {
+          await persistData();
+          renderGrievancePortal();
+          renderMemberFeedbackPortal();
+          renderDashboardStats();
+          if (!silent) {
+            alert(currentLang === 'si' 
+              ? `Google Sheet වෙතින් නව දත්ත සාර්ථකව එකතු විය!\n(නව ගැටළු: ${newGrievancesCount}, නව ප්‍රතිචාර: ${newFeedbacksCount})`
+              : `Successfully synced new cloud data! (Grievances: ${newGrievancesCount}, Feedbacks: ${newFeedbacksCount})`);
+          }
+        } else if (!silent) {
+          alert(currentLang === 'si' ? 'Google Sheet දත්ත පරික්ෂා කරන ලදී. සියලු දත්ත දැනටමත් යාවත්කාලීනයි!' : 'Google Sheet is already in sync.');
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Cloud sync error:', err);
+    if (!silent) {
+      alert(currentLang === 'si' ? 'Google Sheet සබඳතාවයේ දෝෂයක් මතු විය. කරුණාකර Web App URL එක නිවැරදිදැයි පරීක්ෂා කරන්න.' : 'Error connecting to Google Sheets.');
+    }
+  } finally {
+    isSyncingCloud = false;
+    if (iconGrv) iconGrv.classList.remove('fa-spin');
+    if (iconFb) iconFb.classList.remove('fa-spin');
   }
 }
 

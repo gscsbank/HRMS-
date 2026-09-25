@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\iraaf\\Desktop\\HRMS\\HRMS.csproj",
+      "projectUniqueName": "C:\\Users\\iraaf\\Desktop\\HRMS-20260924T151839Z-1-001\\HRMS\\HRMS.csproj",
       "projectName": "HRMS",
-      "projectPath": "C:\\Users\\iraaf\\Desktop\\HRMS\\HRMS.csproj",
+      "projectPath": "C:\\Users\\iraaf\\Desktop\\HRMS-20260924T151839Z-1-001\\HRMS\\HRMS.csproj",
       "packagesPath": "C:\\Users\\iraaf\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\iraaf\\Desktop\\HRMS\\obj\\",
+      "outputPath": "C:\\Users\\iraaf\\Desktop\\HRMS-20260924T151839Z-1-001\\HRMS\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\iraaf\\AppData\\Roaming\\NuGet\\NuGet.Config"

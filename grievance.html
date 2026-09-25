@@ -212,6 +212,7 @@
     </div>
   </div>
 
+  <script src="js/config.js"></script>
   <script>
     let isAnonymous = true;
 
@@ -224,6 +225,12 @@
 
     document.getElementById('mobile-grv-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> යොමු කරමින් පවතී...';
+      }
+
       const refNo = `GRV-2026-${Math.floor(100 + Math.random() * 900)}`;
       const now = new Date();
       const dateStr = now.toISOString().split('T')[0] + ' ' + now.toTimeString().substring(0, 5);
@@ -245,7 +252,22 @@
         actionTaken: ''
       };
 
-      // 1. Try Backend API if available
+      // 1. Send to Google Sheets / Cloud Sync if configured
+      const cloudUrl = typeof getCloudSyncUrl === 'function' ? getCloudSyncUrl() : '';
+      if (cloudUrl) {
+        try {
+          await fetch(cloudUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ type: 'grievance', data: payload })
+          });
+        } catch (err) {
+          console.warn('Cloud sync error:', err);
+        }
+      }
+
+      // 2. Try Localhost / LAN Backend API if reachable
       try {
         await fetch('/api/quick-submit', {
           method: 'POST',
@@ -254,7 +276,7 @@
         });
       } catch (err) {}
 
-      // 2. Persist to LocalStorage
+      // 3. Persist to LocalStorage
       try {
         const stored = localStorage.getItem('galapitiyagama_sanasa_hrms');
         if (stored) {
