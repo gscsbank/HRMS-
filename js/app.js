@@ -1119,7 +1119,7 @@ function editEmployee(id) {
   document.getElementById('emp-phone').value = emp.phone || '';
   document.getElementById('emp-address').value = emp.address || '';
   document.getElementById('emp-designation').value = emp.designation || '';
-  document.getElementById('emp-department').value = emp.department || 'ණය සහ ක්ෂුද්‍ර මූල්‍ය අංශය';
+  document.getElementById('emp-department').value = emp.department || 'OAD — මෙහෙයුම් හා පරිපාලන අංශය (Operations and Administration Division)';
   document.getElementById('emp-appointment-date').value = emp.appointmentDate || '2020-01-01';
   document.getElementById('emp-type').value = emp.employmentType || 'ස්ථිර (Permanent)';
   document.getElementById('emp-basic-salary').value = emp.basicSalary || 55000;
