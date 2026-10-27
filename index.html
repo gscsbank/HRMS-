@@ -70,7 +70,7 @@
 
         <a class="menu-item" data-target="grievance">
           <i class="fa-solid fa-qrcode"></i>
-          <span>Board QR Portal (ගැටළු/යෝජනා)</span>
+          <span>Employee Issues & Suggestions QR</span>
           <span class="menu-badge" id="badge-grv-count">0</span>
         </a>
 
@@ -524,7 +524,7 @@
           <div class="card-box" style="margin-bottom:20px;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <div>
-                <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;">සේවක ගැටළු හා යෝජනා QR පද්ධතිය</h2>
+                <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;">Employee Issues & Suggestions QR System<br><span style="font-size:13px; font-weight:600; color:#7c3aed;">සේවක ගැටළු හා යෝජනා QR පද්ධතිය</span></h2>
                 <p style="font-size:12.5px; color:#64748b;">සේවකයින්ට නාමිකව හෝ 100% නිර්නාමිකව (Anonymous) සේවක ගැටළු හා යෝජනා සෘජුවම යොමු කළ හැක.</p>
               </div>
               <a href="grievance.html" target="_blank" class="btn-smart btn-smart-primary">
@@ -553,8 +553,11 @@
           </div>
 
           <div class="card-box data-table-container" style="padding:0;">
-            <div style="padding:16px 20px; border-bottom:1px solid #f1f5f9;">
+            <div style="padding:16px 20px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
               <h3 style="font-size:15px; font-weight:800; color:#1e1b4b;">සේවක ගැටළු හා යෝජනා සමාලෝචන ලේඛනය</h3>
+              <button type="button" class="btn-smart btn-smart-light" style="color:#dc2626; border-color:#fecaca; font-size:11.5px; padding:5px 12px;" onclick="clearAllGrievances()">
+                <i class="fa-solid fa-trash-can"></i> සියල්ල ඉවත් කරන්න (Clear All)
+              </button>
             </div>
             <table class="smart-table">
               <thead>
@@ -609,8 +612,11 @@
           </div>
 
           <div class="card-box data-table-container" style="padding:0;">
-            <div style="padding:16px 20px; border-bottom:1px solid #f1f5f9;">
+            <div style="padding:16px 20px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
               <h3 style="font-size:15px; font-weight:800; color:#1e1b4b;">ලැබී ඇති සාමාජික ප්‍රතිචාර ලේඛනය</h3>
+              <button type="button" class="btn-smart btn-smart-light" style="color:#dc2626; border-color:#fecaca; font-size:11.5px; padding:5px 12px;" onclick="clearAllMemberFeedbacks()">
+                <i class="fa-solid fa-trash-can"></i> සියල්ල ඉවත් කරන්න (Clear All)
+              </button>
             </div>
             <table class="smart-table">
               <thead>
@@ -1671,9 +1677,14 @@
             <textarea id="review-grv-notes" class="form-input-pill" rows="3" placeholder="මෙම ගැටළුව / යෝජනාව සම්බන්ධයෙන් ගත් ක්‍රියාමාර්ගය මෙහි සටහන් කරන්න..."></textarea>
           </div>
         </div>
-        <div class="smart-modal-footer">
-          <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-grievance-review')">වසන්න</button>
-          <button type="submit" class="btn-smart btn-smart-primary"><i class="fa-solid fa-check"></i> තීරණය සුරකින්න</button>
+        <div class="smart-modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
+          <button type="button" class="btn-smart btn-smart-light" style="color:#dc2626; border-color:#fecaca;" onclick="handleDeleteCurrentGrievance()">
+            <i class="fa-solid fa-trash-can"></i> ඉවත් කරන්න (Delete)
+          </button>
+          <div style="display:flex; gap:8px;">
+            <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-grievance-review')">වසන්න</button>
+            <button type="submit" class="btn-smart btn-smart-primary"><i class="fa-solid fa-check"></i> තීරණය සුරකින්න</button>
+          </div>
         </div>
       </form>
     </div>
@@ -1713,9 +1724,181 @@
             <textarea id="review-fb-action" class="form-input-pill" rows="3" placeholder="මෙම සාමාජික අදහස / ගැටළුව සම්බන්ධයෙන් ගත් ක්‍රියාමාර්ගය මෙහි සටහන් කරන්න..."></textarea>
           </div>
         </div>
-        <div class="smart-modal-footer">
-          <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-member-feedback-review')">වසන්න</button>
-          <button type="submit" class="btn-smart btn-smart-primary" style="background:#059669;"><i class="fa-solid fa-check"></i> සුරකින්න</button>
+        <div class="smart-modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
+          <button type="button" class="btn-smart btn-smart-light" style="color:#dc2626; border-color:#fecaca;" onclick="handleDeleteCurrentMemberFeedback()">
+            <i class="fa-solid fa-trash-can"></i> ඉවත් කරන්න (Delete)
+          </button>
+          <div style="display:flex; gap:8px;">
+            <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-member-feedback-review')">වසන්න</button>
+            <button type="submit" class="btn-smart btn-smart-primary" style="background:#059669;"><i class="fa-solid fa-check"></i> සුරකින්න</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Grievance Modal -->
+  <div class="smart-modal-overlay" id="modal-edit-grievance">
+    <div class="smart-modal-box" style="max-width:600px;">
+      <div class="smart-modal-header">
+        <h3><i class="fa-solid fa-file-pen" style="color:#7c3aed;"></i> ගැටළු/යෝජනාව සංස්කරණය කරන්න <span id="edit-grv-modal-label" style="font-size:13px; color:#94a3b8; font-weight:400;"></span></h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-edit-grievance')">&times;</button>
+      </div>
+      <form id="form-edit-grievance" onsubmit="saveEditGrievanceForm(event)">
+        <div class="smart-modal-body">
+          <input type="hidden" id="edit-grv-id">
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">සේවක නාමය (Employee Name)</label>
+              <input type="text" id="edit-grv-employeeName" class="form-input-pill" placeholder="නාමය">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">දෙපාර්තමේන්තුව (Department)</label>
+              <input type="text" id="edit-grv-department" class="form-input-pill" placeholder="දෙපාර්තමේන්තුව">
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px; background:#f5f3ff; padding:8px 12px; border-radius:8px;">
+            <input type="checkbox" id="edit-grv-isAnonymous" style="width:16px; height:16px; accent-color:#7c3aed;">
+            <label for="edit-grv-isAnonymous" style="font-size:12px; font-weight:700; color:#7c3aed; cursor:pointer;">🔒 නිර්නාමික (Anonymous) — නාමය සංරක්‍ෂිත</label>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">යොමු කළේ (Target Recipient)</label>
+              <select id="edit-grv-targetRecipient" class="form-input-pill">
+                <option value="ප්‍රධාන කළමනාකරු (General Manager)">ප්‍රධාන කළමනාකරු</option>
+                <option value="ශ්‍රී ලංකා සමුපකාර (HR Department)">HR / සමුපකාර</option>
+                <option value="SANASA Board / සනාස මණ්ඩලය">SANASA Board / සනාස මණ්ඩලය</option>
+                <option value="ශාඛා කළමනාකරු (Branch Manager)">ශාඛා කළමනාකරු</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">වර්ගය (Category)</label>
+              <select id="edit-grv-category" class="form-input-pill">
+                <option value="වැටුප් ගැටළු (Salary Issue)">වැටුප් ගැටළු</option>
+                <option value="රැකියා පරිසරය (Workplace Environment)">රැකියා පරිසරය</option>
+                <option value="කළමනාකරු හැසිරීම (Management Behavior)">කළමනාකරු හැසිරීම</option>
+                <option value="අනෙකුත් (Other)">අනෙකුත් (Other)</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-bottom:10px;">
+            <label style="font-size:12px; font-weight:700;">මාතෘකාව (Title)</label>
+            <input type="text" id="edit-grv-title" class="form-input-pill" required>
+          </div>
+
+          <div style="margin-bottom:10px;">
+            <label style="font-size:12px; font-weight:700;">විස්තරය (Description)</label>
+            <textarea id="edit-grv-description" class="form-input-pill" rows="3"></textarea>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">තත්වය (Status)</label>
+              <select id="edit-grv-status" class="form-input-pill">
+                <option value="නව (New)">නව (New)</option>
+                <option value="සලකා බලමින් (Under Review)">සලකා බලමින්</option>
+                <option value="විසඳුම් ලබාදුන් (Approved/Resolved)">විසඳුම් ලබාදුන්</option>
+                <option value="ප්‍රතික්ෂේපිත (Rejected)">ප්‍රතික්ෂේපිත</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">දිනය/වේලාව (Timestamp)</label>
+              <input type="datetime-local" id="edit-grv-timestamp" class="form-input-pill">
+            </div>
+          </div>
+        </div>
+        <div class="smart-modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
+          <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-edit-grievance')">වසන්න</button>
+          <button type="submit" class="btn-smart btn-smart-primary" style="background:#7c3aed;"><i class="fa-solid fa-floppy-disk"></i> වෙනස්කම් සුරකින්න</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Member Feedback Modal -->
+  <div class="smart-modal-overlay" id="modal-edit-member-feedback">
+    <div class="smart-modal-box" style="max-width:600px;">
+      <div class="smart-modal-header">
+        <h3><i class="fa-solid fa-file-pen" style="color:#059669;"></i> සාමාජික ප්‍රතිචාරය සංස්කරණය කරන්න <span id="edit-fb-modal-label" style="font-size:13px; color:#94a3b8; font-weight:400;"></span></h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-edit-member-feedback')">&times;</button>
+      </div>
+      <form id="form-edit-member-feedback" onsubmit="saveEditMemberFeedbackForm(event)">
+        <div class="smart-modal-body">
+          <input type="hidden" id="edit-fb-id">
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">සාමාජිකයාගේ නාමය (Member Name)</label>
+              <input type="text" id="edit-fb-memberName" class="form-input-pill" required>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">සාමාජික අංකය (Member No)</label>
+              <input type="text" id="edit-fb-memberNo" class="form-input-pill" placeholder="MBR-XXXX">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">ශාඛාව (Branch)</label>
+              <input type="text" id="edit-fb-branch" class="form-input-pill" placeholder="ශාඛාව">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">දුරකතනය (Phone)</label>
+              <input type="tel" id="edit-fb-phone" class="form-input-pill" placeholder="07X-XXXXXXX">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">ඇගයීම (Rating 1-5 ★)</label>
+              <select id="edit-fb-overallRating" class="form-input-pill">
+                <option value="5">★★★★★ (5) — විශිෂ්ට</option>
+                <option value="4">★★★★☆ (4) — ඉතා හොඳ</option>
+                <option value="3">★★★☆☆ (3) — සාමාන්‍ය</option>
+                <option value="2">★★☆☆☆ (2) — දුර්වල</option>
+                <option value="1">★☆☆☆☆ (1) — ඉතා දුර්වල</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">ප්‍රතිචාර වර්ගය (Feedback Type)</label>
+              <select id="edit-fb-feedbackType" class="form-input-pill">
+                <option value="සේවා ගුණාත්මකභාවය (Service Quality)">සේවා ගුණාත්මකභාවය</option>
+                <option value="ඩිජිටල් සේවා (Digital Banking)">ඩිජිටල් සේවා</option>
+                <option value="ණය ඉල්ලීම් (Loan Services)">ණය ඉල්ලීම්</option>
+                <option value="සාමාන්‍ය අදහස් (General Suggestion)">සාමාන්‍ය අදහස්</option>
+                <option value="පැමිණිල්ල (Complaint)">පැමිණිල්ල (Complaint)</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-bottom:10px;">
+            <label style="font-size:12px; font-weight:700;">අදහස් (Comments)</label>
+            <textarea id="edit-fb-comments" class="form-input-pill" rows="3" placeholder="සාමාජිකයාගේ අදහස / ගැටළුව / යෝජනාව..."></textarea>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">තත්වය (Status)</label>
+              <select id="edit-fb-status" class="form-input-pill">
+                <option value="ලැබුණි (Received)">ලැබුණි (Received)</option>
+                <option value="සලකා බලමින් (Under Review)">සලකා බලමින්</option>
+                <option value="ක්‍රියාමාර්ග ගන්නා ලදී (Action Taken)">ක්‍රියාමාර්ග ගන්නා ලදී</option>
+                <option value="සටහන් කරගන්නා ලදී (Noted/Closed)">සටහන් කරගන්නා ලදී</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">දිනය/වේලාව (Timestamp)</label>
+              <input type="datetime-local" id="edit-fb-timestamp" class="form-input-pill">
+            </div>
+          </div>
+        </div>
+        <div class="smart-modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
+          <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-edit-member-feedback')">වසන්න</button>
+          <button type="submit" class="btn-smart btn-smart-primary" style="background:#059669;"><i class="fa-solid fa-floppy-disk"></i> වෙනස්කම් සුරකින්න</button>
         </div>
       </form>
     </div>

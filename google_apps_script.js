@@ -41,6 +41,60 @@ function doPost(e) {
     }
 
     // ---------------------------------------------------------------------
+    // B. CLEAR / WIPE ALL QR SUBMISSIONS (Factory Reset Support)
+    // ---------------------------------------------------------------------
+    if (type === "clear_qr_data" || type === "reset_qr_data") {
+      var grvSheet = ss.getSheetByName("Grievances");
+      if (grvSheet && grvSheet.getLastRow() > 1) {
+        grvSheet.deleteRows(2, grvSheet.getLastRow() - 1);
+      }
+      var fbSheet = ss.getSheetByName("MemberFeedback");
+      if (fbSheet && fbSheet.getLastRow() > 1) {
+        fbSheet.deleteRows(2, fbSheet.getLastRow() - 1);
+      }
+      return ContentService.createTextOutput(JSON.stringify({ status: "success", message: "QR grievances and feedback cleared from Google Sheet" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // ---------------------------------------------------------------------
+    // C. DELETE SINGLE GRIEVANCE
+    // ---------------------------------------------------------------------
+    if (type === "delete_grievance") {
+      var grvSheet = ss.getSheetByName("Grievances");
+      var targetId = String((data && data.id) || contents.id || "");
+      if (grvSheet && grvSheet.getLastRow() > 1 && targetId) {
+        var values = grvSheet.getRange(2, 1, grvSheet.getLastRow() - 1, 1).getValues();
+        for (var r = 0; r < values.length; r++) {
+          if (String(values[r][0]).trim() === targetId.trim()) {
+            grvSheet.deleteRow(r + 2);
+            break;
+          }
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({ status: "success", id: targetId }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // ---------------------------------------------------------------------
+    // D. DELETE SINGLE MEMBER FEEDBACK
+    // ---------------------------------------------------------------------
+    if (type === "delete_member_feedback") {
+      var fbSheet = ss.getSheetByName("MemberFeedback");
+      var targetFbId = String((data && data.id) || contents.id || "");
+      if (fbSheet && fbSheet.getLastRow() > 1 && targetFbId) {
+        var fbVals = fbSheet.getRange(2, 1, fbSheet.getLastRow() - 1, 1).getValues();
+        for (var f = 0; f < fbVals.length; f++) {
+          if (String(fbVals[f][0]).trim() === targetFbId.trim()) {
+            fbSheet.deleteRow(f + 2);
+            break;
+          }
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({ status: "success", id: targetFbId }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // ---------------------------------------------------------------------
     // B. GRIEVANCE SUBMISSION (සභාපති වෙත යොමු වන ගැටළු / යෝජනා)
     // ---------------------------------------------------------------------
     if (type === "grievance") {
