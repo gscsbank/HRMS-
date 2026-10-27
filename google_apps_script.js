@@ -52,7 +52,11 @@ function doPost(e) {
       if (fbSheet && fbSheet.getLastRow() > 1) {
         fbSheet.deleteRows(2, fbSheet.getLastRow() - 1);
       }
-      return ContentService.createTextOutput(JSON.stringify({ status: "success", message: "QR grievances and feedback cleared from Google Sheet" }))
+      var wlbSheet = ss.getSheetByName("Wellbeing");
+      if (wlbSheet && wlbSheet.getLastRow() > 1) {
+        wlbSheet.deleteRows(2, wlbSheet.getLastRow() - 1);
+      }
+      return ContentService.createTextOutput(JSON.stringify({ status: "success", message: "QR grievances, feedback and wellbeing surveys cleared from Google Sheet" }))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
@@ -91,6 +95,25 @@ function doPost(e) {
         }
       }
       return ContentService.createTextOutput(JSON.stringify({ status: "success", id: targetFbId }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // ---------------------------------------------------------------------
+    // E. DELETE SINGLE WELLBEING SURVEY
+    // ---------------------------------------------------------------------
+    if (type === "delete_survey" || type === "delete_wellbeing") {
+      var wlbSheet = ss.getSheetByName("Wellbeing");
+      var targetSurvId = String((data && data.id) || contents.id || "");
+      if (wlbSheet && wlbSheet.getLastRow() > 1 && targetSurvId) {
+        var wlbVals = wlbSheet.getRange(2, 1, wlbSheet.getLastRow() - 1, 1).getValues();
+        for (var w = 0; w < wlbVals.length; w++) {
+          if (String(wlbVals[w][0]).trim() === targetSurvId.trim()) {
+            wlbSheet.deleteRow(w + 2);
+            break;
+          }
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({ status: "success", id: targetSurvId }))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
@@ -179,6 +202,50 @@ function doPost(e) {
       ]);
 
       return ContentService.createTextOutput(JSON.stringify({ status: "success", type: "member_feedback", id: fbId }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // ---------------------------------------------------------------------
+    // D. EMPLOYEE WELLBEING SURVEY (සේවක තෘප්තිමත්භාවය හා සුවතාවය)
+    // ---------------------------------------------------------------------
+    if (type === "survey" || type === "wellbeing") {
+      var wlbSheet = ss.getSheetByName("Wellbeing");
+      if (!wlbSheet) {
+        wlbSheet = ss.insertSheet("Wellbeing");
+        wlbSheet.appendRow([
+          "යොමු අංකය (ID)",
+          "දිනය හා වේලාව (Date & Time)",
+          "සේවක නම (Employee Name)",
+          "දෙපාර්තමේන්තුව (Department)",
+          "වැඩ පරිසරය (Work Environment 1-5)",
+          "කළමනාකාරීත්වය (Management Support 1-5)",
+          "වැටුප් සාධාරණත්වය (Salary Fairness 1-5)",
+          "වෘත්තීය දියුණුව (Career Growth 1-5)",
+          "සාමාන්‍ය ලකුණ (Average Score)",
+          "අදහස් හා යෝජනා (Comments)"
+        ]);
+        wlbSheet.getRange("A1:J1").setFontWeight("bold").setBackground("#dcfce7").setFontColor("#065f46");
+        wlbSheet.setFrozenRows(1);
+      }
+
+      var wlbId = data.id || ("WLB-2026-" + Math.floor(100 + Math.random() * 900));
+      var wlbTime = data.timestamp || Utilities.formatDate(new Date(), "Asia/Colombo", "yyyy-MM-dd HH:mm");
+      var ratings = data.ratings || {};
+
+      wlbSheet.appendRow([
+        wlbId,
+        wlbTime,
+        data.employeeName || "නිර්නාමික කාර්ය මණ්ඩල සාමාජික",
+        data.department || "",
+        Number(ratings.workEnvironment) || 4,
+        Number(ratings.managementSupport) || 4,
+        Number(ratings.salaryFairness) || 4,
+        Number(ratings.careerGrowth) || 4,
+        Number(data.averageScore) || 4.0,
+        data.comments || ""
+      ]);
+
+      return ContentService.createTextOutput(JSON.stringify({ status: "success", type: "survey", id: wlbId }))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
@@ -296,6 +363,35 @@ function doGet(e) {
       }
     }
 
+    var surveys = [];
+    var wlbSheet = ss.getSheetByName("Wellbeing");
+    if (wlbSheet && wlbSheet.getLastRow() > 1) {
+      var wlbValues = wlbSheet.getDataRange().getValues();
+      for (var k = 1; k < wlbValues.length; k++) {
+        var wRow = wlbValues[k];
+        if (wRow[0]) {
+          var wDateVal = wRow[1];
+          if (wDateVal instanceof Date) {
+            wDateVal = Utilities.formatDate(wDateVal, "Asia/Colombo", "yyyy-MM-dd HH:mm");
+          }
+          surveys.unshift({
+            id: String(wRow[0]),
+            timestamp: String(wDateVal || ""),
+            employeeName: String(wRow[2] || ""),
+            department: String(wRow[3] || ""),
+            ratings: {
+              workEnvironment: Number(wRow[4]) || 4,
+              managementSupport: Number(wRow[5]) || 4,
+              salaryFairness: Number(wRow[6]) || 4,
+              careerGrowth: Number(wRow[7]) || 4
+            },
+            averageScore: Number(wRow[8]) || 4.0,
+            comments: String(wRow[9] || "")
+          });
+        }
+      }
+    }
+
     var bStats = getBackupStats(ss);
 
     var output = ContentService.createTextOutput(JSON.stringify({
@@ -303,8 +399,10 @@ function doGet(e) {
       organization: "Galapitiyagama Sanasa Cooperative Society Ltd",
       grievances: grievances,
       memberFeedbacks: feedbacks,
+      surveys: surveys,
       totalGrievances: grievances.length,
       totalFeedbacks: feedbacks.length,
+      totalSurveys: surveys.length,
       totalBackups: bStats.totalBackups,
       latestBackupTime: bStats.latestBackupTime,
       serverTime: Utilities.formatDate(new Date(), "Asia/Colombo", "yyyy-MM-dd HH:mm:ss")

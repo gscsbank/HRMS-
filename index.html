@@ -1003,9 +1003,74 @@
         <!-- VIEW 8: SATISFACTION & WELLBEING               -->
         <!-- ============================================== -->
         <section class="view-section" id="view-satisfaction">
-          <div class="card-box" style="margin-bottom:20px;">
-            <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;">සේවක තෘප්තිමත්භාවය හා සුවතාවය (Employee Wellbeing)</h2>
-            <p style="font-size:12.5px; color:#64748b;">වැඩ පරිසරය, කළමනාකාරීත්ව සහයෝගය හා වැටුප් සාධාරණත්වය පිළිබඳ ප්‍රතිචාර</p>
+          <div class="card-box" style="margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+            <div>
+              <h2 style="font-size:18px; font-weight:800; color:#1e1b4b; display:flex; align-items:center; gap:8px;">
+                <i class="fa-solid fa-heart-pulse" style="color:#059669;"></i>
+                සේවක තෘප්තිමත්භාවය හා සුවතාවය (Employee Wellbeing)
+              </h2>
+              <p style="font-size:12.5px; color:#64748b; margin-top:2px;">වැඩ පරිසරය, කළමනාකාරීත්ව සහයෝගය හා වැටුප් සාධාරණත්වය පිළිබඳ සේවක ප්‍රතිචාර</p>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+              <button class="btn-smart" style="background:#25D366; color:#fff; border:none; font-weight:700; box-shadow:0 4px 12px rgba(37, 211, 102, 0.3);" onclick="openWellbeingWhatsAppModal()">
+                <i class="fa-brands fa-whatsapp" style="font-size:15px;"></i> WhatsApp මඟින් සේවකයින්ට යවන්න
+              </button>
+              <button class="btn-smart btn-smart-light" onclick="openWellbeingQRModal()">
+                <i class="fa-solid fa-qrcode"></i> QR කේතය
+              </button>
+              <button class="btn-smart btn-smart-light" onclick="copyWellbeingSurveyLink()">
+                <i class="fa-solid fa-copy"></i> Link පිටපත් කරන්න
+              </button>
+              <button class="btn-smart btn-smart-light" style="color:#059669; border-color:#a7f3d0;" onclick="openAddManualSurveyModal()">
+                <i class="fa-solid fa-plus"></i> + සටහනක් එක් කරන්න
+              </button>
+              <button class="btn-smart btn-smart-light" style="color:#dc2626; border-color:#fecaca;" onclick="clearAllSurveys()">
+                <i class="fa-solid fa-trash-can"></i> සියල්ල ඉවත් කරන්න
+              </button>
+            </div>
+          </div>
+
+          <!-- Top Stat Cards Grid -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:14px; margin-bottom:20px;">
+            <div class="card-box" style="padding:16px; border-left:4px solid #059669; display:flex; align-items:center; gap:14px;">
+              <div style="width:44px; height:44px; border-radius:12px; background:#ecfdf5; color:#059669; display:flex; align-items:center; justify-content:center; font-size:20px;">
+                <i class="fa-solid fa-star"></i>
+              </div>
+              <div>
+                <div style="font-size:11px; color:#64748b; font-weight:700; text-transform:uppercase;">සමස්ත සාමාන්‍ය තෘප්තිය</div>
+                <div style="font-size:20px; font-weight:800; color:#1e1b4b;" id="stat-wellbeing-overall">0.0 / 5.0</div>
+              </div>
+            </div>
+
+            <div class="card-box" style="padding:16px; border-left:4px solid #3b82f6; display:flex; align-items:center; gap:14px;">
+              <div style="width:44px; height:44px; border-radius:12px; background:#eff6ff; color:#3b82f6; display:flex; align-items:center; justify-content:center; font-size:20px;">
+                <i class="fa-solid fa-building"></i>
+              </div>
+              <div>
+                <div style="font-size:11px; color:#64748b; font-weight:700; text-transform:uppercase;">වැඩ පරිසරය සාමාන්‍යය</div>
+                <div style="font-size:20px; font-weight:800; color:#1e1b4b;" id="stat-wellbeing-work">0.0 / 5.0</div>
+              </div>
+            </div>
+
+            <div class="card-box" style="padding:16px; border-left:4px solid #8b5cf6; display:flex; align-items:center; gap:14px;">
+              <div style="width:44px; height:44px; border-radius:12px; background:#f5f3ff; color:#8b5cf6; display:flex; align-items:center; justify-content:center; font-size:20px;">
+                <i class="fa-solid fa-users"></i>
+              </div>
+              <div>
+                <div style="font-size:11px; color:#64748b; font-weight:700; text-transform:uppercase;">කළමනාකාරීත්ව සාමාන්‍යය</div>
+                <div style="font-size:20px; font-weight:800; color:#1e1b4b;" id="stat-wellbeing-mgmt">0.0 / 5.0</div>
+              </div>
+            </div>
+
+            <div class="card-box" style="padding:16px; border-left:4px solid #f59e0b; display:flex; align-items:center; gap:14px;">
+              <div style="width:44px; height:44px; border-radius:12px; background:#fffbeb; color:#f59e0b; display:flex; align-items:center; justify-content:center; font-size:20px;">
+                <i class="fa-solid fa-comments"></i>
+              </div>
+              <div>
+                <div style="font-size:11px; color:#64748b; font-weight:700; text-transform:uppercase;">ලැබුණු ප්‍රතිචාර සංඛ්‍යාව</div>
+                <div style="font-size:20px; font-weight:800; color:#1e1b4b;" id="stat-wellbeing-total">0</div>
+              </div>
+            </div>
           </div>
 
           <div class="card-box data-table-container" style="padding:0;">
@@ -1014,11 +1079,14 @@
                 <tr>
                   <th>අංකය</th>
                   <th>දිනය</th>
+                  <th>සේවකයා</th>
                   <th>වැඩ පරිසරය</th>
                   <th>කළමනාකාරීත්වය</th>
                   <th>වැටුප්</th>
                   <th>දියුණුව</th>
+                  <th>සාමාන්‍යය</th>
                   <th>සේවක අදහස</th>
+                  <th style="text-align:right;">ක්‍රියාමාර්ග</th>
                 </tr>
               </thead>
               <tbody id="table-survey-body"></tbody>
@@ -1899,6 +1967,226 @@
         <div class="smart-modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
           <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-edit-member-feedback')">වසන්න</button>
           <button type="submit" class="btn-smart btn-smart-primary" style="background:#059669;"><i class="fa-solid fa-floppy-disk"></i> වෙනස්කම් සුරකින්න</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Wellbeing WhatsApp Dispatch Hub Modal -->
+  <div class="smart-modal-overlay" id="modal-wellbeing-whatsapp">
+    <div class="smart-modal-box" style="max-width:680px;">
+      <div class="smart-modal-header" style="background:#ecfdf5; border-bottom:1px solid #a7f3d0;">
+        <h3 style="color:#065f46;"><i class="fa-brands fa-whatsapp" style="color:#25D366; font-size:22px;"></i> WhatsApp මඟින් සේවක තෘප්තිමත් සමීක්ෂණය යවන්න</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-wellbeing-whatsapp')">&times;</button>
+      </div>
+      <div class="smart-modal-body">
+        <!-- Share Link Box -->
+        <div style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:14px; padding:14px; margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <label style="font-size:12px; font-weight:700; color:#1e1b4b;">📱 සමීක්ෂණ පෝරමයේ සබැඳිය (Survey Form URL):</label>
+            <button class="btn-smart btn-smart-light" style="padding:3px 10px; font-size:11px;" onclick="copyWellbeingSurveyLink()">
+              <i class="fa-solid fa-copy"></i> Link පිටපත් කරන්න
+            </button>
+          </div>
+          <div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:8px 12px; font-size:12px; font-family:monospace; color:#0f766e; word-break:break-all;" id="wellbeing-share-url-text">
+            http://localhost:5000/wellbeing.html
+          </div>
+          <div style="margin-top:10px; display:flex; gap:8px;">
+            <button class="btn-smart" style="background:#25D366; color:#fff; font-size:12px; font-weight:700; border:none;" onclick="copyWellbeingWhatsAppGroupMessage()">
+              <i class="fa-brands fa-whatsapp"></i> කාර්ය මණ්ඩල WhatsApp සමූහයට (Staff Group) පණිවිඩය පිටපත් කරන්න
+            </button>
+          </div>
+        </div>
+
+        <h4 style="font-size:13px; font-weight:800; color:#1e1b4b; margin-bottom:10px;">
+          <i class="fa-solid fa-users" style="color:#059669;"></i> ලියාපදිංචි සේවකයින්ගේ දුරකථන අංක වෙත සෘජුව WhatsApp පණිවිඩ යැවීම:
+        </h4>
+
+        <!-- Employee List for WhatsApp -->
+        <div style="max-height:300px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:12px;" id="wellbeing-whatsapp-staff-list">
+          <!-- Populated dynamically by JS -->
+        </div>
+      </div>
+      <div class="smart-modal-footer">
+        <button class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-wellbeing-whatsapp')">වසන්න</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wellbeing QR Modal -->
+  <div class="smart-modal-overlay" id="modal-wellbeing-qr">
+    <div class="smart-modal-box" style="max-width:440px; text-align:center;">
+      <div class="smart-modal-header">
+        <h3><i class="fa-solid fa-qrcode" style="color:#059669;"></i> සේවක තෘප්තිමත් සමීක්ෂණ QR කේතය</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-wellbeing-qr')">&times;</button>
+      </div>
+      <div class="smart-modal-body" style="padding:24px 20px;">
+        <div id="qr-wellbeing-modal-container" style="display:flex; justify-content:center; margin-bottom:14px;"></div>
+        <div style="font-size:12px; color:#64748b; margin-bottom:8px;">සේවකයින්ට ඔවුන්ගේ දුරකථනයෙන් ස්කෑන් කර පෝරමය පිරවිය හැක</div>
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:6px 10px; font-size:11px; font-family:monospace; color:#0f766e; word-break:break-all;" id="qr-wellbeing-url-display"></div>
+      </div>
+      <div class="smart-modal-footer" style="display:flex; justify-content:space-between;">
+        <button class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-wellbeing-qr')">වසන්න</button>
+        <button class="btn-smart btn-smart-primary" style="background:#059669;" onclick="copyWellbeingSurveyLink()"><i class="fa-solid fa-copy"></i> Link පිටපත් කරන්න</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Survey Modal -->
+  <div class="smart-modal-overlay" id="modal-edit-survey">
+    <div class="smart-modal-box" style="max-width:580px;">
+      <div class="smart-modal-header">
+        <h3><i class="fa-solid fa-file-pen" style="color:#059669;"></i> සමීක්ෂණ ප්‍රතිචාරය සංස්කරණය කරන්න <span id="edit-surv-modal-label" style="font-size:13px; color:#94a3b8; font-weight:400;"></span></h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-edit-survey')">&times;</button>
+      </div>
+      <form id="form-edit-survey" onsubmit="saveEditSurveyForm(event)">
+        <div class="smart-modal-body">
+          <input type="hidden" id="edit-surv-id">
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">සේවකයා (Employee Name)</label>
+              <input type="text" id="edit-surv-employeeName" class="form-input-pill">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">ලැබුණු දිනය/වේලාව (Timestamp)</label>
+              <input type="datetime-local" id="edit-surv-timestamp" class="form-input-pill">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">1. වැඩ පරිසරය (Work Environment 1-5 ★)</label>
+              <select id="edit-surv-work" class="form-input-pill">
+                <option value="5">★★★★★ (5) - විශිෂ්ටයි</option>
+                <option value="4">★★★★☆ (4) - ඉතා හොඳයි</option>
+                <option value="3">★★★☆☆ (3) - සාමාන්‍යයි</option>
+                <option value="2">★★☆☆☆ (2) - දුර්වලයි</option>
+                <option value="1">★☆☆☆☆ (1) - ඉතා දුර්වලයි</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">2. කළමනාකාරීත්වය (Management Support 1-5 ★)</label>
+              <select id="edit-surv-mgmt" class="form-input-pill">
+                <option value="5">★★★★★ (5) - විශිෂ්ටයි</option>
+                <option value="4">★★★★☆ (4) - ඉතා හොඳයි</option>
+                <option value="3">★★★☆☆ (3) - සාමාන්‍යයි</option>
+                <option value="2">★★☆☆☆ (2) - දුර්වලයි</option>
+                <option value="1">★☆☆☆☆ (1) - ඉතා දුර්වලයි</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">3. වැටුප් සාධාරණත්වය (Salary & Benefits 1-5 ★)</label>
+              <select id="edit-surv-salary" class="form-input-pill">
+                <option value="5">★★★★★ (5) - විශිෂ්ටයි</option>
+                <option value="4">★★★★☆ (4) - ඉතා හොඳයි</option>
+                <option value="3">★★★☆☆ (3) - සාමාන්‍යයි</option>
+                <option value="2">★★☆☆☆ (2) - දුර්වලයි</option>
+                <option value="1">★☆☆☆☆ (1) - ඉතා දුර්වලයි</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">4. වෘත්තීය දියුණුව (Career Growth 1-5 ★)</label>
+              <select id="edit-surv-growth" class="form-input-pill">
+                <option value="5">★★★★★ (5) - විශිෂ්ටයි</option>
+                <option value="4">★★★★☆ (4) - ඉතා හොඳයි</option>
+                <option value="3">★★★☆☆ (3) - සාමාන්‍යයි</option>
+                <option value="2">★★☆☆☆ (2) - දුර්වලයි</option>
+                <option value="1">★☆☆☆☆ (1) - ඉතා දුර්වලයි</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-bottom:10px;">
+            <label style="font-size:12px; font-weight:700;">සේවක අදහස් හා යෝජනා (Comments)</label>
+            <textarea id="edit-surv-comments" class="form-input-pill" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="smart-modal-footer" style="display:flex; justify-content:space-between;">
+          <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-edit-survey')">වසන්න</button>
+          <button type="submit" class="btn-smart btn-smart-primary" style="background:#059669;"><i class="fa-solid fa-floppy-disk"></i> සුරකින්න</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Manual Survey Modal -->
+  <div class="smart-modal-overlay" id="modal-add-manual-survey">
+    <div class="smart-modal-box" style="max-width:580px;">
+      <div class="smart-modal-header">
+        <h3><i class="fa-solid fa-plus-circle" style="color:#059669;"></i> සමීක්ෂණ සටහනක් අතින් ඇතුළත් කරන්න (Manual Entry)</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-add-manual-survey')">&times;</button>
+      </div>
+      <form id="form-add-manual-survey" onsubmit="saveManualSurveyForm(event)">
+        <div class="smart-modal-body">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">සේවකයා (Employee Name / Anonymous)</label>
+              <input type="text" id="manual-surv-emp" class="form-input-pill" placeholder="නම හෝ නිර්නාමික">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">දිනය/වේලාව (Timestamp)</label>
+              <input type="datetime-local" id="manual-surv-time" class="form-input-pill">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">1. වැඩ පරිසරය (1-5 ★)</label>
+              <select id="manual-surv-work" class="form-input-pill">
+                <option value="5">★★★★★ (5) - විශිෂ්ටයි</option>
+                <option value="4" selected>★★★★☆ (4) - ඉතා හොඳයි</option>
+                <option value="3">★★★☆☆ (3) - සාමාන්‍යයි</option>
+                <option value="2">★★☆☆☆ (2) - දුර්වලයි</option>
+                <option value="1">★☆☆☆☆ (1) - ඉතා දුර්වලයි</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">2. කළමනාකාරීත්වය (1-5 ★)</label>
+              <select id="manual-surv-mgmt" class="form-input-pill">
+                <option value="5">★★★★★ (5) - විශිෂ්ටයි</option>
+                <option value="4" selected>★★★★☆ (4) - ඉතා හොඳයි</option>
+                <option value="3">★★★☆☆ (3) - සාමාන්‍යයි</option>
+                <option value="2">★★☆☆☆ (2) - දුර්වලයි</option>
+                <option value="1">★☆☆☆☆ (1) - ඉතා දුර්වලයි</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">3. වැටුප් සාධාරණත්වය (1-5 ★)</label>
+              <select id="manual-surv-salary" class="form-input-pill">
+                <option value="5">★★★★★ (5) - විශිෂ්ටයි</option>
+                <option value="4" selected>★★★★☆ (4) - ඉතා හොඳයි</option>
+                <option value="3">★★★☆☆ (3) - සාමාන්‍යයි</option>
+                <option value="2">★★☆☆☆ (2) - දුර්වලයි</option>
+                <option value="1">★☆☆☆☆ (1) - ඉතා දුර්වලයි</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">4. වෘත්තීය දියුණුව (1-5 ★)</label>
+              <select id="manual-surv-growth" class="form-input-pill">
+                <option value="5">★★★★★ (5) - විශිෂ්ටයි</option>
+                <option value="4" selected>★★★★☆ (4) - ඉතා හොඳයි</option>
+                <option value="3">★★★☆☆ (3) - සාමාන්‍යයි</option>
+                <option value="2">★★☆☆☆ (2) - දුර්වලයි</option>
+                <option value="1">★☆☆☆☆ (1) - ඉතා දුර්වලයි</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-bottom:10px;">
+            <label style="font-size:12px; font-weight:700;">සේවක අදහස් හා යෝජනා</label>
+            <textarea id="manual-surv-comments" class="form-input-pill" rows="3" placeholder="අදහස් මෙහි සටහන් කරන්න..."></textarea>
+          </div>
+        </div>
+        <div class="smart-modal-footer" style="display:flex; justify-content:space-between;">
+          <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-add-manual-survey')">වසන්න</button>
+          <button type="submit" class="btn-smart btn-smart-primary" style="background:#059669;"><i class="fa-solid fa-plus"></i> ඇතුළත් කරන්න</button>
         </div>
       </form>
     </div>

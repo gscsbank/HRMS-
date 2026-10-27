@@ -1,109 +1,69 @@
-{
-  "organization": {
-    "nameEn": "Galapitiyagama Sanasa Cooperative Society Ltd",
-    "nameSi": "ගලපිටියාගම සණස සමුපකාර සමිතිය (වගකීම සීමිත)",
-    "regNo": "කු/ස/1429",
-    "addressEn": "Galapitiyagama, Kurunegala, Sri Lanka",
-    "addressSi": "ගලපිටියාගම, කුරුණෑගල",
-    "phone": "037-2298711 / 077-4567890",
-    "email": "info@galapitiyagamasanasa.lk",
-    "chairman": "ඒ. එම්. දයාරත්න බණ්ඩා මහතා (Hon. Chairman)",
-    "gm": "කේ. ආර්. විජේසුන්දර මහත්මිය (General Manager)"
-  },
-  "employees": [],
-  "tasks": [
-    {
-      "id": "TSK-001",
-      "title": "ගලපිටියාගම කෘෂිකාර්මික හා ව්‍යාපාරික ණය ප්‍රතිසාධන වැඩසටහන",
-      "department": "ණය සහ ක්ෂුද්‍ර මූල්‍ය අංශය",
-      "assignedStaffName": "ගලපිටියාගම සණස ප්‍රධාන කාර්ය මණ්ඩලය",
-      "dueDate": "2026-10-15",
-      "progress": 65,
-      "description": "ප්‍රමාද වූ ක්ෂුද්‍ර මූල්‍ය ණය අයකර ගැනීම සහ ක්ෂේත්‍ර පරීක්ෂණ කඩිනම් කිරීමේ විශේෂ වැඩපිළිවෙල."
-    },
-    {
-      "id": "TSK-002",
-      "title": "සමස්ත සාමාජික තොරතුරු පරිගණකගත කිරීම සහ ඩිජිටල්කරණය",
-      "department": "පරිපාලන හා මෙහෙයුම්",
-      "assignedStaffName": "පරිපාලන කාර්ය මණ්ඩලය",
-      "dueDate": "2026-11-01",
-      "progress": 40,
-      "description": "සමිතියේ සාමාජික ලිපිගොනු සහ ණය ඉතිහාසය පූර්ණ ඩිජිටල් පද්ධතියකට ඇතුළත් කිරීම."
-    },
-    {
-      "id": "TSK-003",
-      "title": "වාර්ෂික මහා සභා රැස්වීමට අදාළ අභ්‍යන්තර ගිණුම් විගණනය",
-      "department": "ගිණුම් හා විගණන අංශය",
-      "assignedStaffName": "ගිණුම් අංශය",
-      "dueDate": "2026-10-05",
-      "progress": 80,
-      "description": "2025/2026 මූල්‍ය වර්ෂයේ ගිණුම් ශේෂ සහ මූල්‍ය ප්‍රකාශන සම්පූර්ණ කිරීම."
-    }
-  ],
-  "meetings": [
-    {
-      "id": "MEET-001",
-      "title": "අධ්‍යක්ෂ මණ්ඩල මාසික නිල රැස්වීම (Board Meeting)",
-      "date": "2026-09-28",
-      "time": "09:30 AM - 12:30 PM",
-      "chair": "ඒ. එම්. දයාරත්න බණ්ඩා මහතා (Hon. Chairman)",
-      "venue": "ගලපිටියාගම සණස ප්‍රධාන ශ්‍රවණාගාරය",
-      "agenda": "1. පසුගිය මස වාර්තා සම්මත කිරීම\n2. ක්ෂුද්‍ර මූල්‍ය ණය අනුමත කිරීම\n3. නව සාමාජික අයදුම්පත් සමාලෝචනය"
-    },
-    {
-      "id": "MEET-002",
-      "title": "ණය කමිටු සහ ක්ෂේත්‍ර නිලධාරී සමාලෝචනය",
-      "date": "2026-10-02",
-      "time": "02:00 PM - 04:30 PM",
-      "chair": "කේ. ආර්. විජේසුන්දර මහත්මිය (General Manager)",
-      "venue": "ගලපිටියාගම සණස කමිටු ශාලාව",
-      "agenda": "1. ක්ෂේත්‍ර ණය අයවීම් ප්‍රගතිය\n2. විශේෂ සහන ණය යෝජනා සමාලෝචනය"
-    },
-    {
-      "id": "MEET-003",
-      "title": "කාර්ය මණ්ඩල සුභසාධන සහ ප්‍රගති සමාලෝචනය",
-      "date": "2026-10-08",
-      "time": "03:00 PM - 05:00 PM",
-      "chair": "ඒ. එම්. දයාරත්න බණ්ඩා මහතා (Hon. Chairman)",
-      "venue": "ප්‍රධාන රැස්වීම් ශාලාව",
-      "agenda": "1. සේවක කාර්යසාධන සහ සුභසාධන පහසුකම්\n2. ඉදිරි මාසයේ ඉලක්ක සැලසුම් කිරීම"
-    }
-  ],
-  "users": [
-    {
-      "id": "USR-001",
-      "username": "admin",
-      "name": "ප්‍රධාන පරිපාලක (Administrator)",
-      "role": "admin",
-      "roleTitle": "සණස ප්‍රධාන පරිපාලක (Full Admin Access)",
-      "status": "Active",
-      "createdDate": "2026-09-24",
-      "password": "admin123"
-    },
-    {
-      "id": "USR-002",
-      "username": "manager",
-      "name": "කේ. ආර්. විජේසුන්දර (General Manager)",
-      "role": "manager",
-      "roleTitle": "සාමාන්‍යාධිකාරී (Manager Access)",
-      "status": "Active",
-      "createdDate": "2026-09-24",
-      "password": "sanasa123"
-    },
-    {
-      "id": "USR-003",
-      "username": "officer",
-      "name": "ණය හා ක්ෂේත්‍ර නිලධාරී (Credit Officer)",
-      "role": "officer",
-      "roleTitle": "ක්ෂේත්‍ර නිලධාරී (Officer Access)",
-      "status": "Active",
-      "createdDate": "2026-09-24",
-      "password": "officer123"
-    }
-  ],
-  "grievances": [],
-  "memberFeedbacks": [],
-  "appraisals": [],
-  "surveys": [],
-  "payrollHistory": []
+﻿{
+    "organization":  {
+                         "nameEn":  "Galapitiyagama Sanasa Cooperative Society Ltd",
+                         "nameSi":  "ගලපිටියාගම සණස සමුපකාර සමිතිය (වගකීම සීමිත)",
+                         "regNo":  "කු/ස/1429",
+                         "addressEn":  "Galapitiyagama, Kurunegala, Sri Lanka",
+                         "addressSi":  "ගලපිටියාගම, කුරුණෑගල",
+                         "phone":  "037-2298711 / 077-4567890",
+                         "email":  "info@galapitiyagamasanasa.lk",
+                         "chairman":  "ඒ. එම්. දයාරත්න බණ්ඩා මහතා (Hon. Chairman)",
+                         "gm":  "කේ. ආර්. විජේසුන්දර මහත්මිය (General Manager)"
+                     },
+    "employees":  [
+
+                  ],
+    "tasks":  [
+
+              ],
+    "meetings":  [
+
+                 ],
+    "users":  [
+                  {
+                      "id":  "USR-001",
+                      "username":  "admin",
+                      "name":  "ප්‍රධාන පරිපාලක (Administrator)",
+                      "role":  "admin",
+                      "roleTitle":  "සණස ප්‍රධාන පරිපාලක (Full Admin Access)",
+                      "status":  "Active",
+                      "createdDate":  "2026-09-24",
+                      "password":  "admin123"
+                  },
+                  {
+                      "id":  "USR-002",
+                      "username":  "manager",
+                      "name":  "කේ. ආර්. විජේසුන්දර (General Manager)",
+                      "role":  "manager",
+                      "roleTitle":  "සාමාන්‍යාධිකාරී (Manager Access)",
+                      "status":  "Active",
+                      "createdDate":  "2026-09-24",
+                      "password":  "sanasa123"
+                  },
+                  {
+                      "id":  "USR-003",
+                      "username":  "officer",
+                      "name":  "ණය හා ක්ෂේත්‍ර නිලධාරී (Credit Officer)",
+                      "role":  "officer",
+                      "roleTitle":  "ක්ෂේත්‍ර නිලධාරී (Officer Access)",
+                      "status":  "Active",
+                      "createdDate":  "2026-09-24",
+                      "password":  "officer123"
+                  }
+              ],
+    "grievances":  [
+
+                   ],
+    "memberFeedbacks":  [
+
+                        ],
+    "appraisals":  [
+
+                   ],
+    "surveys":  [
+
+                ],
+    "payrollHistory":  [
+
+                       ]
 }

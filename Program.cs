@@ -131,6 +131,17 @@ app.MapPost("/api/quick-submit", async (HttpContext context) =>
             list.Insert(0, payload);
             dict["memberFeedbacks"] = list;
         }
+        else if (type == "survey" || type == "wellbeing")
+        {
+            List<object> list = new();
+            if (dict.ContainsKey("surveys"))
+            {
+                var existingJson = JsonSerializer.Serialize(dict["surveys"]);
+                list = JsonSerializer.Deserialize<List<object>>(existingJson) ?? new List<object>();
+            }
+            list.Insert(0, payload);
+            dict["surveys"] = list;
+        }
         
         var updatedJson = JsonSerializer.Serialize(dict, new JsonSerializerOptions { WriteIndented = true });
         await File.WriteAllTextAsync(dbPath, updatedJson);
