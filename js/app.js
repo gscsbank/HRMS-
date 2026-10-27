@@ -392,11 +392,21 @@ async function syncFromCloud(silent = false) {
         let newGrievancesCount = 0;
         let newFeedbacksCount = 0;
 
+        const deletedGrvIds = new Set(JSON.parse(localStorage.getItem('sanasa_deleted_grv_ids') || '[]'));
+        const deletedFbIds = new Set(JSON.parse(localStorage.getItem('sanasa_deleted_fb_ids') || '[]'));
+        const qrClearedTime = parseInt(localStorage.getItem('sanasa_qr_cleared_time') || '0', 10);
+
         if (Array.isArray(data.grievances) && data.grievances.length > 0) {
           if (!appData.grievances) appData.grievances = [];
           const existingIds = new Set(appData.grievances.map(g => g.id));
           data.grievances.forEach(g => {
-            if (!existingIds.has(g.id)) {
+            if (!existingIds.has(g.id) && !deletedGrvIds.has(g.id)) {
+              if (qrClearedTime > 0 && g.timestamp) {
+                const itemTime = new Date(g.timestamp.replace(' ', 'T')).getTime();
+                if (!isNaN(itemTime) && itemTime <= qrClearedTime) {
+                  return;
+                }
+              }
               appData.grievances.unshift(g);
               newGrievancesCount++;
             }
@@ -407,7 +417,13 @@ async function syncFromCloud(silent = false) {
           if (!appData.memberFeedbacks) appData.memberFeedbacks = [];
           const existingFbIds = new Set(appData.memberFeedbacks.map(f => f.id));
           data.memberFeedbacks.forEach(f => {
-            if (!existingFbIds.has(f.id)) {
+            if (!existingFbIds.has(f.id) && !deletedFbIds.has(f.id)) {
+              if (qrClearedTime > 0 && f.timestamp) {
+                const itemTime = new Date(f.timestamp.replace(' ', 'T')).getTime();
+                if (!isNaN(itemTime) && itemTime <= qrClearedTime) {
+                  return;
+                }
+              }
               appData.memberFeedbacks.unshift(f);
               newFeedbacksCount++;
             }
@@ -623,7 +639,7 @@ function switchView(targetId) {
     projects: 'Work Progress (ක්‍රියාත්මක ව්‍යාපෘති)',
     meetings: 'Upcoming Meetings (නිල රැස්වීම්)',
     skills: 'Skills Matrix (නිපුණතා න්‍යාසය)',
-    grievance: 'Board QR Portal (ගැටළු/යෝජනා)',
+    grievance: 'Employee Issues & Suggestions QR (සේවක ගැටළු හා යෝජනා)',
     'member-feedback': 'Member Feedback QR',
     payroll: 'Payroll & EPF/ETF (වැටුප්)',
     appraisals: 'Appraisals (කාර්යසාධනය)',
@@ -1654,17 +1670,62 @@ function renderSkillsCharts() {
 // =========================================================================
 // 4. ONLINE QR GRIEVANCE PORTAL
 // =========================================================================
+// Robust date parser & formatter: handles ISO, Google Sheets Date string, etc.
+function parseDateSafe(ts) {
+  if (!ts) return null;
+  const s = ts.toString().trim();
+  let d = new Date(s);
+  if (!isNaN(d.getTime())) return d;
+  d = new Date(s.replace(' ', 'T'));
+  if (!isNaN(d.getTime())) return d;
+  const m = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?:[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+  if (m) {
+    const d2 = new Date(parseInt(m[1]), parseInt(m[2]) - 1, parseInt(m[3]), parseInt(m[4] || '0'), parseInt(m[5] || '0'), parseInt(m[6] || '0'));
+    if (!isNaN(d2.getTime())) return d2;
+  }
+  return null;
+}
+
+function formatTimestamp(ts) {
+  if (!ts) return '';
+  const d = parseDateSafe(ts);
+  if (!d) return ts;
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function toIsoDateTimeLocal(ts) {
+  if (!ts) return '';
+  const d = parseDateSafe(ts);
+  if (!d) return '';
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 function renderGrievancePortal() {
   renderGrievanceQR();
   const tbody = document.querySelector('#table-grievance-body');
   if (!tbody) return;
 
+  if (!appData.grievances || appData.grievances.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" style="text-align:center; padding:36px; color:#94a3b8;">
+          <i class="fa-solid fa-inbox" style="font-size:32px; margin-bottom:8px; display:block; opacity:0.6;"></i>
+          ගැටළු හෝ යෝජනා කිසිවක් නැත (No staff grievances yet)
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
   tbody.innerHTML = appData.grievances.map(g => {
     const actionText = g.actionTaken || g.boardNotes || '';
+    const fmtTime = formatTimestamp(g.timestamp);
     return `
     <tr>
       <td><strong>${g.id}</strong></td>
-      <td><span style="font-size:11px; color:#64748b;">${g.timestamp}</span></td>
+      <td><span style="font-size:11px; color:#64748b;">${fmtTime}</span></td>
       <td>
         <strong style="color:${g.isAnonymous ? '#7c3aed' : '#1e1b4b'};">
           ${g.isAnonymous ? '🔒 නිර්නාමික (Anonymous)' : g.employeeName}
@@ -1673,18 +1734,26 @@ function renderGrievancePortal() {
       <td><span class="badge-pill badge-purple">${g.targetRecipient}</span></td>
       <td>
         <div style="font-weight:700;">${g.title}</div>
-        <div style="font-size:11.5px; color:#64748b;">${g.description.substring(0, 65)}...</div>
+        <div style="font-size:11.5px; color:#64748b;">${(g.description||'').substring(0, 65)}...</div>
       </td>
       <td><span class="badge-pill ${getBadgeClass(g.status)}">${g.status}</span></td>
-      <td style="min-width:210px;">
+      <td style="min-width:240px;">
         ${actionText 
           ? `<div style="font-size:12px; color:#0f766e; font-weight:600; margin-bottom:5px; line-height:1.4; background:#f0fdf4; padding:6px 10px; border-radius:8px; border:1px solid #bbf7d0;">
                <i class="fa-solid fa-circle-check"></i> ${actionText}
              </div>` 
           : `<span style="font-size:11px; color:#94a3b8; font-style:italic; display:block; margin-bottom:5px;">ක්‍රියාමාර්ගයක් සටහන් කර නැත</span>`}
-        <button class="btn-smart btn-smart-light" style="padding:4px 10px; font-size:11.5px;" onclick="openGrievanceReviewModal('${g.id}')">
-          <i class="fa-solid ${actionText ? 'fa-pen-to-square' : 'fa-plus'}"></i> ${actionText ? 'වෙනස් කරන්න' : 'ක්‍රියාමාර්ගයක් එක් කරන්න'}
-        </button>
+        <div style="display:flex; gap:5px; align-items:center; flex-wrap:wrap;">
+          <button class="btn-smart btn-smart-light" style="padding:3px 9px; font-size:11px;" onclick="openGrievanceReviewModal('${g.id}')">
+            <i class="fa-solid ${actionText ? 'fa-pen-to-square' : 'fa-plus'}"></i> ${actionText ? 'ක්‍රියාව' : 'ක්‍රියාව +'}
+          </button>
+          <button class="btn-smart btn-smart-light" style="padding:3px 8px; font-size:12px; color:#7c3aed; border-color:#e9d5ff;" onclick="openEditGrievanceModal('${g.id}')" title="සංස්කරණය කරන්න (Edit)">
+            <i class="fa-solid fa-file-pen"></i>
+          </button>
+          <button class="btn-smart btn-smart-light" style="padding:3px 8px; font-size:12px; color:#dc2626; border-color:#fecaca;" onclick="deleteSingleGrievance('${g.id}')" title="ඉවත් කරන්න (Delete)">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
       </td>
     </tr>
   `;
@@ -1757,12 +1826,25 @@ function renderMemberFeedbackPortal() {
   const tbody = document.querySelector('#table-member-feedback-body');
   if (!tbody) return;
 
+  if (!appData.memberFeedbacks || appData.memberFeedbacks.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align:center; padding:36px; color:#94a3b8;">
+          <i class="fa-solid fa-comments" style="font-size:32px; margin-bottom:8px; display:block; opacity:0.6;"></i>
+          සාමාජික අදහස් හෝ ප්‍රතිචාර කිසිවක් නැත (No member feedback yet)
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
   tbody.innerHTML = appData.memberFeedbacks.map(f => {
     const actionText = f.actionTaken || '';
+    const fmtTime = formatTimestamp(f.timestamp);
     return `
     <tr>
       <td><strong>${f.id}</strong></td>
-      <td><span style="font-size:11px; color:#64748b;">${f.timestamp}</span></td>
+      <td><span style="font-size:11px; color:#64748b;">${fmtTime}</span></td>
       <td>
         <strong>${f.memberName}</strong><br>
         <span style="font-size:10.5px; color:#94a3b8;">${f.memberNo || ''}</span>
@@ -1776,15 +1858,23 @@ function renderMemberFeedbackPortal() {
         <div style="font-size:12px; margin-top:2px;">${f.comments}</div>
       </td>
       <td><span class="badge-pill ${getFeedbackBadgeClass(f.status)}">${f.status || 'ලැබුණි (Received)'}</span></td>
-      <td style="min-width:210px;">
+      <td style="min-width:240px;">
         ${actionText 
           ? `<div style="font-size:12px; color:#0f766e; font-weight:600; margin-bottom:5px; line-height:1.4; background:#f0fdf4; padding:6px 10px; border-radius:8px; border:1px solid #bbf7d0;">
                <i class="fa-solid fa-circle-check"></i> ${actionText}
              </div>` 
           : `<span style="font-size:11px; color:#94a3b8; font-style:italic; display:block; margin-bottom:5px;">ක්‍රියාමාර්ගයක් සටහන් කර නැත</span>`}
-        <button class="btn-smart btn-smart-light" style="padding:4px 10px; font-size:11.5px;" onclick="openMemberFeedbackReviewModal('${f.id}')">
-          <i class="fa-solid ${actionText ? 'fa-pen-to-square' : 'fa-plus'}"></i> ${actionText ? 'වෙනස් කරන්න' : 'ක්‍රියාමාර්ගයක් එක් කරන්න'}
-        </button>
+        <div style="display:flex; gap:5px; align-items:center; flex-wrap:wrap;">
+          <button class="btn-smart btn-smart-light" style="padding:3px 9px; font-size:11px;" onclick="openMemberFeedbackReviewModal('${f.id}')">
+            <i class="fa-solid ${actionText ? 'fa-pen-to-square' : 'fa-plus'}"></i> ${actionText ? 'ක්‍රියාව' : 'ක්‍රියාව +'}
+          </button>
+          <button class="btn-smart btn-smart-light" style="padding:3px 8px; font-size:12px; color:#059669; border-color:#a7f3d0;" onclick="openEditMemberFeedbackModal('${f.id}')" title="සංස්කරණය කරන්න (Edit)">
+            <i class="fa-solid fa-file-pen"></i>
+          </button>
+          <button class="btn-smart btn-smart-light" style="padding:3px 8px; font-size:12px; color:#dc2626; border-color:#fecaca;" onclick="deleteSingleMemberFeedback('${f.id}')" title="ඉවත් කරන්න (Delete)">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
       </td>
     </tr>
   `;
@@ -1807,7 +1897,7 @@ function openMemberFeedbackReviewModal(id) {
   document.getElementById('review-fb-title').innerHTML = `<i class="fa-solid fa-comments" style="color:#059669;"></i> ${f.id}: සාමාජික අදහස් සමාලෝචනය`;
   document.getElementById('review-fb-member').textContent = `${f.memberName} ${f.memberNo ? '(' + f.memberNo + ')' : ''}`;
   document.getElementById('review-fb-branch').textContent = f.branch || 'ප්‍රධාන කාර්යාලය';
-  document.getElementById('review-fb-date').textContent = f.timestamp || '';
+  document.getElementById('review-fb-date').textContent = formatTimestamp(f.timestamp) || '';
   document.getElementById('review-fb-rating').textContent = `${'★'.repeat(f.overallRating || 5)} (${f.overallRating || 5}/5)`;
   document.getElementById('review-fb-type').textContent = f.feedbackType || 'අදහස්';
   document.getElementById('review-fb-comments').textContent = f.comments || '';
@@ -4619,21 +4709,344 @@ async function createLocalServerSnapshot() {
 // Prompt Factory Reset
 async function promptResetSystemData() {
   const conf1 = confirm(currentLang === 'si'
-    ? '⚠️ අනතුරුදායකයි!\n\nඔබගේ සියලුම වත්මන් සේවක, වැටුප් හා QR දත්ත ඉවත් කර පද්ධතිය මුල් ආදර්ශන තත්වයට (Factory Seed Defaults) පත් කිරීමට අවශ්‍ය බව තහවුරු කරන්නද?'
-    : '⚠️ Danger Zone!\n\nAre you sure you want to reset all data to default demo state?');
+    ? '⚠️ අනතුරුදායකයි!\n\nඔබගේ සියලුම වත්මන් සේවක, වැටුප්, QR ගැටළු හා සාමාජික ප්‍රතිචාර ඇතුළු සියලු දත්ත ඉවත් කර පද්ධතිය මුල් ආදර්ශන තත්වයට (Factory Seed Defaults) පත් කිරීමට අවශ්‍ය බව තහවුරු කරන්නද?'
+    : '⚠️ Danger Zone!\n\nAre you sure you want to reset ALL data (including grievances & feedbacks) to default state?');
 
   if (!conf1) return;
 
   const conf2 = confirm(currentLang === 'si'
-    ? 'මෙමගින් ඔබගේ දත්ත ස්ථිරවම ප්‍රතිස්ථාපනය වේ. (ආරක්ෂාව සඳහා පෙර Backup එකක් බාගත කර තබා ගැනීමට නිර්දේශ කෙරේ).\n\nඉදිරියට යාමට සම්පූර්ණයෙන්ම විශ්වාසද?'
-    : 'This action cannot be undone. Are you completely sure you want to proceed?');
+    ? 'මෙමගින් ඔබගේ සියලු QR ගැටළු, සාමාජික ප්‍රතිචාර සහ සේවක දත්ත ස්ථිරවම ඉවත් වේ.\n\nඉදිරියට යාමට සම්පූර්ණයෙන්ම විශ්වාසද?'
+    : 'This will permanently delete ALL grievances, feedbacks and staff data. Are you sure?');
 
   if (!conf2) return;
 
+  // Clear deleted-ID tracking
+  localStorage.removeItem('sanasa_deleted_grv_ids');
+  localStorage.removeItem('sanasa_deleted_fb_ids');
+  // Mark current time as the clear timestamp so cloud sync skips old QR entries
+  localStorage.setItem('sanasa_qr_cleared_time', String(Date.now()));
+
   appData = JSON.parse(JSON.stringify(defaultSeedData));
+  appData.grievances = [];
+  appData.memberFeedbacks = [];
+
   await persistData();
-  alert(currentLang === 'si' ? 'පද්ධතිය සාර්ථකව පෙරනිමි තත්වයට පත් කරන ලදී.' : 'System has been reset to defaults.');
+
+  // Silently try to notify Google Sheets to clear QR data too
+  try {
+    const cloudUrl = typeof getCloudSyncUrl === 'function' ? getCloudSyncUrl() : '';
+    if (cloudUrl) {
+      fetch(cloudUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ type: 'clear_qr_data' })
+      });
+    }
+  } catch (e) { /* non-fatal */ }
+
+  alert(currentLang === 'si'
+    ? '✅ පද්ධතිය සාර්ථකව පෙරනිමි තත්වයට පත් කරන ලදී.\nසේවක ගැටළු, සාමාජික ප්‍රතිචාර සහ සේවක දත්ත ඉවත් කරන ලදී.'
+    : '✅ System has been factory reset. All grievances, feedbacks and staff data cleared.');
   window.location.reload();
+}
+
+// Clear ALL Grievances (from local + cloud)
+async function clearAllGrievances() {
+  if (!appData.grievances || appData.grievances.length === 0) {
+    alert(currentLang === 'si' ? 'ඉවත් කිරීමට ගැටළු / යෝජනා කිසිවක් නැත.' : 'No grievances to clear.');
+    return;
+  }
+  const conf = confirm(currentLang === 'si'
+    ? `⚠️ ලැයිස්තුවේ ඇති සියලු ගැටළු / යෝජනා ${appData.grievances.length}ක් ස්ථිරවම ඉවත් කිරීමට අවශ්‍යද?`
+    : `Delete all ${appData.grievances.length} grievances permanently?`);
+  if (!conf) return;
+
+  // Track all deleted IDs to suppress future cloud sync
+  const allIds = appData.grievances.map(g => g.id);
+  const prev = JSON.parse(localStorage.getItem('sanasa_deleted_grv_ids') || '[]');
+  localStorage.setItem('sanasa_deleted_grv_ids', JSON.stringify([...new Set([...prev, ...allIds])]));
+  localStorage.setItem('sanasa_qr_cleared_time', String(Date.now()));
+
+  appData.grievances = [];
+  await persistData();
+
+  // Silently notify cloud
+  try {
+    const cloudUrl = typeof getCloudSyncUrl === 'function' ? getCloudSyncUrl() : '';
+    if (cloudUrl) {
+      fetch(cloudUrl, {
+        method: 'POST', mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ type: 'clear_qr_data' })
+      });
+    }
+  } catch(e) {}
+
+  renderGrievancePortal();
+  renderDashboardStats();
+  alert(currentLang === 'si'
+    ? '✅ සේවක ගැටළු / යෝජනා ලැයිස්තුව සාර්ථකව ඉවත් කරන ලදී!'
+    : '✅ All grievances cleared successfully!');
+}
+
+// Clear ALL Member Feedbacks
+async function clearAllMemberFeedbacks() {
+  if (!appData.memberFeedbacks || appData.memberFeedbacks.length === 0) {
+    alert(currentLang === 'si' ? 'ඉවත් කිරීමට සාමාජික ප්‍රතිචාර කිසිවක් නැත.' : 'No feedbacks to clear.');
+    return;
+  }
+  const conf = confirm(currentLang === 'si'
+    ? `⚠️ ලැයිස්තුවේ ඇති සියලු සාමාජික ප්‍රතිචාර ${appData.memberFeedbacks.length}ක් ස්ථිරවම ඉවත් කිරීමට අවශ්‍යද?`
+    : `Delete all ${appData.memberFeedbacks.length} member feedbacks permanently?`);
+  if (!conf) return;
+
+  const allIds = appData.memberFeedbacks.map(f => f.id);
+  const prev = JSON.parse(localStorage.getItem('sanasa_deleted_fb_ids') || '[]');
+  localStorage.setItem('sanasa_deleted_fb_ids', JSON.stringify([...new Set([...prev, ...allIds])]));
+  localStorage.setItem('sanasa_qr_cleared_time', String(Date.now()));
+
+  appData.memberFeedbacks = [];
+  await persistData();
+
+  try {
+    const cloudUrl = typeof getCloudSyncUrl === 'function' ? getCloudSyncUrl() : '';
+    if (cloudUrl) {
+      fetch(cloudUrl, {
+        method: 'POST', mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ type: 'clear_qr_data' })
+      });
+    }
+  } catch(e) {}
+
+  renderMemberFeedbackPortal();
+  renderDashboardStats();
+  alert(currentLang === 'si'
+    ? '✅ සාමාජික ප්‍රතිචාර ලැයිස්තුව සාර්ථකව ඉවත් කරන ලදී!'
+    : '✅ All member feedbacks cleared successfully!');
+}
+
+// Delete Single Grievance from review modal
+async function handleDeleteCurrentGrievance() {
+  const id = document.getElementById('review-grv-id')?.value;
+  if (!id) return;
+
+  const conf = confirm(currentLang === 'si'
+    ? `"${id}" - මෙම ගැටළු/යෝජනා සටහන ස්ථිරවම ඉවත් කිරීමට අවශ්‍යද?`
+    : `Permanently delete grievance "${id}"?`);
+  if (!conf) return;
+
+  const prev = JSON.parse(localStorage.getItem('sanasa_deleted_grv_ids') || '[]');
+  localStorage.setItem('sanasa_deleted_grv_ids', JSON.stringify([...new Set([...prev, id])]));
+
+  appData.grievances = (appData.grievances || []).filter(g => g.id !== id);
+  await persistData();
+  closeSmartModal('modal-smart-grievance-review');
+  renderGrievancePortal();
+  renderDashboardStats();
+
+  // Silently delete from cloud
+  try {
+    const cloudUrl = typeof getCloudSyncUrl === 'function' ? getCloudSyncUrl() : '';
+    if (cloudUrl) {
+      fetch(cloudUrl, {
+        method: 'POST', mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ type: 'delete_grievance', id: id })
+      });
+    }
+  } catch(e) {}
+
+  alert(currentLang === 'si' ? '✅ ගැටළු/යෝජනා සටහන ඉවත් කරන ලදී.' : '✅ Grievance deleted.');
+}
+
+// Delete Single Member Feedback from review modal
+async function handleDeleteCurrentMemberFeedback() {
+  const id = document.getElementById('review-fb-id')?.value;
+  if (!id) return;
+
+  const conf = confirm(currentLang === 'si'
+    ? `"${id}" - මෙම සාමාජික ප්‍රතිචාරය ස්ථිරවම ඉවත් කිරීමට අවශ්‍යද?`
+    : `Permanently delete feedback "${id}"?`);
+  if (!conf) return;
+
+  const prev = JSON.parse(localStorage.getItem('sanasa_deleted_fb_ids') || '[]');
+  localStorage.setItem('sanasa_deleted_fb_ids', JSON.stringify([...new Set([...prev, id])]));
+
+  appData.memberFeedbacks = (appData.memberFeedbacks || []).filter(f => f.id !== id);
+  await persistData();
+  closeSmartModal('modal-smart-member-feedback-review');
+  renderMemberFeedbackPortal();
+  renderDashboardStats();
+
+  try {
+    const cloudUrl = typeof getCloudSyncUrl === 'function' ? getCloudSyncUrl() : '';
+    if (cloudUrl) {
+      fetch(cloudUrl, {
+        method: 'POST', mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ type: 'delete_member_feedback', id: id })
+      });
+    }
+  } catch(e) {}
+
+  alert(currentLang === 'si' ? '✅ සාමාජික ප්‍රතිචාරය ඉවත් කරන ලදී.' : '✅ Member feedback deleted.');
+}
+
+// =========================================================================
+// PER-ROW EDIT & DELETE — GRIEVANCES
+// =========================================================================
+
+function openEditGrievanceModal(id) {
+  const g = appData.grievances.find(item => item.id === id);
+  if (!g) return;
+
+  document.getElementById('edit-grv-id').value = g.id;
+  document.getElementById('edit-grv-employeeName').value = g.isAnonymous ? '' : (g.employeeName || '');
+  document.getElementById('edit-grv-isAnonymous').checked = !!g.isAnonymous;
+  document.getElementById('edit-grv-department').value = g.department || '';
+  document.getElementById('edit-grv-targetRecipient').value = g.targetRecipient || '';
+  document.getElementById('edit-grv-category').value = g.category || '';
+  document.getElementById('edit-grv-title').value = g.title || '';
+  document.getElementById('edit-grv-description').value = g.description || '';
+  document.getElementById('edit-grv-status').value = g.status || 'නව (New)';
+  document.getElementById('edit-grv-timestamp').value = toIsoDateTimeLocal(g.timestamp);
+  document.getElementById('edit-grv-modal-label').textContent = `${g.id}: ${g.title}`;
+
+  openSmartModal('modal-edit-grievance');
+}
+
+async function saveEditGrievanceForm(e) {
+  e.preventDefault();
+  const id = document.getElementById('edit-grv-id').value;
+  const g = appData.grievances.find(x => x.id === id);
+  if (!g) return;
+
+  const isAnon = document.getElementById('edit-grv-isAnonymous').checked;
+  g.isAnonymous = isAnon;
+  g.employeeName = isAnon ? 'නිර්නාමික (Anonymous)' : document.getElementById('edit-grv-employeeName').value;
+  g.department = document.getElementById('edit-grv-department').value;
+  g.targetRecipient = document.getElementById('edit-grv-targetRecipient').value;
+  g.category = document.getElementById('edit-grv-category').value;
+  g.title = document.getElementById('edit-grv-title').value;
+  g.description = document.getElementById('edit-grv-description').value;
+  g.status = document.getElementById('edit-grv-status').value;
+  const tsRaw = document.getElementById('edit-grv-timestamp').value;
+  if (tsRaw) g.timestamp = tsRaw.replace('T', ' ');
+
+  await persistData();
+  closeSmartModal('modal-edit-grievance');
+  renderGrievancePortal();
+  renderDashboardStats();
+  alert('✅ ගැටළු/යෝජනා සටහන සාර්ථකව සංස්කරණය කරන ලදී. | Grievance updated successfully.');
+}
+
+async function deleteSingleGrievance(id) {
+  const g = appData.grievances.find(item => item.id === id);
+  const label = g ? `"${g.title || id}"` : `"${id}"`;
+  const conf = confirm(currentLang === 'si'
+    ? `${label} - මෙම ගැටළු/යෝජනා සටහන ස්ථිරවම ඉවත් කිරීමට අවශ්‍යද?`
+    : `Permanently delete grievance ${label}?`);
+  if (!conf) return;
+
+  const prev = JSON.parse(localStorage.getItem('sanasa_deleted_grv_ids') || '[]');
+  localStorage.setItem('sanasa_deleted_grv_ids', JSON.stringify([...new Set([...prev, id])]));
+
+  appData.grievances = (appData.grievances || []).filter(x => x.id !== id);
+  await persistData();
+  renderGrievancePortal();
+  renderDashboardStats();
+
+  try {
+    const cloudUrl = typeof getCloudSyncUrl === 'function' ? getCloudSyncUrl() : '';
+    if (cloudUrl) {
+      fetch(cloudUrl, {
+        method: 'POST', mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ type: 'delete_grievance', id: id })
+      });
+    }
+  } catch(e) {}
+
+  alert(currentLang === 'si' ? '✅ ගැටළු/යෝජනා සටහන ඉවත් කරන ලදී.' : '✅ Grievance deleted.');
+}
+
+// =========================================================================
+// PER-ROW EDIT & DELETE — MEMBER FEEDBACK
+// =========================================================================
+
+function openEditMemberFeedbackModal(id) {
+  const f = appData.memberFeedbacks.find(item => item.id === id);
+  if (!f) return;
+
+  document.getElementById('edit-fb-id').value = f.id;
+  document.getElementById('edit-fb-memberName').value = f.memberName || '';
+  document.getElementById('edit-fb-memberNo').value = f.memberNo || '';
+  document.getElementById('edit-fb-branch').value = f.branch || '';
+  document.getElementById('edit-fb-phone').value = f.phone || '';
+  document.getElementById('edit-fb-overallRating').value = f.overallRating || 5;
+  document.getElementById('edit-fb-feedbackType').value = f.feedbackType || '';
+  document.getElementById('edit-fb-comments').value = f.comments || '';
+  document.getElementById('edit-fb-status').value = f.status || 'ලැබුණි (Received)';
+  document.getElementById('edit-fb-timestamp').value = toIsoDateTimeLocal(f.timestamp);
+  document.getElementById('edit-fb-modal-label').textContent = `${f.id}: ${f.memberName}`;
+
+  openSmartModal('modal-edit-member-feedback');
+}
+
+async function saveEditMemberFeedbackForm(e) {
+  e.preventDefault();
+  const id = document.getElementById('edit-fb-id').value;
+  const f = appData.memberFeedbacks.find(x => x.id === id);
+  if (!f) return;
+
+  f.memberName = document.getElementById('edit-fb-memberName').value;
+  f.memberNo = document.getElementById('edit-fb-memberNo').value;
+  f.branch = document.getElementById('edit-fb-branch').value;
+  f.phone = document.getElementById('edit-fb-phone').value;
+  f.overallRating = parseInt(document.getElementById('edit-fb-overallRating').value, 10) || 5;
+  f.feedbackType = document.getElementById('edit-fb-feedbackType').value;
+  f.comments = document.getElementById('edit-fb-comments').value;
+  f.status = document.getElementById('edit-fb-status').value;
+  const tsRaw = document.getElementById('edit-fb-timestamp').value;
+  if (tsRaw) f.timestamp = tsRaw.replace('T', ' ');
+
+  await persistData();
+  closeSmartModal('modal-edit-member-feedback');
+  renderMemberFeedbackPortal();
+  renderDashboardStats();
+  alert('✅ සාමාජික ප්‍රතිචාරය සාර්ථකව සංස්කරණය කරන ලදී. | Feedback updated successfully.');
+}
+
+async function deleteSingleMemberFeedback(id) {
+  const f = appData.memberFeedbacks.find(item => item.id === id);
+  const label = f ? `"${f.memberName || id}"` : `"${id}"`;
+  const conf = confirm(currentLang === 'si'
+    ? `${label} - මෙම සාමාජික ප්‍රතිචාරය ස්ථිරවම ඉවත් කිරීමට අවශ්‍යද?`
+    : `Permanently delete feedback from ${label}?`);
+  if (!conf) return;
+
+  const prev = JSON.parse(localStorage.getItem('sanasa_deleted_fb_ids') || '[]');
+  localStorage.setItem('sanasa_deleted_fb_ids', JSON.stringify([...new Set([...prev, id])]));
+
+  appData.memberFeedbacks = (appData.memberFeedbacks || []).filter(x => x.id !== id);
+  await persistData();
+  renderMemberFeedbackPortal();
+  renderDashboardStats();
+
+  try {
+    const cloudUrl = typeof getCloudSyncUrl === 'function' ? getCloudSyncUrl() : '';
+    if (cloudUrl) {
+      fetch(cloudUrl, {
+        method: 'POST', mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ type: 'delete_member_feedback', id: id })
+      });
+    }
+  } catch(e) {}
+
+  alert(currentLang === 'si' ? '✅ සාමාජික ප්‍රතිචාරය ඉවත් කරන ලදී.' : '✅ Member feedback deleted.');
 }
 
 // Global modal & action registrations
@@ -4648,6 +5061,18 @@ window.showRestorePreviewModal = showRestorePreviewModal;
 window.executeConfirmedRestore = executeConfirmedRestore;
 window.createLocalServerSnapshot = createLocalServerSnapshot;
 window.promptResetSystemData = promptResetSystemData;
+window.clearAllGrievances = clearAllGrievances;
+window.clearAllMemberFeedbacks = clearAllMemberFeedbacks;
+window.handleDeleteCurrentGrievance = handleDeleteCurrentGrievance;
+window.handleDeleteCurrentMemberFeedback = handleDeleteCurrentMemberFeedback;
+window.openEditGrievanceModal = openEditGrievanceModal;
+window.saveEditGrievanceForm = saveEditGrievanceForm;
+window.deleteSingleGrievance = deleteSingleGrievance;
+window.openEditMemberFeedbackModal = openEditMemberFeedbackModal;
+window.saveEditMemberFeedbackForm = saveEditMemberFeedbackForm;
+window.deleteSingleMemberFeedback = deleteSingleMemberFeedback;
+window.formatTimestamp = formatTimestamp;
+window.toIsoDateTimeLocal = toIsoDateTimeLocal;
 
 // =========================================================================
 // ULTRA-MODERN SMART TOAST & NOTIFICATION SYSTEM
