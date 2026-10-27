@@ -159,6 +159,10 @@ function checkAuthSession() {
 
 function showLoginModal() {
   const overlay = document.getElementById('login-modal-overlay');
+  const uInput = document.getElementById('login-username');
+  const pInput = document.getElementById('login-password');
+  if (uInput) uInput.value = '';
+  if (pInput) pInput.value = '';
   if (overlay) overlay.style.display = 'flex';
 }
 
@@ -378,6 +382,13 @@ async function syncFromCloud(silent = false) {
     if (res.ok) {
       const data = await res.json();
       if (data && data.status === 'success') {
+        if (data.latestBackupTime && data.latestBackupTime !== 'none' && data.latestBackupTime !== 'කිසිවක් නැත (None)') {
+          localStorage.setItem('sanasa_last_cloud_backup_time', data.latestBackupTime);
+        }
+        if (typeof data.totalBackups !== 'undefined') {
+          localStorage.setItem('sanasa_total_cloud_backups', data.totalBackups);
+        }
+
         let newGrievancesCount = 0;
         let newFeedbacksCount = 0;
 
@@ -618,7 +629,8 @@ function switchView(targetId) {
     appraisals: 'Appraisals (කාර්යසාධනය)',
     satisfaction: 'Wellbeing (සේවක තෘප්තිය)',
     posters: 'QR පෝස්ටර් (Print-Ready)',
-    'admin-panel': 'Admin Panel (පරිපාලක පාලනය)'
+    'admin-panel': 'Admin Panel (පරිපාලක පාලනය)',
+    'backup-restore': 'Backup & Restore (දත්ත උපස්ථ සහ ප්‍රතිසාධනය)'
   };
   const topH1 = document.querySelector('.top-bar-left h1');
   if (topH1 && titles[targetId]) {
@@ -645,6 +657,8 @@ function switchView(targetId) {
     setTimeout(renderMeetingsView, 50);
   } else if (targetId === 'admin-panel') {
     setTimeout(renderAdminPanel, 50);
+  } else if (targetId === 'backup-restore') {
+    setTimeout(renderBackupRestoreView, 50);
   }
 }
 
@@ -4217,3 +4231,591 @@ function printEpfMonthlySummary() {
 // Global modal handlers
 window.openGrievanceReviewModal = openGrievanceReviewModal;
 window.openMemberFeedbackReviewModal = openMemberFeedbackReviewModal;
+
+// =========================================================================
+// DATA BACKUP & RESTORE MODULE (GOOGLE APPS SCRIPT CLOUD & LOCAL JSON)
+// =========================================================================
+let pendingRestoreData = null;
+
+function renderBackupRestoreView() {
+  if (!appData) return;
+
+  // 1. Update Database Records Counters
+  const empEl = document.getElementById('stat-count-employees');
+  const payEl = document.getElementById('stat-count-payroll');
+  const tskEl = document.getElementById('stat-count-tasks');
+  const meetEl = document.getElementById('stat-count-meetings');
+  const grvEl = document.getElementById('stat-count-grievances');
+  const fbEl = document.getElementById('stat-count-feedbacks');
+
+  if (empEl) empEl.textContent = (appData.employees || []).length;
+  if (payEl) payEl.textContent = (appData.payrollHistory || []).length;
+  if (tskEl) tskEl.textContent = (appData.tasks || []).length;
+  if (meetEl) meetEl.textContent = (appData.meetings || []).length;
+  if (grvEl) grvEl.textContent = (appData.grievances || []).length;
+  if (fbEl) fbEl.textContent = (appData.memberFeedbacks || []).length;
+
+  // 2. Cloud Configuration Status & Stats
+  const cloudUrl = typeof getCloudSyncUrl === 'function' ? getCloudSyncUrl() : '';
+  const badge = document.getElementById('badge-cloud-config-status');
+  if (badge) {
+    if (cloudUrl && cloudUrl.trim()) {
+      badge.className = 'badge-pill badge-green';
+      badge.innerHTML = '<i class="fa-solid fa-cloud-check"></i> Cloud Ready';
+    } else {
+      badge.className = 'badge-pill badge-red';
+      badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> URL එක සකසා නැත';
+    }
+  }
+
+  const lastBackupTime = localStorage.getItem('sanasa_last_cloud_backup_time') || 'පරීක්ෂා කර නොමැත';
+  const totalBackups = localStorage.getItem('sanasa_total_cloud_backups') || '-';
+
+  const lastBkpElem = document.getElementById('display-cloud-last-backup');
+  const totBkpElem = document.getElementById('display-cloud-total-backups');
+  if (lastBkpElem) lastBkpElem.textContent = lastBackupTime;
+  if (totBkpElem) totBkpElem.textContent = totalBackups;
+}
+
+// Perform Cloud Backup to Google Apps Script / Google Sheets
+async function performCloudBackup() {
+  const cloudUrl = typeof getCloudSyncUrl === 'function' ? getCloudSyncUrl() : '';
+  if (!cloudUrl || !cloudUrl.trim()) {
+    alert(currentLang === 'si'
+      ? 'කරුණාකර පළමුව Google Cloud සැකසුම් (Cloud Settings) වෙත ගොස් ඔබගේ Google Apps Script Web App URL එක ඇතුළත් කරන්න.'
+      : 'Please configure your Google Apps Script Web App URL in Cloud Settings first.');
+    openSmartModal('modal-online-settings');
+    return;
+  }
+
+  const btn = document.getElementById('btn-cloud-backup-action');
+  const originalHtml = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Google Sheet වෙත Backup වෙමින් පවතී...';
+    btn.disabled = true;
+  }
+
+  try {
+    const now = new Date();
+    const timestampStr = now.getFullYear() + '-' +
+      String(now.getMonth() + 1).padStart(2, '0') + '-' +
+      String(now.getDate()).padStart(2, '0') + ' ' +
+      String(now.getHours()).padStart(2, '0') + ':' +
+      String(now.getMinutes()).padStart(2, '0') + ':' +
+      String(now.getSeconds()).padStart(2, '0');
+
+    const backupId = 'BKP-' + now.getFullYear() +
+      String(now.getMonth() + 1).padStart(2, '0') +
+      String(now.getDate()).padStart(2, '0') + '-' +
+      String(now.getHours()).padStart(2, '0') +
+      String(now.getMinutes()).padStart(2, '0') +
+      String(now.getSeconds()).padStart(2, '0');
+
+    const empCount = (appData.employees || []).length;
+    const payCount = (appData.payrollHistory || []).length;
+    const tskCount = (appData.tasks || []).length;
+    const grvCount = (appData.grievances || []).length;
+    const fbCount = (appData.memberFeedbacks || []).length;
+
+    const payload = {
+      type: 'backup',
+      backupId: backupId,
+      timestamp: timestampStr,
+      note: `Dashboard Backup (සේවකයින්: ${empCount}, වැටුප්: ${payCount}, ගැටළු: ${grvCount})`,
+      summary: {
+        employeesCount: empCount,
+        payrollCount: payCount,
+        tasksCount: tskCount,
+        meetingsCount: (appData.meetings || []).length,
+        grievancesCount: grvCount,
+        feedbacksCount: fbCount
+      },
+      data: appData
+    };
+
+    await fetch(cloudUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+
+    localStorage.setItem('sanasa_last_cloud_backup_time', timestampStr);
+    const prevCount = parseInt(localStorage.getItem('sanasa_total_cloud_backups') || '0', 10);
+    localStorage.setItem('sanasa_total_cloud_backups', String(prevCount + 1));
+
+    renderBackupRestoreView();
+
+    alert(currentLang === 'si'
+      ? `✅ Google Sheets Cloud Backup එක සාර්ථකව සුරකින ලදී!\n\nඋපස්ථ අංකය: ${backupId}\nදිනය හා වේලාව: ${timestampStr}\nසේවකයින්: ${empCount}\nවැටුප් වාර්තා: ${payCount}\nගැටළු හා යෝජනා: ${grvCount}\n\nGoogle Sheet එකෙහි Employees, Payroll, Tasks, Meetings යන Sheets ද ස්වයංක්‍රීයව යාවත්කාලීන විය.`
+      : `✅ Cloud Backup successfully created in Google Sheets!\n\nBackup ID: ${backupId}\nTime: ${timestampStr}\nEmployees: ${empCount}\nPayroll Records: ${payCount}`);
+
+  } catch (err) {
+    console.error('Cloud backup error:', err);
+    alert(currentLang === 'si'
+      ? 'Google Sheet Cloud Backup කිරීමේදී දෝෂයක් මතු විය: ' + err.message
+      : 'Error creating Cloud Backup: ' + err.message);
+  } finally {
+    if (btn) {
+      btn.innerHTML = originalHtml;
+      btn.disabled = false;
+    }
+  }
+}
+
+// Perform Cloud Restore from Google Apps Script
+async function performCloudRestore(backupId) {
+  const cloudUrl = typeof getCloudSyncUrl === 'function' ? getCloudSyncUrl() : '';
+  if (!cloudUrl || !cloudUrl.trim()) {
+    alert(currentLang === 'si'
+      ? 'කරුණාකර පළමුව Google Apps Script Web App URL එක සකසන්න.'
+      : 'Please configure your Google Apps Script URL first.');
+    openSmartModal('modal-online-settings');
+    return;
+  }
+
+  const btn = document.getElementById('btn-cloud-restore-action');
+  const originalHtml = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cloud එකෙන් කියවමින් පවතී...';
+    btn.disabled = true;
+  }
+
+  try {
+    const url = cloudUrl + (cloudUrl.includes('?') ? '&' : '?') +
+      'action=restore' +
+      (backupId ? '&backupId=' + encodeURIComponent(backupId) : '') +
+      '&t=' + Date.now();
+
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP error ' + res.status);
+
+    const result = await res.json();
+    if (result.status === 'success' && result.data) {
+      pendingRestoreData = result.data;
+      closeSmartModal('modal-cloud-backups-list');
+
+      const sourceLabel = 'Google Sheet Cloud Backup ' + (result.backupId ? '(' + result.backupId + ')' : '(නවතම)');
+      const timeLabel = result.timestamp || 'මෑතකදී';
+
+      showRestorePreviewModal(sourceLabel, timeLabel, result.data);
+    } else {
+      alert(currentLang === 'si'
+        ? 'Google Sheet එකෙන් Restore කිරීමට උපස්ථ දත්ත සොයාගත නොහැකි විය: ' + (result.message || 'හිස් දත්ත')
+        : 'Could not find backup data in Google Sheets: ' + (result.message || 'No data'));
+    }
+
+  } catch (err) {
+    console.error('Cloud restore fetch error:', err);
+    alert(currentLang === 'si'
+      ? 'Google Sheet එකෙන් දත්ත කියවීමේදී දෝෂයක් මතු විය: ' + err.message
+      : 'Error reading cloud backup: ' + err.message);
+  } finally {
+    if (btn) {
+      btn.innerHTML = originalHtml;
+      btn.disabled = false;
+    }
+  }
+}
+
+// Open Cloud Backups History Modal & Load List
+function openCloudBackupsHistoryModal() {
+  openSmartModal('modal-cloud-backups-list');
+  loadCloudBackupsHistory();
+}
+
+async function loadCloudBackupsHistory() {
+  const cloudUrl = typeof getCloudSyncUrl === 'function' ? getCloudSyncUrl() : '';
+  const tbody = document.getElementById('table-cloud-backups-body');
+  const iconRefresh = document.getElementById('icon-refresh-cloud-backups');
+
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:24px; color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Google Sheet එකෙන් උපස්ථ ලැයිස්තුව කියවමින් පවතී...</td></tr>`;
+
+  if (!cloudUrl || !cloudUrl.trim()) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:24px; color:#ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Google Apps Script Web App URL එක සකසා නැත.</td></tr>`;
+    return;
+  }
+
+  if (iconRefresh) iconRefresh.classList.add('fa-spin');
+
+  try {
+    const url = cloudUrl + (cloudUrl.includes('?') ? '&' : '?') + 'action=list_backups&t=' + Date.now();
+    const res = await fetch(url);
+    const result = await res.json();
+
+    if (result.status === 'success' && Array.isArray(result.backups) && result.backups.length > 0) {
+      localStorage.setItem('sanasa_total_cloud_backups', String(result.backups.length));
+      localStorage.setItem('sanasa_last_cloud_backup_time', result.backups[0].timestamp || '');
+      renderBackupRestoreView();
+
+      tbody.innerHTML = result.backups.map(b => `
+        <tr>
+          <td style="font-weight:700; color:#1e1b4b; font-size:12px;">${escapeHtml(b.timestamp || '')}</td>
+          <td style="font-family:monospace; font-size:11px; color:#6d28d9;">${escapeHtml(b.backupId || '')}</td>
+          <td style="text-align:center;"><span class="badge-pill badge-green">${b.employeesCount || 0}</span></td>
+          <td style="text-align:center;"><span class="badge-pill badge-purple">${b.payrollCount || 0}</span></td>
+          <td style="text-align:center;"><span class="badge-pill badge-blue">${b.tasksCount || 0}</span></td>
+          <td style="text-align:center;"><span class="badge-pill badge-orange">${b.grievancesCount || 0}</span></td>
+          <td>
+            <button type="button" class="btn-smart btn-smart-primary" style="font-size:11px; padding:4px 10px; background:#d97706;" onclick="performCloudRestore('${escapeHtml(b.backupId)}')">
+              <i class="fa-solid fa-rotate-left"></i> Restore
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    } else {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:24px; color:#64748b;"><i class="fa-solid fa-inbox"></i> Google Sheet එකෙහි මෙතෙක් උපස්ථ (Backups) කිසිවක් හමු නොවීය. ඉහත "Google Sheet වෙත දැන් Backup කරන්න" ඔබා නව උපස්ථයක් සාදන්න.</td></tr>`;
+    }
+  } catch (err) {
+    console.warn('Failed to load cloud backup list:', err);
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:24px; color:#ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Google Sheet වෙතින් උපස්ථ ලැයිස්තුව ලබා ගැනීමේදී දෝෂයක් මතු විය: ${escapeHtml(err.message)}</td></tr>`;
+  } finally {
+    if (iconRefresh) iconRefresh.classList.remove('fa-spin');
+  }
+}
+
+// Show Modal with Restore Preview
+function showRestorePreviewModal(sourceText, timeText, data) {
+  const srcEl = document.getElementById('restore-preview-source');
+  const timeEl = document.getElementById('restore-preview-time');
+  const empEl = document.getElementById('restore-preview-emp');
+  const payEl = document.getElementById('restore-preview-pay');
+  const tskEl = document.getElementById('restore-preview-tasks');
+  const meetEl = document.getElementById('restore-preview-meetings');
+  const grvEl = document.getElementById('restore-preview-grv');
+  const fbEl = document.getElementById('restore-preview-fb');
+
+  if (srcEl) srcEl.textContent = sourceText;
+  if (timeEl) timeEl.textContent = timeText;
+  if (empEl) empEl.textContent = (data.employees || []).length;
+  if (payEl) payEl.textContent = (data.payrollHistory || []).length;
+  if (tskEl) tskEl.textContent = (data.tasks || []).length;
+  if (meetEl) meetEl.textContent = (data.meetings || []).length;
+  if (grvEl) grvEl.textContent = (data.grievances || []).length;
+  if (fbEl) fbEl.textContent = (data.memberFeedbacks || []).length;
+
+  openSmartModal('modal-restore-preview');
+}
+
+// Execute Confirmed Restore Action
+async function executeConfirmedRestore() {
+  if (!pendingRestoreData) {
+    alert('ප්‍රතිසාධනය සඳහා දත්ත නොමැත (No pending restore data).');
+    closeSmartModal('modal-restore-preview');
+    return;
+  }
+
+  try {
+    appData = JSON.parse(JSON.stringify(pendingRestoreData));
+
+    // Ensure all required collections exist
+    if (!appData.employees) appData.employees = [];
+    if (!appData.tasks) appData.tasks = [];
+    if (!appData.meetings) appData.meetings = [];
+    if (!appData.users) appData.users = [];
+    if (!appData.grievances) appData.grievances = [];
+    if (!appData.memberFeedbacks) appData.memberFeedbacks = [];
+    if (!appData.appraisals) appData.appraisals = [];
+    if (!appData.surveys) appData.surveys = [];
+    if (!appData.payrollHistory) appData.payrollHistory = [];
+    if (!appData.incentiveRecords) appData.incentiveRecords = [];
+    if (!appData.epfRemittances) appData.epfRemittances = [];
+
+    await persistData();
+
+    closeSmartModal('modal-restore-preview');
+    pendingRestoreData = null;
+
+    // Refresh all portals & views
+    if (typeof renderDashboardStats === 'function') renderDashboardStats();
+    if (typeof renderEmployees === 'function') renderEmployees();
+    if (typeof renderProjectsView === 'function') renderProjectsView();
+    if (typeof renderMeetingsView === 'function') renderMeetingsView();
+    if (typeof renderGrievancePortal === 'function') renderGrievancePortal();
+    if (typeof renderMemberFeedbackPortal === 'function') renderMemberFeedbackPortal();
+    if (typeof renderPayroll === 'function') renderPayroll();
+    if (typeof renderAdminPanel === 'function') renderAdminPanel();
+    renderBackupRestoreView();
+
+    alert(currentLang === 'si'
+      ? '🎉 පද්ධති දත්ත සාර්ථකව ප්‍රතිසාධනය (Restore) කරන ලදී!\nසියලුම සේවක, වැටුප් හා QR තොරතුරු යාවත්කාලීන විය.'
+      : '🎉 System data was successfully restored!');
+
+  } catch (err) {
+    console.error('Error executing restore:', err);
+    alert('Restore කිරීමේදී දෝෂයක් මතු විය: ' + err.message);
+  }
+}
+
+// Download Local JSON Backup
+function downloadLocalBackup() {
+  if (!appData) return;
+
+  const now = new Date();
+  const dateStr = now.getFullYear() + '-' +
+    String(now.getMonth() + 1).padStart(2, '0') + '-' +
+    String(now.getDate()).padStart(2, '0') + '_' +
+    String(now.getHours()).padStart(2, '0') +
+    String(now.getMinutes()).padStart(2, '0');
+
+  const fileName = `Sanasa_HRMS_Backup_${dateStr}.json`;
+  const jsonContent = JSON.stringify(appData, null, 2);
+  const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
+
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(link.href);
+}
+
+// Handle Local Backup File Selected from File Input
+function handleLocalBackupFileSelected(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (!parsed || (typeof parsed !== 'object') || (!parsed.organization && !parsed.employees)) {
+        throw new Error('මෙම ගොනුව නිවැරදි HRMS Backup ගොනුවක් නොවේ.');
+      }
+
+      pendingRestoreData = parsed;
+      const fileDate = file.lastModified ? new Date(file.lastModified).toLocaleString() : 'නොදනී';
+      showRestorePreviewModal('පරිගණක ගොනුව: ' + file.name, fileDate, parsed);
+
+    } catch (err) {
+      alert('Backup ගොනුව කියවීමේ දෝෂයකි: ' + err.message);
+    } finally {
+      event.target.value = ''; // Reset input
+    }
+  };
+  reader.readAsText(file);
+}
+
+// Create Local Server Snapshot via C# API
+async function createLocalServerSnapshot() {
+  try {
+    const res = await fetch('/api/backup/create', { method: 'POST' });
+    if (res.ok) {
+      const data = await res.json();
+      alert(currentLang === 'si'
+        ? `✅ පරිගණක සේවාදායකයේ Snapshot පිටපතක් සාර්ථකව සුරකින ලදී!\nගොනු නාමය: ${data.fileName}\nවේලාව: ${data.timestamp}`
+        : `✅ Local server snapshot created: ${data.fileName}`);
+    } else {
+      // Server API unreachable -> offer direct JSON download
+      downloadLocalBackup();
+    }
+  } catch (e) {
+    downloadLocalBackup();
+  }
+}
+
+// Prompt Factory Reset
+async function promptResetSystemData() {
+  const conf1 = confirm(currentLang === 'si'
+    ? '⚠️ අනතුරුදායකයි!\n\nඔබගේ සියලුම වත්මන් සේවක, වැටුප් හා QR දත්ත ඉවත් කර පද්ධතිය මුල් ආදර්ශන තත්වයට (Factory Seed Defaults) පත් කිරීමට අවශ්‍ය බව තහවුරු කරන්නද?'
+    : '⚠️ Danger Zone!\n\nAre you sure you want to reset all data to default demo state?');
+
+  if (!conf1) return;
+
+  const conf2 = confirm(currentLang === 'si'
+    ? 'මෙමගින් ඔබගේ දත්ත ස්ථිරවම ප්‍රතිස්ථාපනය වේ. (ආරක්ෂාව සඳහා පෙර Backup එකක් බාගත කර තබා ගැනීමට නිර්දේශ කෙරේ).\n\nඉදිරියට යාමට සම්පූර්ණයෙන්ම විශ්වාසද?'
+    : 'This action cannot be undone. Are you completely sure you want to proceed?');
+
+  if (!conf2) return;
+
+  appData = JSON.parse(JSON.stringify(defaultSeedData));
+  await persistData();
+  alert(currentLang === 'si' ? 'පද්ධතිය සාර්ථකව පෙරනිමි තත්වයට පත් කරන ලදී.' : 'System has been reset to defaults.');
+  window.location.reload();
+}
+
+// Global modal & action registrations
+window.renderBackupRestoreView = renderBackupRestoreView;
+window.performCloudBackup = performCloudBackup;
+window.performCloudRestore = performCloudRestore;
+window.openCloudBackupsHistoryModal = openCloudBackupsHistoryModal;
+window.loadCloudBackupsHistory = loadCloudBackupsHistory;
+window.downloadLocalBackup = downloadLocalBackup;
+window.handleLocalBackupFileSelected = handleLocalBackupFileSelected;
+window.showRestorePreviewModal = showRestorePreviewModal;
+window.executeConfirmedRestore = executeConfirmedRestore;
+window.createLocalServerSnapshot = createLocalServerSnapshot;
+window.promptResetSystemData = promptResetSystemData;
+
+// =========================================================================
+// ULTRA-MODERN SMART TOAST & NOTIFICATION SYSTEM
+// =========================================================================
+
+function escapeHtml(str) {
+  if (typeof str !== 'string') return String(str || '');
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function getOrCreateToastContainer() {
+  let container = document.getElementById('smart-toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'smart-toast-container';
+    document.body.appendChild(container);
+  }
+  return container;
+}
+
+// Gentle pleasant audio chime using Web Audio API
+function playNotificationChime(type) {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    const now = ctx.currentTime;
+    if (type === 'error') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(280, now);
+      osc.frequency.exponentialRampToValueAtTime(180, now + 0.18);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+      osc.start(now);
+      osc.stop(now + 0.2);
+    } else {
+      // Pleasant dual tone chime for success / info
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, now); // D5
+      osc.frequency.exponentialRampToValueAtTime(880, now + 0.08); // A5
+      gain.gain.setValueAtTime(0.06, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+      osc.start(now);
+      osc.stop(now + 0.22);
+    }
+  } catch (e) {
+    // Autoplay restrictions or unsupported audio
+  }
+}
+
+function showSmartNotification(rawMessage, forcedType, duration) {
+  const container = getOrCreateToastContainer();
+  const text = String(rawMessage || '').trim();
+  if (!text) return;
+
+  // Determine Notification Type
+  let type = forcedType;
+  if (!type) {
+    if (text.includes('සාර්ථක') || text.includes('success') || text.includes('සුරකින') || text.includes('යාවත්කාලීන') || text.includes('✅') || text.includes('🎉')) {
+      type = 'success';
+    } else if (text.includes('දෝෂ') || text.includes('error') || text.includes('වැරදි') || text.includes('අවලංගු') || text.includes('අසාර්ථක') || text.includes('කළ නොහැකි') || text.includes('❌')) {
+      type = 'error';
+    } else if (text.includes('අවධානය') || text.includes('අවවාදය') || text.includes('warning') || text.includes('අනතුරු') || text.includes('⚠️')) {
+      type = 'warning';
+    } else {
+      type = 'info';
+    }
+  }
+
+  // Titles & Icons based on type
+  let title = 'ගලපිටියාගම සණස HRMS';
+  let iconHtml = '<i class="fa-solid fa-bell"></i>';
+
+  if (type === 'success') {
+    title = 'සාර්ථකයි (Success)';
+    iconHtml = '<i class="fa-solid fa-circle-check"></i>';
+  } else if (type === 'error') {
+    title = 'දෝෂයක් (Error)';
+    iconHtml = '<i class="fa-solid fa-circle-xmark"></i>';
+  } else if (type === 'warning') {
+    title = 'අවධානය පිණිසයි (Warning)';
+    iconHtml = '<i class="fa-solid fa-triangle-exclamation"></i>';
+  } else if (type === 'info') {
+    title = 'පද්ධති දැනුම්දීම (Notification)';
+    iconHtml = '<i class="fa-solid fa-circle-info"></i>';
+  }
+
+  // Calculate auto-dismiss duration
+  const autoDuration = duration || Math.min(8500, Math.max(4000, text.length * 60));
+
+  // Build Toast DOM
+  const toast = document.createElement('div');
+  toast.className = `smart-toast-item toast-${type}`;
+  toast.innerHTML = `
+    <div class="toast-icon-box">${iconHtml}</div>
+    <div class="toast-content">
+      <div class="toast-title">
+        <span>${title}</span>
+      </div>
+      <div class="toast-message">${escapeHtml(text).replace(/\n/g, '<br>')}</div>
+    </div>
+    <button type="button" class="toast-close-btn" title="Close / වසන්න">&times;</button>
+    <div class="toast-progress-bar">
+      <div class="toast-progress-fill" style="animation-duration: ${autoDuration}ms;"></div>
+    </div>
+  `;
+
+  // Close helper
+  let closed = false;
+  const dismissToast = () => {
+    if (closed) return;
+    closed = true;
+    toast.classList.add('toast-out');
+    setTimeout(() => {
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 320);
+  };
+
+  const closeBtn = toast.querySelector('.toast-close-btn');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dismissToast();
+    });
+  }
+
+  toast.addEventListener('click', () => {
+    dismissToast();
+  });
+
+  let timer = setTimeout(dismissToast, autoDuration);
+
+  // Pause on hover
+  toast.addEventListener('mouseenter', () => {
+    const fill = toast.querySelector('.toast-progress-fill');
+    if (fill) fill.style.animationPlayState = 'paused';
+    clearTimeout(timer);
+  });
+
+  toast.addEventListener('mouseleave', () => {
+    const fill = toast.querySelector('.toast-progress-fill');
+    if (fill) fill.style.animationPlayState = 'running';
+    timer = setTimeout(dismissToast, 2000);
+  });
+
+  container.appendChild(toast);
+  playNotificationChime(type);
+}
+
+// Override Native Window Alert to automatically use Smart Notifications!
+const nativeAlert = window.alert;
+window.alert = function(msg) {
+  showSmartNotification(msg);
+};
+
+window.showSmartNotification = showSmartNotification;
+window.showNotification = showSmartNotification;
+window.showToast = showSmartNotification;
+window.escapeHtml = escapeHtml;
+
+
