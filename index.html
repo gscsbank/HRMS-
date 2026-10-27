@@ -359,13 +359,14 @@
 
             <div style="display:flex; gap:14px; margin-top:16px;">
               <input type="text" id="search-employee-input" class="form-input-pill" placeholder="නම, සේවක අංකය, තනතුර හෝ NIC අනුව සොයන්න..." style="flex:1;">
-              <select id="filter-employee-dept" class="form-input-pill" style="width:250px;">
+              <select id="filter-employee-dept" class="form-input-pill" style="width:280px;">
                 <option value="ALL">සියලු අංශ (All Departments)</option>
-                <option value="ණය සහ ක්ෂුද්‍ර මූල්‍ය අංශය">ණය සහ ක්ෂුද්‍ර මූල්‍ය</option>
-                <option value="ගිණුම් හා විගණන අංශය">ගිණුම් හා විගණන</option>
-                <option value="ක්ෂේත්‍ර අංශය">ක්ෂේත්‍ර අංශය (Field)</option>
-                <option value="සාමාජික සේවා හා සංවර්ධන">සාමාජික සේවා</option>
-                <option value="පරිපාලන හා මෙහෙයුම්">පරිපාලන හා මෙහෙයුම්</option>
+                <option value="OAD — මෙහෙයුම් හා පරිපාලන අංශය (Operations and Administration Division)">OAD — මෙහෙයුම් හා පරිපාලන අංශය</option>
+                <option value="FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)">FMD — මූල්‍ය හා කළමනාකරණ අංශය</option>
+                <option value="CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)">CSD — පාරිභෝගික සේවා අංශය</option>
+                <option value="LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)">LID — ණය නිකුත් කිරීමේ අංශය</option>
+                <option value="LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)">LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන හා සුභසාධන</option>
+                <option value="FLD — ක්ෂේත්‍ර අංශය (Field Division)">FLD — ක්ෂේත්‍ර අංශය</option>
               </select>
             </div>
           </div>
@@ -1628,11 +1629,12 @@
             <div>
               <label style="font-size:12px; font-weight:700;">අංශය (Department)</label>
               <select id="emp-department" class="form-input-pill">
-                <option value="ණය සහ ක්ෂුද්‍ර මූල්‍ය අංශය">ණය සහ ක්ෂුද්‍ර මූල්‍ය අංශය</option>
-                <option value="ගිණුම් හා විගණන අංශය">ගිණුම් හා විගණන අංශය</option>
-                <option value="ක්ෂේත්‍ර අංශය">ක්ෂේත්‍ර අංශය (Field Department)</option>
-                <option value="සාමාජික සේවා හා සංවර්ධන">සාමාජික සේවා හා සංවර්ධන</option>
-                <option value="පරිපාලන හා මෙහෙයුම්">පරිපාලන හා මෙහෙයුම්</option>
+                <option value="OAD — මෙහෙයුම් හා පරිපාලන අංශය (Operations and Administration Division)">OAD — මෙහෙයුම් හා පරිපාලන අංශය (Operations and Administration Division)</option>
+                <option value="FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)">FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)</option>
+                <option value="CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)">CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)</option>
+                <option value="LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)">LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)</option>
+                <option value="LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)">LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය</option>
+                <option value="FLD — ක්ෂේත්‍ර අංශය (Field Division)">FLD — ක්ෂේත්‍ර අංශය (Field Division)</option>
               </select>
             </div>
             <div>
@@ -2230,11 +2232,12 @@
           <div style="margin-bottom:12px;">
             <label style="font-size:12px; font-weight:700;">අංශය (Department)</label>
             <select id="proj-dept" class="form-input-pill">
-              <option value="ණය සහ ක්ෂුද්‍ර මූල්‍ය අංශය">ණය සහ ක්ෂුද්‍ර මූල්‍ය අංශය</option>
-              <option value="ගිණුම් හා විගණන අංශය">ගිණුම් හා විගණන අංශය</option>
-              <option value="ක්ෂේත්‍ර අංශය">ක්ෂේත්‍ර අංශය</option>
-              <option value="සාමාජික සේවා හා සංවර්ධන">සාමාජික සේවා හා සංවර්ධන</option>
-              <option value="පරිපාලන හා මෙහෙයුම්">පරිපාලන හා මෙහෙයුම්</option>
+              <option value="OAD — මෙහෙයුම් හා පරිපාලන අංශය (Operations and Administration Division)">OAD — මෙහෙයුම් හා පරිපාලන අංශය (Operations and Administration Division)</option>
+              <option value="FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)">FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)</option>
+              <option value="CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)">CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)</option>
+              <option value="LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)">LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)</option>
+              <option value="LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)">LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය</option>
+              <option value="FLD — ක්ෂේත්‍ර අංශය (Field Division)">FLD — ක්ෂේත්‍ර අංශය (Field Division)</option>
             </select>
           </div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
