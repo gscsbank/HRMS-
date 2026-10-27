@@ -98,7 +98,7 @@
 
         <a class="menu-item" data-target="posters">
           <i class="fa-solid fa-print"></i>
-          <span>Print QR Posters (පෝස්ටර්)</span>
+          <span>QR පෝස්ටර් (Print-Ready)</span>
         </a>
 
         <div class="menu-label">SYSTEM & SECURITY</div>
@@ -183,7 +183,7 @@
         <section class="view-section active" id="view-dashboard">
           
           <!-- TOP ROW: Greeting Banner + 3 Stat Metric Boxes + Team Performance Chart + Total Employee Ring Chart -->
-          <div style="display:grid; grid-template-columns: 240px 1fr 280px; gap:16px; margin-bottom:20px; align-items:stretch;">
+          <div style="display:grid; grid-template-columns: 240px 1fr 340px; gap:16px; margin-bottom:20px; align-items:stretch;">
             
             <!-- 1. GREETING HERO BANNER (MOCKUP ITEM 1) -->
             <div class="card-box" style="background:#e6f4ea; border:1px solid #a7f3d0; padding:20px; display:flex; flex-direction:column; justify-content:space-between; border-radius:18px;">
@@ -191,8 +191,8 @@
                 <div style="width:44px; height:44px; background:#059669; color:#fff; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:14px; box-shadow:0 4px 12px rgba(5,150,105,0.25);">
                   <i class="fa-solid fa-user-gear"></i>
                 </div>
-                <h3 style="font-size:15px; font-weight:800; color:#064e3b; margin-bottom:6px;">HELLO SCARLETTE !</h3>
-                <p style="font-size:11.5px; color:#047857; line-height:1.45; margin-bottom:14px;">
+                <h3 id="dashboard-greeting-title" style="font-size:15px; font-weight:800; color:#064e3b; margin-bottom:6px;">HELLO HR DEPARTMENT !</h3>
+                <p id="dashboard-greeting-msg" style="font-size:11.5px; color:#047857; line-height:1.45; margin-bottom:14px;">
                   Good morning! You have active HR operations &amp; staff applications today. So let's get started.
                 </p>
               </div>
@@ -258,12 +258,12 @@
             </div>
 
             <!-- 3. TOTAL EMPLOYEE DONUT CHART (MOCKUP ITEM RIGHT) -->
-            <div class="card-box" style="border-radius:18px; padding:16px; display:flex; flex-direction:column; justify-content:space-between;">
+            <div class="card-box" style="border-radius:18px; padding:16px 14px; display:flex; flex-direction:column; justify-content:space-between;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <h3 style="font-size:14px; font-weight:800; color:#111827;">Total Employee</h3>
                 <span class="badge-pill badge-green" style="font-size:10px;">Staff Breakdown</span>
               </div>
-              <div style="height:120px; position:relative; margin-bottom:8px;">
+              <div style="height:125px; position:relative; margin-bottom:8px;">
                 <canvas id="chart-task-percentage"></canvas>
               </div>
               <div style="font-size:11px; color:#374151; display:flex; flex-direction:column; gap:4px;">
@@ -519,8 +519,8 @@
           <div class="card-box" style="margin-bottom:20px;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <div>
-                <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;">සභාපති හා අධ්‍යක්ෂ මණ්ඩල QR ගැටළු හා යෝජනා පද්ධතිය</h2>
-                <p style="font-size:12.5px; color:#64748b;">සේවකයින්ට නාමිකව හෝ 100% නිර්නාමිකව (Anonymous) ගරු සභාපතිතුමා වෙත සෘජුවම යොමු කළ හැක.</p>
+                <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;">සේවක ගැටළු හා යෝජනා QR පද්ධතිය</h2>
+                <p style="font-size:12.5px; color:#64748b;">සේවකයින්ට නාමිකව හෝ 100% නිර්නාමිකව (Anonymous) සේවක ගැටළු හා යෝජනා සෘජුවම යොමු කළ හැක.</p>
               </div>
               <a href="grievance.html" target="_blank" class="btn-smart btn-smart-primary">
                 <i class="fa-solid fa-mobile-screen"></i> ජංගම පෝරමය විවෘත කරන්න
@@ -537,12 +537,11 @@
                 <span class="badge-pill badge-purple" style="margin-bottom:8px;">Cloud Hosted Online QR</span>
                 <h3 style="font-size:16px; font-weight:800; color:#1e1b4b; margin-bottom:6px;">ස්මාර්ට් දුරකථනයෙන් ස්කෑන් කර අදහස් යොමු කරන්න</h3>
                 <p style="font-size:13px; color:#64748b; line-height:1.6; max-width:650px;">
-                  මෙම QR කේතය අන්තර්ජාලය (Online) හරහා කෙලින්ම ක්‍රියාත්මක වේ. සේවකයින්ට කාර්යාලයේ හෝ නිවසේ සිට 4G/5G මගින් ස්කෑන් කර නාමිකව හෝ නිර්නාමිකව 
-                  ගැටළු, සුභසාධන ඉල්ලීම් හා සංවර්ධන යෝජනා ගරු සභාපතිතුමා වෙත යොමු කළ හැක.
+                  මෙම QR කේතය අන්තර්ජාලය (Online) හරහා කෙලින්ම ක්‍රියාත්මක වේ. සේවකයින්ට QR කේතය ස්කෑන් කර නාමිකව හෝ නිර්නාමිකව ගැටළු, සුභසාධන ඉල්ලීම් හා සංවර්ධන යෝජනා යොමු කළ හැක.
                 </p>
-                <div style="margin-top:12px; display:flex; gap:10px;">
+                <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+                  <button class="btn-smart btn-smart-primary" style="background:#7c3aed;" onclick="syncFromCloud()"><i class="fa-solid fa-arrows-rotate" id="sync-icon-grv"></i> Google Sheet දත්ත Sync කරන්න</button>
                   <button class="btn-smart btn-smart-light" onclick="switchView('posters')"><i class="fa-solid fa-print"></i> A4 පෝස්ටරය මුද්‍රණය</button>
-                  <button class="btn-smart btn-smart-light" onclick="openSmartModal('modal-online-settings')"><i class="fa-solid fa-gear"></i> Online URL වෙනස් කරන්න</button>
                 </div>
               </div>
             </div>
@@ -550,7 +549,7 @@
 
           <div class="card-box data-table-container" style="padding:0;">
             <div style="padding:16px 20px; border-bottom:1px solid #f1f5f9;">
-              <h3 style="font-size:15px; font-weight:800; color:#1e1b4b;">සභාපති හා අධ්‍යක්ෂ මණ්ඩල සමාලෝචන ලේඛනය</h3>
+              <h3 style="font-size:15px; font-weight:800; color:#1e1b4b;">සේවක ගැටළු හා යෝජනා සමාලෝචන ලේඛනය</h3>
             </div>
             <table class="smart-table">
               <thead>
@@ -561,7 +560,7 @@
                   <th>යොමු කළේ</th>
                   <th>ශීර්ෂය හා විස්තරය</th>
                   <th>තත්වය</th>
-                  <th>ක්‍රියාමාර්ග</th>
+                  <th>ගත් ක්‍රියාමාර්ගය</th>
                 </tr>
               </thead>
               <tbody id="table-grievance-body"></tbody>
@@ -592,11 +591,12 @@
               </div>
               <div>
                 <span class="badge-pill badge-green" style="margin-bottom:8px;">Online Member Portal</span>
-                <h3 style="font-size:16px; font-weight:800; color:#1e1b4b; margin-bottom:6px;">ශාඛා කවුන්ටර සහ පොරොත්තු ශාලා සඳහා QR කේතය</h3>
+                <h3 style="font-size:16px; font-weight:800; color:#1e1b4b; margin-bottom:6px;">සාමාජික අදහස් විමසීම් Online QR පද්ධතිය</h3>
                 <p style="font-size:13px; color:#64748b; line-height:1.6; max-width:650px;">
-                  ණය හා තැන්පතු සේවා වේගය, කාර්ය මණ්ඩල සුහදශීලීත්වය හා ශාඛාවේ පිරිසිදුකම පිළිබඳ සාමාජික අදහස් සහ තරු ලකුණු ඇගයීම් සභාපතිතුමාගේ සෘජු අවධානයට ලැබේ.
+                  ණය හා තැන්පතු සේවා වේගය, කාර්ය මණ්ඩල සුහදශීලීත්වය හා ශාඛාවේ පිරිසිදුකම/ පිළිවෙල පිළිබඳ සාමාජික අදහස් සහ තරු ලකුණු ඇගයීම් ලබාගැනීම. (මෙය මානව සම්පත් කළමණාකරන අංශය විසින් ගරු සභාපති ඇතුළු අධ්යක්ෂ මණ්ඩලය වෙත ඉදිරිපත් කල යුතුය.)
                 </p>
-                <div style="margin-top:12px; display:flex; gap:10px;">
+                <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+                  <button class="btn-smart btn-smart-primary" style="background:#059669;" onclick="syncFromCloud()"><i class="fa-solid fa-arrows-rotate" id="sync-icon-fb"></i> Google Sheet දත්ත Sync කරන්න</button>
                   <button class="btn-smart btn-smart-light" onclick="switchView('posters')"><i class="fa-solid fa-print"></i> කවුන්ටර පෝස්ටරය මුද්‍රණය</button>
                 </div>
               </div>
@@ -617,6 +617,7 @@
                   <th>ඇගයීම</th>
                   <th>අදහස</th>
                   <th>තත්වය</th>
+                  <th>ගත් ක්‍රියාමාර්ගය</th>
                 </tr>
               </thead>
               <tbody id="table-member-feedback-body"></tbody>
@@ -1019,37 +1020,36 @@
         <!-- ============================================== -->
         <section class="view-section" id="view-posters">
           <div class="card-box" style="margin-bottom:20px;">
-            <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;">මුද්‍රණය කළ හැකි නිල QR පෝස්ටර් (Print-Ready)</h2>
-            <p style="font-size:12.5px; color:#64748b;">ශාඛා කාර්යාල දැන්වීම් පුවරු, සේවක මේස හා කවුන්ටර සඳහා A4 පෝස්ටර්</p>
+            <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;">මුද්‍රණය කළ හැකි QR පෝස්ටර්</h2>
           </div>
 
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
             <!-- Poster 1: Grievance -->
-            <div class="card-box" style="text-align:center; padding:30px; border:2px dashed #7c3aed;">
+            <div id="print-poster-grievance" style="background:#fff; text-align:center; padding:30px; border:2px dashed #7c3aed; border-radius:18px; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
               <div style="background:#ffffff; border:1.5px solid #e2e8f0; border-radius:14px; padding:6px 12px; width:170px; margin:0 auto 12px; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(0,0,0,0.04);">
                 <img src="images/gscs_logo.png" alt="GSCS Logo" style="width:100%; height:auto; display:block;">
               </div>
               <h3 style="color:#7c3aed; font-size:18px; font-weight:800;">ගලපිටියාගම සණස සමුපකාර සමිතිය</h3>
-              <p style="font-size:13px; font-weight:700; margin:6px 0 16px;">සේවක ගැටළු හා යෝජනා ගරු සභාපතිතුමා වෙත යොමු කිරීමේ ද්වාරය</p>
+              <p style="font-size:13px; font-weight:700; margin:6px 0 16px;">සේවක ගැටළු හා යෝජනා යොමු කිරීමේ ද්වාරය</p>
               <div id="poster-qr-grievance-area" style="width:200px; height:200px; margin:0 auto 16px;"></div>
               <p style="font-size:12px; color:#64748b; margin-bottom:16px;">
                 ඔබේ ජංගම දුරකථනයෙන් QR කේතය ස්කෑන් කර <strong>100% නිර්නාමිකව</strong> හෝ නාමිකව යොමු කරන්න.
               </p>
-              <button class="btn-smart btn-smart-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> මුද්‍රණය කරන්න (Print A4)</button>
+              <button class="btn-smart btn-smart-primary no-print" onclick="printPoster('grievance')" style="background:#7c3aed;"><i class="fa-solid fa-print"></i> මුද්‍රණය කරන්න (Print A4)</button>
             </div>
 
             <!-- Poster 2: Member Feedback -->
-            <div class="card-box" style="text-align:center; padding:30px; border:2px dashed #059669;">
+            <div id="print-poster-feedback" style="background:#fff; text-align:center; padding:30px; border:2px dashed #1e3a8a; border-radius:18px; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
               <div style="background:#ffffff; border:1.5px solid #e2e8f0; border-radius:14px; padding:6px 12px; width:170px; margin:0 auto 12px; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(0,0,0,0.04);">
                 <img src="images/gscs_logo.png" alt="GSCS Logo" style="width:100%; height:auto; display:block;">
               </div>
-              <h3 style="color:#059669; font-size:18px; font-weight:800;">ගලපිටියාගම සණස සමුපකාර සමිතිය</h3>
-              <p style="font-size:13px; font-weight:700; margin:6px 0 16px;">සාමාජික අදහස් හා ඇගයීම් සභාපතිතුමා වෙත යොමු කිරීමේ ද්වාරය</p>
+              <h3 style="color:#1e3a8a; font-size:18px; font-weight:800;">ගලපිටියාගම සණස බැංකුව</h3>
+              <p style="font-size:13px; font-weight:700; margin:6px 0 16px;">සාමාජික අදහස් හා ඇගයීම් යොමු කිරීමේ ද්වාරය</p>
               <div id="poster-qr-feedback-area" style="width:200px; height:200px; margin:0 auto 16px;"></div>
               <p style="font-size:12px; color:#64748b; margin-bottom:16px;">
                 ඔබේ වටිනා අදහස් හා තරු ලකුණු අපට දන්වා සේවාව තවදුරටත් උසස් කිරීමට දායක වන්න.
               </p>
-              <button class="btn-smart btn-smart-primary" style="background:#059669;" onclick="window.print()"><i class="fa-solid fa-print"></i> මුද්‍රණය කරන්න (Print A4)</button>
+              <button class="btn-smart btn-smart-primary no-print" onclick="printPoster('feedback')" style="background:#1e3a8a;"><i class="fa-solid fa-print"></i> මුද්‍රණය කරන්න (Print A4)</button>
             </div>
           </div>
         </section>
@@ -1414,7 +1414,7 @@
   <div class="smart-modal-overlay" id="modal-smart-grievance-review">
     <div class="smart-modal-box">
       <div class="smart-modal-header">
-        <h3 id="review-grv-title"><i class="fa-solid fa-gavel" style="color:#7c3aed;"></i> අධ්‍යක්ෂ මණ්ඩල සමාලෝචනය</h3>
+        <h3 id="review-grv-title"><i class="fa-solid fa-gavel" style="color:#7c3aed;"></i> සේවක ගැටළු හා යෝජනා සමාලෝචනය</h3>
         <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-smart-grievance-review')">&times;</button>
       </div>
       <form id="form-smart-grievance-review">
@@ -1439,13 +1439,55 @@
           </div>
 
           <div>
-            <label style="font-size:12px; font-weight:700;">ගරු සභාපති / අධ්‍යක්ෂ මණ්ඩල සටහන (Board Notes)</label>
-            <textarea id="review-grv-notes" class="form-input-pill" rows="3" placeholder="මණ්ඩල තීරණය මෙහි සටහන් කරන්න..."></textarea>
+            <label style="font-size:12px; font-weight:700;">ගත් ක්‍රියාමාර්ගය / මණ්ඩල තීරණ සටහන (Action Taken / Resolution)</label>
+            <textarea id="review-grv-notes" class="form-input-pill" rows="3" placeholder="මෙම ගැටළුව / යෝජනාව සම්බන්ධයෙන් ගත් ක්‍රියාමාර්ගය මෙහි සටහන් කරන්න..."></textarea>
           </div>
         </div>
         <div class="smart-modal-footer">
           <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-grievance-review')">වසන්න</button>
           <button type="submit" class="btn-smart btn-smart-primary"><i class="fa-solid fa-check"></i> තීරණය සුරකින්න</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Member Feedback Review Modal -->
+  <div class="smart-modal-overlay" id="modal-smart-member-feedback-review">
+    <div class="smart-modal-box">
+      <div class="smart-modal-header">
+        <h3 id="review-fb-title"><i class="fa-solid fa-comments" style="color:#059669;"></i> සාමාජික අදහස් සමාලෝචනය හා ගත් ක්‍රියාමාර්ගය</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-smart-member-feedback-review')">&times;</button>
+      </div>
+      <form id="form-smart-member-feedback-review">
+        <div class="smart-modal-body">
+          <input type="hidden" id="review-fb-id">
+          <div style="background:#f8fafc; padding:12px; border-radius:10px; margin-bottom:12px; font-size:12px;">
+            <p><strong>සාමාජිකයා:</strong> <span id="review-fb-member" style="color:#059669; font-weight:700;"></span></p>
+            <p><strong>ශාඛාව / දිනය:</strong> <span id="review-fb-branch" class="badge-pill badge-purple"></span> <span id="review-fb-date" style="color:#64748b; margin-left:6px;"></span></p>
+            <p style="margin-top:4px;"><strong>ඇගයීම:</strong> <span id="review-fb-rating" style="color:#f59e0b;"></span> (<span id="review-fb-type" class="badge-pill badge-blue"></span>)</p>
+            <div style="margin-top:6px; border-top:1px solid #e2e8f0; padding-top:6px;">
+              <p id="review-fb-comments" style="line-height:1.5; color:#1e1b4b;"></p>
+            </div>
+          </div>
+
+          <div style="margin-bottom:10px;">
+            <label style="font-size:12px; font-weight:700;">තත්වය (Status)</label>
+            <select id="review-fb-status" class="form-input-pill">
+              <option value="ලැබුණි (Received)">ලැබුණි (Received)</option>
+              <option value="සලකා බලමින් (Under Review)">සලකා බලමින් (Under Review)</option>
+              <option value="ක්‍රියාමාර්ග ගන්නා ලදී (Action Taken)">ක්‍රියාමාර්ග ගන්නා ලදී (Action Taken)</option>
+              <option value="සටහන් කරගන්නා ලදී (Noted/Closed)">සටහන් කරගන්නා ලදී (Noted/Closed)</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size:12px; font-weight:700;">ගත් ක්‍රියාමාර්ගය (Action Taken)</label>
+            <textarea id="review-fb-action" class="form-input-pill" rows="3" placeholder="මෙම සාමාජික අදහස / ගැටළුව සම්බන්ධයෙන් ගත් ක්‍රියාමාර්ගය මෙහි සටහන් කරන්න..."></textarea>
+          </div>
+        </div>
+        <div class="smart-modal-footer">
+          <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-member-feedback-review')">වසන්න</button>
+          <button type="submit" class="btn-smart btn-smart-primary" style="background:#059669;"><i class="fa-solid fa-check"></i> සුරකින්න</button>
         </div>
       </form>
     </div>

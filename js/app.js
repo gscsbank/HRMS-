@@ -617,7 +617,7 @@ function switchView(targetId) {
     payroll: 'Payroll & EPF/ETF (වැටුප්)',
     appraisals: 'Appraisals (කාර්යසාධනය)',
     satisfaction: 'Wellbeing (සේවක තෘප්තිය)',
-    posters: 'Print QR Posters (පෝස්ටර්)',
+    posters: 'QR පෝස්ටර් (Print-Ready)',
     'admin-panel': 'Admin Panel (පරිපාලක පාලනය)'
   };
   const topH1 = document.querySelector('.top-bar-left h1');
@@ -707,6 +707,23 @@ function renderDashboard() {
   const feedbacks = appData.memberFeedbacks || [];
   const tasks = appData.tasks || [];
   const meetings = appData.meetings || [];
+
+  // Dynamic Greeting Banner based on Time of Day
+  const greetingTitle = document.getElementById('dashboard-greeting-title');
+  if (greetingTitle) {
+    greetingTitle.textContent = 'HELLO HR DEPARTMENT !';
+  }
+  const greetingMsg = document.getElementById('dashboard-greeting-msg');
+  if (greetingMsg) {
+    const hour = new Date().getHours();
+    let timeGreeting = 'Good morning';
+    if (hour >= 12 && hour < 17) {
+      timeGreeting = 'Good afternoon';
+    } else if (hour >= 17 || hour < 5) {
+      timeGreeting = 'Good evening';
+    }
+    greetingMsg.textContent = `${timeGreeting}! You have active HR operations & staff applications today. So let's get started.`;
+  }
 
   // Top Metric Cards
   const pillTotalStaff = document.getElementById('stat-pill-total-staff');
@@ -901,14 +918,36 @@ function renderDashboardCharts() {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '70%',
+        cutout: '68%',
+        layout: {
+          padding: { left: 0, right: 2, top: 0, bottom: 0 }
+        },
         plugins: {
           legend: {
             position: 'right',
+            align: 'center',
             labels: {
-              boxWidth: 12,
-              font: { family: "'Segoe UI', system-ui, sans-serif", size: 11, weight: '600' },
-              color: '#334155'
+              boxWidth: 10,
+              boxHeight: 10,
+              padding: 6,
+              font: { family: "'Segoe UI', system-ui, sans-serif", size: 10.5, weight: '600' },
+              color: '#334155',
+              generateLabels: function(chart) {
+                const original = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+                return original.map(item => {
+                  if (item.text && item.text.length > 25) {
+                    item.text = item.text.substring(0, 23) + '...';
+                  }
+                  return item;
+                });
+              }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              title: function(context) {
+                return deptLabels[context[0].dataIndex] || '';
+              }
             }
           }
         }
@@ -1606,7 +1645,9 @@ function renderGrievancePortal() {
   const tbody = document.querySelector('#table-grievance-body');
   if (!tbody) return;
 
-  tbody.innerHTML = appData.grievances.map(g => `
+  tbody.innerHTML = appData.grievances.map(g => {
+    const actionText = g.actionTaken || g.boardNotes || '';
+    return `
     <tr>
       <td><strong>${g.id}</strong></td>
       <td><span style="font-size:11px; color:#64748b;">${g.timestamp}</span></td>
@@ -1621,13 +1662,19 @@ function renderGrievancePortal() {
         <div style="font-size:11.5px; color:#64748b;">${g.description.substring(0, 65)}...</div>
       </td>
       <td><span class="badge-pill ${getBadgeClass(g.status)}">${g.status}</span></td>
-      <td>
-        <button class="btn-smart btn-smart-light" onclick="openGrievanceReviewModal('${g.id}')">
-          <i class="fa-solid fa-eye"></i> සලකා බලන්න
+      <td style="min-width:210px;">
+        ${actionText 
+          ? `<div style="font-size:12px; color:#0f766e; font-weight:600; margin-bottom:5px; line-height:1.4; background:#f0fdf4; padding:6px 10px; border-radius:8px; border:1px solid #bbf7d0;">
+               <i class="fa-solid fa-circle-check"></i> ${actionText}
+             </div>` 
+          : `<span style="font-size:11px; color:#94a3b8; font-style:italic; display:block; margin-bottom:5px;">ක්‍රියාමාර්ගයක් සටහන් කර නැත</span>`}
+        <button class="btn-smart btn-smart-light" style="padding:4px 10px; font-size:11.5px;" onclick="openGrievanceReviewModal('${g.id}')">
+          <i class="fa-solid ${actionText ? 'fa-pen-to-square' : 'fa-plus'}"></i> ${actionText ? 'වෙනස් කරන්න' : 'ක්‍රියාමාර්ගයක් එක් කරන්න'}
         </button>
       </td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function renderGrievanceQR() {
@@ -1656,12 +1703,12 @@ function openGrievanceReviewModal(id) {
   if (!g) return;
 
   document.getElementById('review-grv-id').value = g.id;
-  document.getElementById('review-grv-title').textContent = `${g.id}: ${g.title}`;
+  document.getElementById('review-grv-title').innerHTML = `<i class="fa-solid fa-gavel" style="color:#7c3aed;"></i> ${g.id}: ${g.title}`;
   document.getElementById('review-grv-sender').textContent = g.isAnonymous ? '🔒 නිර්නාමික (100% Confidential Anonymous Staff)' : g.employeeName;
   document.getElementById('review-grv-target').textContent = g.targetRecipient;
   document.getElementById('review-grv-desc').textContent = g.description;
   document.getElementById('review-grv-status').value = g.status;
-  document.getElementById('review-grv-notes').value = g.boardNotes || '';
+  document.getElementById('review-grv-notes').value = g.actionTaken || g.boardNotes || '';
 
   openSmartModal('modal-smart-grievance-review');
 }
@@ -1673,12 +1720,13 @@ async function saveGrievanceReviewForm(e) {
   if (!g) return;
 
   g.status = document.getElementById('review-grv-status').value;
-  g.boardNotes = document.getElementById('review-grv-notes').value;
+  g.actionTaken = document.getElementById('review-grv-notes').value;
+  g.boardNotes = g.actionTaken;
 
   await persistData();
   closeSmartModal('modal-smart-grievance-review');
   renderAllViews();
-  alert(currentLang === 'si' ? 'අධ්‍යක්ෂ මණ්ඩල සටහන සාර්ථකව සුරකින ලදී!' : 'Board resolution saved!');
+  alert(currentLang === 'si' ? 'සේවක ගැටළුව/යෝජනාව පිළිබඳ ගත් ක්‍රියාමාර්ගය සාර්ථකව සුරකින ලදී!' : 'Resolution / Action notes saved successfully!');
 }
 
 function getBadgeClass(status) {
@@ -1695,7 +1743,9 @@ function renderMemberFeedbackPortal() {
   const tbody = document.querySelector('#table-member-feedback-body');
   if (!tbody) return;
 
-  tbody.innerHTML = appData.memberFeedbacks.map(f => `
+  tbody.innerHTML = appData.memberFeedbacks.map(f => {
+    const actionText = f.actionTaken || '';
+    return `
     <tr>
       <td><strong>${f.id}</strong></td>
       <td><span style="font-size:11px; color:#64748b;">${f.timestamp}</span></td>
@@ -1711,9 +1761,61 @@ function renderMemberFeedbackPortal() {
         <span class="badge-pill badge-blue">${f.feedbackType}</span>
         <div style="font-size:12px; margin-top:2px;">${f.comments}</div>
       </td>
-      <td><span class="badge-pill badge-green">${f.status || 'Received'}</span></td>
+      <td><span class="badge-pill ${getFeedbackBadgeClass(f.status)}">${f.status || 'ලැබුණි (Received)'}</span></td>
+      <td style="min-width:210px;">
+        ${actionText 
+          ? `<div style="font-size:12px; color:#0f766e; font-weight:600; margin-bottom:5px; line-height:1.4; background:#f0fdf4; padding:6px 10px; border-radius:8px; border:1px solid #bbf7d0;">
+               <i class="fa-solid fa-circle-check"></i> ${actionText}
+             </div>` 
+          : `<span style="font-size:11px; color:#94a3b8; font-style:italic; display:block; margin-bottom:5px;">ක්‍රියාමාර්ගයක් සටහන් කර නැත</span>`}
+        <button class="btn-smart btn-smart-light" style="padding:4px 10px; font-size:11.5px;" onclick="openMemberFeedbackReviewModal('${f.id}')">
+          <i class="fa-solid ${actionText ? 'fa-pen-to-square' : 'fa-plus'}"></i> ${actionText ? 'වෙනස් කරන්න' : 'ක්‍රියාමාර්ගයක් එක් කරන්න'}
+        </button>
+      </td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
+}
+
+function getFeedbackBadgeClass(status) {
+  if (!status) return 'badge-blue';
+  if (status.includes('Resolved') || status.includes('විසඳුම්') || status.includes('Action Taken') || status.includes('ක්‍රියාමාර්ග')) return 'badge-green';
+  if (status.includes('Review') || status.includes('සලකා')) return 'badge-orange';
+  if (status.includes('Noted') || status.includes('සටහන්')) return 'badge-purple';
+  return 'badge-blue';
+}
+
+function openMemberFeedbackReviewModal(id) {
+  const f = appData.memberFeedbacks.find(item => item.id === id);
+  if (!f) return;
+
+  document.getElementById('review-fb-id').value = f.id;
+  document.getElementById('review-fb-title').innerHTML = `<i class="fa-solid fa-comments" style="color:#059669;"></i> ${f.id}: සාමාජික අදහස් සමාලෝචනය`;
+  document.getElementById('review-fb-member').textContent = `${f.memberName} ${f.memberNo ? '(' + f.memberNo + ')' : ''}`;
+  document.getElementById('review-fb-branch').textContent = f.branch || 'ප්‍රධාන කාර්යාලය';
+  document.getElementById('review-fb-date').textContent = f.timestamp || '';
+  document.getElementById('review-fb-rating').textContent = `${'★'.repeat(f.overallRating || 5)} (${f.overallRating || 5}/5)`;
+  document.getElementById('review-fb-type').textContent = f.feedbackType || 'අදහස්';
+  document.getElementById('review-fb-comments').textContent = f.comments || '';
+  document.getElementById('review-fb-status').value = f.status || 'ලැබුණි (Received)';
+  document.getElementById('review-fb-action').value = f.actionTaken || '';
+
+  openSmartModal('modal-smart-member-feedback-review');
+}
+
+async function saveMemberFeedbackReviewForm(e) {
+  e.preventDefault();
+  const id = document.getElementById('review-fb-id').value;
+  const f = appData.memberFeedbacks.find(x => x.id === id);
+  if (!f) return;
+
+  f.status = document.getElementById('review-fb-status').value;
+  f.actionTaken = document.getElementById('review-fb-action').value;
+
+  await persistData();
+  closeSmartModal('modal-smart-member-feedback-review');
+  renderAllViews();
+  alert(currentLang === 'si' ? 'සාමාජික අදහස පිළිබඳ ගත් ක්‍රියාමාර්ගය සාර්ථකව සුරකින ලදී!' : 'Member feedback action saved successfully!');
 }
 
 function renderMemberFeedbackQR() {
@@ -1730,7 +1832,7 @@ function renderMemberFeedbackQR() {
       text: url,
       width: 180,
       height: 180,
-      colorDark: "#059669",
+      colorDark: "#1e3a8a",
       colorLight: "#ffffff",
       correctLevel: QRCode.CorrectLevel.H
     });
@@ -2916,6 +3018,193 @@ function renderPrintablePosters() {
   renderPosterQRs();
 }
 
+// Print a single poster (grievance or feedback) cleanly on A4 in full solid black
+function printPoster(type) {
+  const isGrievance = (type === 'grievance');
+  const orgName = isGrievance ? 'ගලපිටියාගම සණස සමුපකාර සමිතිය' : 'ගලපිටියාගම සණස බැංකුව';
+  const posterTitle = isGrievance ? 'සේවක ගැටළු හා යෝජනා යොමු කිරීමේ ද්වාරය' : 'සාමාජික අදහස් හා ඇගයීම් යොමු කිරීමේ ද්වාරය';
+  const instruction = isGrievance
+    ? 'ඔබේ ජංගම දුරකථනයෙන් QR කේතය ස්කෑන් කර <strong>100% නිර්නාමිකව</strong> හෝ නාමිකව යොමු කරන්න.'
+    : 'ඔබේ වටිනා අදහස් හා තරු ලකුණු අපට දන්වා සේවාව තවදුරටත් උසස් කිරීමට දායක වන්න.';
+
+  // Generate 100% pure solid black (#000000) QR code for crisp official printing without gray fading
+  const targetUrl = getOnlinePageUrl(isGrievance ? 'grievance.html' : 'feedback.html');
+  const tempDiv = document.createElement('div');
+  new QRCode(tempDiv, {
+    text: targetUrl,
+    width: 256,
+    height: 256,
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.H
+  });
+
+  let qrDataUrl = '';
+  const img = tempDiv.querySelector('img');
+  if (img && img.src && img.src.startsWith('data:')) {
+    qrDataUrl = img.src;
+  } else {
+    const canvas = tempDiv.querySelector('canvas');
+    if (canvas) {
+      qrDataUrl = canvas.toDataURL('image/png');
+    }
+  }
+
+  // Logo source
+  const existingLogo = document.querySelector('.sidebar-brand img, #print-poster-grievance img, #print-poster-feedback img');
+  const logoSrc = existingLogo ? existingLogo.src : 'images/gscs_logo.png';
+
+  // Use hidden iframe for reliable, isolated A4 printing
+  let frame = document.getElementById('poster-print-iframe');
+  if (frame) frame.remove();
+
+  frame = document.createElement('iframe');
+  frame.id = 'poster-print-iframe';
+  frame.style.position = 'fixed';
+  frame.style.right = '0';
+  frame.style.bottom = '0';
+  frame.style.width = '0';
+  frame.style.height = '0';
+  frame.style.border = '0';
+  document.body.appendChild(frame);
+
+  const doc = frame.contentWindow.document;
+  doc.open();
+  doc.write(`<!DOCTYPE html>
+<html lang="si">
+<head>
+  <meta charset="UTF-8">
+  <title>${posterTitle}</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 15mm;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', 'Iskoola Pota', -apple-system, sans-serif;
+    }
+    body {
+      background: #ffffff !important;
+      color: #000000 !important;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .poster-container {
+      width: 100%;
+      max-width: 580px;
+      margin: 0 auto;
+      text-align: center;
+      border: 3.5px dashed #000000;
+      border-radius: 24px;
+      padding: 44px 32px 36px;
+      background: #ffffff;
+      color: #000000;
+    }
+    .logo-container {
+      background: #ffffff;
+      border: 2px solid #000000;
+      border-radius: 14px;
+      padding: 8px 16px;
+      width: 180px;
+      margin: 0 auto 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo-container img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .org-title {
+      font-size: 25px;
+      font-weight: 900;
+      color: #000000 !important;
+      margin: 0 0 8px 0;
+      line-height: 1.3;
+    }
+    .poster-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #000000 !important;
+      margin: 0 0 24px 0;
+      line-height: 1.4;
+    }
+    .qr-box {
+      width: 240px;
+      height: 240px;
+      margin: 0 auto 22px;
+      padding: 12px;
+      background: #ffffff;
+      border: 2px solid #000000;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qr-box img {
+      width: 216px !important;
+      height: 216px !important;
+      max-width: 216px !important;
+      max-height: 216px !important;
+      display: block !important;
+      object-fit: contain !important;
+    }
+    .instruction-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: #000000 !important;
+      line-height: 1.6;
+      max-width: 480px;
+      margin: 0 auto 22px;
+    }
+    .instruction-text strong {
+      color: #000000 !important;
+      font-weight: 900;
+    }
+    .poster-footer {
+      border-top: 1.5px solid #000000;
+      padding-top: 14px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #000000 !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="poster-container">
+    <div class="logo-container">
+      <img src="${logoSrc}" alt="GSCS Logo">
+    </div>
+    <h1 class="org-title">${orgName}</h1>
+    <h2 class="poster-title">${posterTitle}</h2>
+    <div class="qr-box">
+      <img src="${qrDataUrl}" alt="QR Code">
+    </div>
+    <p class="instruction-text">${instruction}</p>
+    <div class="poster-footer">
+      <span>ගලපිටියාගම සණස &bull; Smart HRMS Portal</span>
+    </div>
+  </div>
+</body>
+</html>`);
+  doc.close();
+
+  setTimeout(() => {
+    frame.contentWindow.focus();
+    frame.contentWindow.print();
+  }, 400);
+}
+
 function renderPosterQRs() {
   const p1 = document.getElementById('poster-qr-grievance-area');
   const p2 = document.getElementById('poster-qr-feedback-area');
@@ -2938,7 +3227,7 @@ function renderPosterQRs() {
       text: getOnlinePageUrl('feedback.html'),
       width: 200,
       height: 200,
-      colorDark: "#059669",
+      colorDark: "#1e3a8a",
       colorLight: "#ffffff",
       correctLevel: QRCode.CorrectLevel.H
     });
@@ -3397,6 +3686,7 @@ function setupEventListeners() {
   document.getElementById('form-smart-employee')?.addEventListener('submit', saveSmartEmployeeForm);
   document.getElementById('form-smart-skills-edit')?.addEventListener('submit', saveSkillsForm);
   document.getElementById('form-smart-grievance-review')?.addEventListener('submit', saveGrievanceReviewForm);
+  document.getElementById('form-smart-member-feedback-review')?.addEventListener('submit', saveMemberFeedbackReviewForm);
   document.getElementById('form-smart-project')?.addEventListener('submit', saveProjectForm);
   document.getElementById('form-smart-meeting')?.addEventListener('submit', saveMeetingForm);
   document.getElementById('form-smart-user')?.addEventListener('submit', saveUserForm);
@@ -3923,3 +4213,7 @@ function printEpfMonthlySummary() {
 
   openSmartModal('modal-smart-sheet-print');
 }
+
+// Global modal handlers
+window.openGrievanceReviewModal = openGrievanceReviewModal;
+window.openMemberFeedbackReviewModal = openMemberFeedbackReviewModal;

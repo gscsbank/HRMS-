@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\iraaf\\Desktop\\HRMS-20260924T151839Z-1-001\\HRMS\\HRMS.csproj": {}
+    "C:\\Users\\iraaf\\Downloads\\HRMS--main (2)\\HRMS--main\\HRMS.csproj": {}
   },
   "projects": {
-    "C:\\Users\\iraaf\\Desktop\\HRMS-20260924T151839Z-1-001\\HRMS\\HRMS.csproj": {
+    "C:\\Users\\iraaf\\Downloads\\HRMS--main (2)\\HRMS--main\\HRMS.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\iraaf\\Desktop\\HRMS-20260924T151839Z-1-001\\HRMS\\HRMS.csproj",
+        "projectUniqueName": "C:\\Users\\iraaf\\Downloads\\HRMS--main (2)\\HRMS--main\\HRMS.csproj",
         "projectName": "HRMS",
-        "projectPath": "C:\\Users\\iraaf\\Desktop\\HRMS-20260924T151839Z-1-001\\HRMS\\HRMS.csproj",
+        "projectPath": "C:\\Users\\iraaf\\Downloads\\HRMS--main (2)\\HRMS--main\\HRMS.csproj",
         "packagesPath": "C:\\Users\\iraaf\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\iraaf\\Desktop\\HRMS-20260924T151839Z-1-001\\HRMS\\obj\\",
+        "outputPath": "C:\\Users\\iraaf\\Downloads\\HRMS--main (2)\\HRMS--main\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\iraaf\\AppData\\Roaming\\NuGet\\NuGet.Config"

@@ -34,3 +34,39 @@ C:\Users\iraaf\Desktop\HRMS-20260924T151839Z-1-001\HRMS\obj\Debug\net9.0\refint\
 C:\Users\iraaf\Desktop\HRMS-20260924T151839Z-1-001\HRMS\obj\Debug\net9.0\HRMS.pdb
 C:\Users\iraaf\Desktop\HRMS-20260924T151839Z-1-001\HRMS\obj\Debug\net9.0\HRMS.genruntimeconfig.cache
 C:\Users\iraaf\Desktop\HRMS-20260924T151839Z-1-001\HRMS\obj\Debug\net9.0\ref\HRMS.dll
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\bin\Debug\net9.0\appsettings.Development.json
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\bin\Debug\net9.0\appsettings.json
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\bin\Debug\net9.0\data\hrms_data.json
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\bin\Debug\net9.0\HRMS.staticwebassets.runtime.json
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\bin\Debug\net9.0\HRMS.staticwebassets.endpoints.json
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\bin\Debug\net9.0\HRMS.exe
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\bin\Debug\net9.0\HRMS.deps.json
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\bin\Debug\net9.0\HRMS.runtimeconfig.json
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\bin\Debug\net9.0\HRMS.dll
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\bin\Debug\net9.0\HRMS.pdb
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\HRMS.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\HRMS.AssemblyInfoInputs.cache
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\HRMS.AssemblyInfo.cs
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\HRMS.csproj.CoreCompileInputs.cache
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\HRMS.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\scopedcss\bundle\HRMS.styles.css
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\compressed\2zap8tc4e6-ulb8kzwt9u.gz
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\compressed\iw7uadqvbs-628kzi3i32.gz
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\compressed\j5qoko619x-1fb05gxm0m.gz
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\compressed\k6v1fyqbds-h3165eo2e6.gz
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\compressed\jefvpvlnh5-87p0tmjhtv.gz
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\compressed\k1eoyzsf5m-sskubcax12.gz
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\compressed\ec6f19r13z-9fowhze9kn.gz
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\compressed\dxxwg3uei0-6q0a62eh3a.gz
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\compressed\uoweykyiak-h5gslb8p3n.gz
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\compressed\8y05yff8dx-ehqtxiasrs.gz
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\compressed\fybul8ogjo-kr5app9otf.gz
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\staticwebassets.build.json
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\staticwebassets.build.json.cache
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\staticwebassets.development.json
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\staticwebassets.build.endpoints.json
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\HRMS.dll
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\refint\HRMS.dll
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\HRMS.pdb
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\HRMS.genruntimeconfig.cache
+C:\Users\iraaf\Downloads\HRMS--main (2)\HRMS--main\obj\Debug\net9.0\ref\HRMS.dll
