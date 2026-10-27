@@ -23,64 +23,13 @@ const defaultSeedData = {
   employees: [],
   grievances: [],
   memberFeedbacks: [],
-  tasks: [
-    {
-      id: "TSK-001",
-      title: "ගලපිටියාගම කෘෂිකාර්මික හා ව්‍යාපාරික ණය ප්‍රතිසාධන වැඩසටහන",
-      department: "ණය සහ ක්ෂුද්‍ර මූල්‍ය අංශය",
-      assignedStaffName: "කළමනාකාරීත්වය හා ක්ෂේත්‍ර නිලධාරීන්",
-      dueDate: "2026-10-15",
-      progress: 65,
-      description: "ප්‍රමාද වූ ක්ෂුද්‍ර මූල්‍ය ණය අයකර ගැනීම සහ ක්ෂේත්‍ර පරීක්ෂණ කඩිනම් කිරීමේ විශේෂ වැඩපිළිවෙල."
-    },
-    {
-      id: "TSK-002",
-      title: "සමස්ත සාමාජික තොරතුරු පරිගණකගත කිරීම සහ ඩිජිටල්කරණය",
-      department: "පරිපාලන හා මෙහෙයුම්",
-      assignedStaffName: "පරිපාලන කාර්ය මණ්ඩලය",
-      dueDate: "2026-11-01",
-      progress: 40,
-      description: "සමිතියේ සාමාජික ලිපිගොනු සහ ණය ඉතිහාසය පූර්ණ ඩිජිටල් පද්ධතියකට ඇතුළත් කිරීම."
-    },
-    {
-      id: "TSK-003",
-      title: "වාර්ෂික මහා සභා රැස්වීමට අදාළ අභ්‍යන්තර ගිණුම් විගණනය",
-      department: "ගිණුම් හා විගණන අංශය",
-      assignedStaffName: "ගිණුම් අංශය",
-      dueDate: "2026-10-05",
-      progress: 80,
-      description: "2025/2026 මූල්‍ය වර්ෂයේ ගිණුම් ශේෂ සහ මූල්‍ය ප්‍රකාශන සම්පූර්ණ කිරීම."
-    }
-  ],
-  meetings: [
-    {
-      id: "MEET-001",
-      title: "අධ්‍යක්ෂ මණ්ඩල මාසික නිල රැස්වීම (Board Meeting)",
-      date: "2026-09-28",
-      time: "09:30 AM - 12:30 PM",
-      chair: "ඒ. එම්. දයාරත්න බණ්ඩා මහතා (Hon. Chairman)",
-      venue: "ගලපිටියාගම සණස ප්‍රධාන ශ්‍රවණාගාරය",
-      agenda: "1. පසුගිය මස වාර්තා සම්මත කිරීම\n2. ක්ෂුද්‍ර මූල්‍ය ණය අනුමත කිරීම\n3. නව සාමාජික අයදුම්පත් සමාලෝචනය"
-    },
-    {
-      id: "MEET-002",
-      title: "ණය කමිටු සහ ක්ෂේත්‍ර නිලධාරී සමාලෝචනය",
-      date: "2026-10-02",
-      time: "02:00 PM - 04:30 PM",
-      chair: "කේ. ආර්. විජේසුන්දර මහත්මිය (General Manager)",
-      venue: "ගලපිටියාගම සණස කමිටු ශාලාව",
-      agenda: "1. ක්ෂේත්‍ර ණය අයවීම් ප්‍රගතිය\n2. විශේෂ සහන ණය යෝජනා සමාලෝචනය"
-    },
-    {
-      id: "MEET-003",
-      title: "කාර්ය මණ්ඩල සුභසාධන සහ ප්‍රගති සමාලෝචනය",
-      date: "2026-10-08",
-      time: "03:00 PM - 05:00 PM",
-      chair: "ඒ. එම්. දයාරත්න බණ්ඩා මහතා (Hon. Chairman)",
-      venue: "ප්‍රධාන රැස්වීම් ශාලාව",
-      agenda: "1. සේවක කාර්යසාධන සහ සුභසාධන පහසුකම්\n2. ඉදිරි මාසයේ ඉලක්ක සැලසුම් කිරීම"
-    }
-  ],
+  tasks: [],
+  meetings: [],
+  appraisals: [],
+  surveys: [],
+  payrollHistory: [],
+  incentiveRecords: [],
+  epfRemittances: [],
   users: [
     {
       id: "USR-001",
@@ -391,9 +340,11 @@ async function syncFromCloud(silent = false) {
 
         let newGrievancesCount = 0;
         let newFeedbacksCount = 0;
+        let newSurveysCount = 0;
 
         const deletedGrvIds = new Set(JSON.parse(localStorage.getItem('sanasa_deleted_grv_ids') || '[]'));
         const deletedFbIds = new Set(JSON.parse(localStorage.getItem('sanasa_deleted_fb_ids') || '[]'));
+        const deletedSurvIds = new Set(JSON.parse(localStorage.getItem('sanasa_deleted_surv_ids') || '[]'));
         const qrClearedTime = parseInt(localStorage.getItem('sanasa_qr_cleared_time') || '0', 10);
 
         if (Array.isArray(data.grievances) && data.grievances.length > 0) {
@@ -430,15 +381,33 @@ async function syncFromCloud(silent = false) {
           });
         }
 
-        if (newGrievancesCount > 0 || newFeedbacksCount > 0) {
+        if (Array.isArray(data.surveys) && data.surveys.length > 0) {
+          if (!appData.surveys) appData.surveys = [];
+          const existingSurvIds = new Set(appData.surveys.map(s => s.id));
+          data.surveys.forEach(s => {
+            if (!existingSurvIds.has(s.id) && !deletedSurvIds.has(s.id)) {
+              if (qrClearedTime > 0 && s.timestamp) {
+                const itemTime = new Date(s.timestamp.replace(' ', 'T')).getTime();
+                if (!isNaN(itemTime) && itemTime <= qrClearedTime) {
+                  return;
+                }
+              }
+              appData.surveys.unshift(s);
+              newSurveysCount++;
+            }
+          });
+        }
+
+        if (newGrievancesCount > 0 || newFeedbacksCount > 0 || newSurveysCount > 0) {
           await persistData();
           renderGrievancePortal();
           renderMemberFeedbackPortal();
+          renderSatisfactionModule();
           renderDashboardStats();
           if (!silent) {
             alert(currentLang === 'si' 
-              ? `Google Sheet වෙතින් නව දත්ත සාර්ථකව එකතු විය!\n(නව ගැටළු: ${newGrievancesCount}, නව ප්‍රතිචාර: ${newFeedbacksCount})`
-              : `Successfully synced new cloud data! (Grievances: ${newGrievancesCount}, Feedbacks: ${newFeedbacksCount})`);
+              ? `Google Sheet වෙතින් නව දත්ත සාර්ථකව එකතු විය!\n(නව ගැටළු: ${newGrievancesCount}, නව ප්‍රතිචාර: ${newFeedbacksCount}, නව සේවක තෘප්තිමත් සමීක්ෂණ: ${newSurveysCount})`
+              : `Successfully synced new cloud data! (Grievances: ${newGrievancesCount}, Feedbacks: ${newFeedbacksCount}, Surveys: ${newSurveysCount})`);
           }
         } else if (!silent) {
           alert(currentLang === 'si' ? 'Google Sheet දත්ත පරික්ෂා කරන ලදී. සියලු දත්ත දැනටමත් යාවත්කාලීනයි!' : 'Google Sheet is already in sync.');
@@ -530,14 +499,10 @@ async function loadApplicationData() {
     } catch (e) {}
   }
 
-  // Ensure all collections exist with fallback to seed data
+  // Ensure all collections exist
   if (!appData.employees) appData.employees = [];
-  if (!appData.tasks || appData.tasks.length === 0) {
-    appData.tasks = JSON.parse(JSON.stringify(defaultSeedData.tasks));
-  }
-  if (!appData.meetings || appData.meetings.length === 0) {
-    appData.meetings = JSON.parse(JSON.stringify(defaultSeedData.meetings));
-  }
+  if (!appData.tasks) appData.tasks = [];
+  if (!appData.meetings) appData.meetings = [];
   if (!appData.users || appData.users.length === 0) {
     appData.users = JSON.parse(JSON.stringify(defaultSeedData.users));
   }
@@ -675,6 +640,8 @@ function switchView(targetId) {
     setTimeout(renderAdminPanel, 50);
   } else if (targetId === 'backup-restore') {
     setTimeout(renderBackupRestoreView, 50);
+  } else if (targetId === 'satisfaction') {
+    setTimeout(renderSatisfactionModule, 50);
   }
 }
 
@@ -811,57 +778,65 @@ function renderDashboard() {
   // 2. Events and Meetings List (Mockup Col 2)
   const eventsList = document.getElementById('dashboard-events-meetings-list');
   if (eventsList) {
-    const list = meetings.length > 0 ? meetings : [
-      { title: "ණය කමිටු සහ ක්ෂේත්‍ර සමාලෝචනය", date: "07/10/2026", time: "8:00 am" },
-      { title: "අධ්‍යක්ෂ මණ්ඩල මාසික නිල රැස්වීම", date: "08/10/2026", time: "10:00 am" },
-      { title: "කාර්ය මණ්ඩල සුභසාධන හමුව", date: "10/10/2026", time: "11:30 am" }
-    ];
-    eventsList.innerHTML = list.slice(0, 4).map(m => `
-      <div style="background:#f9fafb; border:1px solid #f3f4f6; border-radius:12px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center;">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <div style="width:34px; height:34px; background:#e6f4ea; border-radius:10px; color:#059669; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0;">
-            <i class="fa-solid fa-calendar-day"></i>
+    if (!meetings || meetings.length === 0) {
+      eventsList.innerHTML = `
+        <div style="text-align:center; padding:28px 12px; color:#9ca3af; font-size:12px;">
+          <i class="fa-solid fa-calendar-xmark" style="font-size:26px; margin-bottom:8px; display:block; opacity:0.5;"></i>
+          රැස්වීම් හෝ සිදුවීම් නොමැත (No upcoming meetings)
+        </div>
+      `;
+    } else {
+      eventsList.innerHTML = meetings.slice(0, 4).map(m => `
+        <div style="background:#f9fafb; border:1px solid #f3f4f6; border-radius:12px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:34px; height:34px; background:#e6f4ea; border-radius:10px; color:#059669; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0;">
+              <i class="fa-solid fa-calendar-day"></i>
+            </div>
+            <div>
+              <div style="font-size:12px; font-weight:700; color:#111827;">${m.title}</div>
+              <div style="font-size:10.5px; color:#6b7280;">Meeting</div>
+            </div>
           </div>
-          <div>
-            <div style="font-size:12px; font-weight:700; color:#111827;">${m.title}</div>
-            <div style="font-size:10.5px; color:#6b7280;">Meeting</div>
+          <div style="text-align:right;">
+            <div style="font-size:11px; font-weight:700; color:#111827;">${m.time || '9:00 am'}</div>
+            <div style="font-size:10px; color:#9ca3af;">${m.date || ''}</div>
           </div>
         </div>
-        <div style="text-align:right;">
-          <div style="font-size:11px; font-weight:700; color:#111827;">${m.time || '9:00 am'}</div>
-          <div style="font-size:10px; color:#9ca3af;">${m.date || ''}</div>
-        </div>
-      </div>
-    `).join('');
+      `).join('');
+    }
   }
 
   // 3. Birthdays List (Mockup Col 3)
   const bdayList = document.getElementById('dashboard-birthdays-list');
   if (bdayList) {
-    const sampleBdays = (emps.length > 0 ? emps : [
-      { fullName: "කේ. ආර්. විජේසුන්දර", designation: "General Manager", dob: "12/08/2026" },
-      { fullName: "එස්. බී. හේරත්", designation: "ප්‍රධාන ණය නිලධාරී", dob: "20/08/2026" },
-      { fullName: "ඩබ්. ඒ. නිමල් පෙරේරා", designation: "ගිණුම් සහකාර නිලධාරී", dob: "22/08/2026" }
-    ]);
-    bdayList.innerHTML = sampleBdays.slice(0, 4).map(e => {
-      const hasPhoto = e.photo && e.photo.length > 20;
-      return `
-        <div style="background:#f9fafb; border:1px solid #f3f4f6; border-radius:12px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center;">
-          <div style="display:flex; align-items:center; gap:10px;">
-            <div style="width:34px; height:34px; border-radius:50%; background:#059669; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px; overflow:hidden; flex-shrink:0;">
-              ${hasPhoto ? `<img src="${e.photo}" style="width:100%; height:100%; object-fit:cover;">` : (e.callingName || e.fullName || 'S').charAt(0)}
-            </div>
-            <div>
-              <div style="font-size:12px; font-weight:700; color:#111827;">${e.callingName || e.fullName}</div>
-              <div style="font-size:10.5px; color:#6b7280;">${e.designation}</div>
-            </div>
-          </div>
-          <div style="font-size:10.5px; font-weight:700; color:#059669; background:#e6f4ea; padding:3px 8px; border-radius:12px;">
-            ${e.dob || '15/08'}
-          </div>
+    if (!emps || emps.length === 0) {
+      bdayList.innerHTML = `
+        <div style="text-align:center; padding:28px 12px; color:#9ca3af; font-size:12px;">
+          <i class="fa-solid fa-cake-candles" style="font-size:26px; margin-bottom:8px; display:block; opacity:0.5;"></i>
+          උපන් දින නොමැත (No upcoming birthdays)
         </div>
       `;
-    }).join('');
+    } else {
+      bdayList.innerHTML = emps.slice(0, 4).map(e => {
+        const hasPhoto = e.photo && e.photo.length > 20;
+        return `
+          <div style="background:#f9fafb; border:1px solid #f3f4f6; border-radius:12px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div style="width:34px; height:34px; border-radius:50%; background:#059669; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px; overflow:hidden; flex-shrink:0;">
+                ${hasPhoto ? `<img src="${e.photo}" style="width:100%; height:100%; object-fit:cover;">` : (e.callingName || e.fullName || 'S').charAt(0)}
+              </div>
+              <div>
+                <div style="font-size:12px; font-weight:700; color:#111827;">${e.callingName || e.fullName}</div>
+                <div style="font-size:10.5px; color:#6b7280;">${e.designation || ''}</div>
+              </div>
+            </div>
+            <div style="font-size:10.5px; font-weight:700; color:#059669; background:#e6f4ea; padding:3px 8px; border-radius:12px;">
+              ${e.dob || ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
   }
 
   renderDashboardCharts();
@@ -2894,52 +2869,9 @@ function renderAppraisalModule() {
   const tbody = document.querySelector('#table-appraisal-body');
   if (!tbody) return;
 
-  // Initialize seed appraisals if empty
-  if (!appData.appraisals || appData.appraisals.length === 0) {
-    appData.appraisals = [
-      {
-        id: "APR-2026-001",
-        employeeId: "EMP-001",
-        employeeName: "කේ. ආර්. විජේසුන්දර",
-        designation: "General Manager",
-        period: "2025/2026 වාර්ෂික ඇගයීම",
-        date: "2026-03-31",
-        scores: { taskExecution: 24, creditRecovery: 23, customerCare: 19, teamwork: 14, attendance: 14 },
-        totalScore: 94,
-        grade: "Grade A - විශිෂ්ටයි",
-        incrementRecommended: true,
-        remarks: "කළමනාකාරීත්ව කාර්යක්ෂමතාව සහ ණය අයකර ගැනීමේ ඉලක්ක ඉහළින්ම සාක්ෂාත් කර ඇත."
-      },
-      {
-        id: "APR-2026-002",
-        employeeId: "EMP-002",
-        employeeName: "එස්. බී. හේරත්",
-        designation: "ප්‍රධාන ණය නිලධාරී",
-        period: "2025/2026 වාර්ෂික ඇගයීම",
-        date: "2026-03-31",
-        scores: { taskExecution: 22, creditRecovery: 21, customerCare: 17, teamwork: 13, attendance: 14 },
-        totalScore: 87,
-        grade: "Grade A - විශිෂ්ටයි",
-        incrementRecommended: true,
-        remarks: "ණය තක්සේරු කටයුතු සහ ක්ෂේත්‍ර ණය අයවීම් ප්‍රගතිය ඉතා සතුටුදායකයි."
-      },
-      {
-        id: "APR-2026-003",
-        employeeId: "EMP-003",
-        employeeName: "ඩබ්. ඒ. නිමල් පෙරේරා",
-        designation: "ගිණුම් සහකාර නිලධාරී",
-        period: "2025/2026 වාර්ෂික ඇගයීම",
-        date: "2026-03-31",
-        scores: { taskExecution: 18, creditRecovery: 18, customerCare: 15, teamwork: 12, attendance: 13 },
-        totalScore: 76,
-        grade: "Grade B - ඉතා හොඳයි",
-        incrementRecommended: true,
-        remarks: "ගිණුම්කරණ කාර්යයන් යහපත්ය. IT / Excel පුහුණුවට යොමු කිරීමට නිර්දේශ කෙරේ."
-      }
-    ];
-  }
+  if (!appData.appraisals) appData.appraisals = [];
 
-  const appraisals = appData.appraisals || [];
+  const appraisals = appData.appraisals;
 
   // Update Stats Counters
   const elTotal = document.getElementById('stat-appraisal-total');
@@ -3090,29 +3022,357 @@ function renderSatisfactionModule() {
   const tbody = document.querySelector('#table-survey-body');
   if (!tbody) return;
 
-  if (surveys.length === 0) {
+  // Update summary stats
+  const total = surveys.length;
+  let avgOverall = 0, avgWork = 0, avgMgmt = 0;
+  if (total > 0) {
+    let sumOverall = 0, sumWork = 0, sumMgmt = 0;
+    surveys.forEach(s => {
+      const w = s.ratings?.workEnvironment || 4;
+      const m = s.ratings?.managementSupport || 4;
+      const sal = s.ratings?.salaryFairness || 4;
+      const g = s.ratings?.careerGrowth || 4;
+      const avg = s.averageScore || Number(((w + m + sal + g) / 4).toFixed(1));
+      sumOverall += avg;
+      sumWork += w;
+      sumMgmt += m;
+    });
+    avgOverall = (sumOverall / total).toFixed(1);
+    avgWork = (sumWork / total).toFixed(1);
+    avgMgmt = (sumMgmt / total).toFixed(1);
+  }
+
+  const elOverall = document.getElementById('stat-wellbeing-overall');
+  const elWork = document.getElementById('stat-wellbeing-work');
+  const elMgmt = document.getElementById('stat-wellbeing-mgmt');
+  const elTotal = document.getElementById('stat-wellbeing-total');
+
+  if (elOverall) elOverall.textContent = total > 0 ? `${avgOverall} / 5.0` : '0.0 / 5.0';
+  if (elWork) elWork.textContent = total > 0 ? `${avgWork} / 5.0` : '0.0 / 5.0';
+  if (elMgmt) elMgmt.textContent = total > 0 ? `${avgMgmt} / 5.0` : '0.0 / 5.0';
+  if (elTotal) elTotal.textContent = String(total);
+
+  if (total === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="7" style="text-align:center; padding:30px; color:#94a3b8;">
-          <i class="fa-solid fa-face-smile" style="font-size:28px; margin-bottom:8px; display:block; opacity:0.6;"></i>
-          තෘප්තිමත්භාවය පිළිබඳ සමීක්ෂණ ප්‍රතිඵල නොමැත
+        <td colspan="10" style="text-align:center; padding:36px; color:#94a3b8;">
+          <i class="fa-solid fa-heart-pulse" style="font-size:32px; margin-bottom:10px; display:block; opacity:0.6; color:#059669;"></i>
+          තෘප්තිමත්භාවය පිළිබඳ සමීක්ෂණ ප්‍රතිඵල නොමැත (No wellbeing surveys received yet)<br>
+          <span style="font-size:12px; color:#64748b; margin-top:6px; display:inline-block;">ඉහත <strong>'WhatsApp මඟින් සේවකයින්ට යවන්න'</strong> හෝ <strong>'+ සටහනක් එක් කරන්න'</strong> ඔබන්න.</span>
         </td>
       </tr>
     `;
     return;
   }
 
-  tbody.innerHTML = surveys.map(s => `
-    <tr>
-      <td><strong>${s.id}</strong></td>
-      <td>${s.timestamp}</td>
-      <td><span style="color:#f59e0b;">${'★'.repeat(s.ratings?.workEnvironment || 4)}</span></td>
-      <td><span style="color:#f59e0b;">${'★'.repeat(s.ratings?.managementSupport || 4)}</span></td>
-      <td><span style="color:#f59e0b;">${'★'.repeat(s.ratings?.salaryFairness || 4)}</span></td>
-      <td><span style="color:#f59e0b;">${'★'.repeat(s.ratings?.careerGrowth || 4)}</span></td>
-      <td><span style="font-size:12px; color:#64748b;">${s.comments}</span></td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = surveys.map(s => {
+    const w = s.ratings?.workEnvironment || 4;
+    const m = s.ratings?.managementSupport || 4;
+    const sal = s.ratings?.salaryFairness || 4;
+    const g = s.ratings?.careerGrowth || 4;
+    const avg = s.averageScore || Number(((w + m + sal + g) / 4).toFixed(1));
+    const fmtTime = formatTimestamp(s.timestamp);
+    const empName = s.employeeName || (s.isAnonymous ? '🔒 නිර්නාමික' : 'කාර්ය මණ්ඩලය');
+
+    return `
+      <tr>
+        <td><strong>${s.id}</strong></td>
+        <td><span style="font-size:11px; color:#64748b;">${fmtTime}</span></td>
+        <td>
+          <strong style="color:${s.isAnonymous ? '#059669' : '#1e1b4b'}; font-size:12px;">${empName}</strong>
+          ${s.department ? `<br><span style="font-size:10px; color:#94a3b8;">${s.department}</span>` : ''}
+        </td>
+        <td><span style="color:#f59e0b; font-size:12px;">${'★'.repeat(w)}</span> <span style="font-size:10.5px; color:#64748b;">(${w})</span></td>
+        <td><span style="color:#f59e0b; font-size:12px;">${'★'.repeat(m)}</span> <span style="font-size:10.5px; color:#64748b;">(${m})</span></td>
+        <td><span style="color:#f59e0b; font-size:12px;">${'★'.repeat(sal)}</span> <span style="font-size:10.5px; color:#64748b;">(${sal})</span></td>
+        <td><span style="color:#f59e0b; font-size:12px;">${'★'.repeat(g)}</span> <span style="font-size:10.5px; color:#64748b;">(${g})</span></td>
+        <td>
+          <span class="badge-pill ${avg >= 4 ? 'badge-green' : (avg >= 3 ? 'badge-blue' : 'badge-orange')}" style="font-weight:700;">
+            ${avg} / 5
+          </span>
+        </td>
+        <td><div style="font-size:12px; color:#334155; max-width:240px; word-break:break-word;">${s.comments || '<span style="color:#cbd5e1; font-style:italic;">සටහන් කර නැත</span>'}</div></td>
+        <td style="text-align:right; white-space:nowrap;">
+          <button class="btn-smart btn-smart-light" style="padding:3px 8px; font-size:12px; color:#059669; border-color:#a7f3d0;" onclick="openEditSurveyModal('${s.id}')" title="සංස්කරණය (Edit)">
+            <i class="fa-solid fa-file-pen"></i>
+          </button>
+          <button class="btn-smart btn-smart-light" style="padding:3px 8px; font-size:12px; color:#dc2626; border-color:#fecaca;" onclick="deleteSingleSurvey('${s.id}')" title="ඉවත් කරන්න (Delete)">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// =========================================================================
+// WELLBEING / SATISFACTION HUB FUNCTIONS
+// =========================================================================
+
+function openWellbeingWhatsAppModal() {
+  const url = getOnlinePageUrl('wellbeing.html');
+  const urlBox = document.getElementById('wellbeing-share-url-text');
+  if (urlBox) urlBox.textContent = url;
+
+  const staffContainer = document.getElementById('wellbeing-whatsapp-staff-list');
+  if (!staffContainer) return;
+
+  const emps = appData.employees || [];
+  if (emps.length === 0) {
+    staffContainer.innerHTML = `
+      <div style="padding:24px; text-align:center; color:#94a3b8; font-size:12px;">
+        <i class="fa-solid fa-user-xmark" style="font-size:24px; margin-bottom:6px; display:block; opacity:0.6;"></i>
+        ලියාපදිංචි සේවකයින් නොමැත. කරුණාකර සේවක මණ්ඩලය (Employees) අංශයෙන් සේවකයින් ලියාපදිංචි කරන්න හෝ ඉහත ඇති <strong>'කාර්ය මණ්ඩල WhatsApp සමූහයට පණිවිඩය පිටපත් කරන්න'</strong> බොත්තම භාවිත කරන්න.
+      </div>
+    `;
+  } else {
+    staffContainer.innerHTML = emps.map(e => {
+      let rawPhone = String(e.mobilePhone || e.phone || '').trim().replace(/[^0-9]/g, '');
+      let waPhone = '';
+      if (rawPhone.startsWith('0')) {
+        waPhone = '94' + rawPhone.substring(1);
+      } else if (rawPhone.startsWith('94')) {
+        waPhone = rawPhone;
+      } else if (rawPhone.length >= 9) {
+        waPhone = '94' + rawPhone;
+      }
+
+      const msg = `ආයුබෝවන් ${e.callingName || e.fullName} මහත්මයාණෙනි/මහත්මියනි,\n\nගලපිටියාගම සණස සමුපකාර සමිතියේ සේවක තෘප්තිමත්භාවය හා සුවතාවය (Employee Wellbeing) පිළිබඳ කෙටි සමීක්ෂණයට පහත සබැඳිය ඔස්සේ පිවිස ඔබගේ වටිනා අදහස් ඉදිරිපත් කරන්න:\n\n🔗 ${url}\n\n(මෙහිදී ඔබගේ රහස්‍යභාවය 100% ක් සුරැකෙන පරිදි නිර්නාමිකවද අදහස් ඉදිරිපත් කළ හැක)\n\nස්තූතියි!\nපරිපාලන අංශය,\nගලපිටියාගම සණස සමුපකාර සමිතිය.`;
+
+      const waLink = waPhone ? `https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}` : '#';
+
+      return `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid #f1f5f9;">
+          <div>
+            <div style="font-size:12.5px; font-weight:700; color:#1e1b4b;">${e.fullName}</div>
+            <div style="font-size:11px; color:#64748b;">${e.designation || 'කාර්ය මණ්ඩල සාමාජික'} ${e.mobilePhone ? '• ' + e.mobilePhone : '<span style="color:#ef4444;">(දුරකථන අංකයක් නැත)</span>'}</div>
+          </div>
+          <div>
+            ${waPhone ? `
+              <a href="${waLink}" target="_blank" class="btn-smart" style="background:#25D366; color:#fff; font-size:11.5px; font-weight:700; padding:5px 12px; text-decoration:none; display:inline-flex; align-items:center; gap:6px; border-radius:8px;">
+                <i class="fa-brands fa-whatsapp"></i> WhatsApp යවන්න
+              </a>
+            ` : `
+              <button class="btn-smart btn-smart-light" style="font-size:11px; opacity:0.5;" disabled>අංකයක් නැත</button>
+            `}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  openSmartModal('modal-wellbeing-whatsapp');
+}
+
+function copyWellbeingSurveyLink() {
+  const url = getOnlinePageUrl('wellbeing.html');
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url);
+  } else {
+    const inp = document.createElement('input');
+    inp.value = url;
+    document.body.appendChild(inp);
+    inp.select();
+    document.execCommand('copy');
+    inp.remove();
+  }
+  alert(currentLang === 'si' ? '✅ සේවක තෘප්තිමත් සමීක්ෂණ සබැඳිය (URL) සාර්ථකව පිටපත් කරන ලදී!' : 'Survey link copied to clipboard!');
+}
+
+function copyWellbeingWhatsAppGroupMessage() {
+  const url = getOnlinePageUrl('wellbeing.html');
+  const msg = `ආයුබෝවන් ගලපිටියාගම සණස සමස්ත කාර්ය මණ්ඩලය වෙත,\n\nආයතනික වැඩ පරිසරය, කළමනාකාරීත්ව සහයෝගය, වැටුප් හා සේවක සුභසාධනය පිළිබඳ ඔබගේ වටිනා අදහස් ලබාගැනීම උදෙසා සකස් කළ 'සේවක තෘප්තිමත්භාවය හා සුවතාවය පිළිබඳ සමීක්ෂණයට' පහත සබැඳිය ඔස්සේ පිවිස සහභාගී වන මෙන් කාරුණිකව ඉල්ලා සිටිමු.\n\n🔗 සමීක්ෂණ පෝරමය: ${url}\n\n🔒 මෙහිදී ඔබගේ පෞද්ගලික අනන්‍යතාවය හෙළි නොකර 100% ක් නිර්නාමිකවද ප්‍රතිචාර දැක්විය හැක.\n\nස්තූතියි!\nපරිපාලන අංශය,\nගලපිටියාගම සණස සමුපකාර සමිතිය (වගකීම සීමිත).`;
+
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(msg);
+  } else {
+    const inp = document.createElement('textarea');
+    inp.value = msg;
+    document.body.appendChild(inp);
+    inp.select();
+    document.execCommand('copy');
+    inp.remove();
+  }
+  alert(currentLang === 'si' ? '✅ කාර්ය මණ්ඩල WhatsApp Group පණිවිඩය සාර්ථකව පිටපත් කරන ලදී! දැන් ඔබගේ WhatsApp සමූහයට Paste කරන්න.' : 'Group message copied! Paste to WhatsApp.');
+}
+
+function openWellbeingQRModal() {
+  const url = getOnlinePageUrl('wellbeing.html');
+  const container = document.getElementById('qr-wellbeing-modal-container');
+  const textDisplay = document.getElementById('qr-wellbeing-url-display');
+  if (textDisplay) textDisplay.textContent = url;
+
+  if (container) {
+    container.innerHTML = '';
+    if (typeof QRCode !== 'undefined') {
+      new QRCode(container, {
+        text: url,
+        width: 200,
+        height: 200,
+        colorDark: "#047857",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
+  }
+
+  openSmartModal('modal-wellbeing-qr');
+}
+
+function openAddManualSurveyModal() {
+  const form = document.getElementById('form-add-manual-survey');
+  if (form) form.reset();
+  const timeInput = document.getElementById('manual-surv-time');
+  if (timeInput) {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    timeInput.value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  }
+  openSmartModal('modal-add-manual-survey');
+}
+
+async function saveManualSurveyForm(e) {
+  e.preventDefault();
+  const refNo = `WLB-2026-${Math.floor(100 + Math.random() * 900)}`;
+  const emp = document.getElementById('manual-surv-emp').value || 'කාර්ය මණ්ඩල සාමාජික';
+  const tsRaw = document.getElementById('manual-surv-time').value;
+  const timeStr = tsRaw ? tsRaw.replace('T', ' ') : formatTimestamp(new Date());
+
+  const w = parseInt(document.getElementById('manual-surv-work').value, 10) || 4;
+  const m = parseInt(document.getElementById('manual-surv-mgmt').value, 10) || 4;
+  const sal = parseInt(document.getElementById('manual-surv-salary').value, 10) || 4;
+  const g = parseInt(document.getElementById('manual-surv-growth').value, 10) || 4;
+  const comments = document.getElementById('manual-surv-comments').value || '';
+  const avg = Number(((w + m + sal + g) / 4).toFixed(1));
+
+  const newSurvey = {
+    id: refNo,
+    timestamp: timeStr,
+    employeeName: emp,
+    department: '',
+    isAnonymous: emp.includes('නිර්නාමික') || emp.toLowerCase().includes('anon'),
+    ratings: {
+      workEnvironment: w,
+      managementSupport: m,
+      salaryFairness: sal,
+      careerGrowth: g
+    },
+    averageScore: avg,
+    comments: comments
+  };
+
+  if (!appData.surveys) appData.surveys = [];
+  appData.surveys.unshift(newSurvey);
+  await persistData();
+  closeSmartModal('modal-add-manual-survey');
+  renderSatisfactionModule();
+  alert(currentLang === 'si' ? '✅ සමීක්ෂණ සටහන සාර්ථකව ඇතුළත් කරන ලදී!' : 'Survey added successfully!');
+}
+
+function openEditSurveyModal(id) {
+  const s = (appData.surveys || []).find(item => item.id === id);
+  if (!s) return;
+
+  document.getElementById('edit-surv-id').value = s.id;
+  document.getElementById('edit-surv-employeeName').value = s.employeeName || '';
+  document.getElementById('edit-surv-timestamp').value = toIsoDateTimeLocal(s.timestamp);
+  document.getElementById('edit-surv-work').value = s.ratings?.workEnvironment || 4;
+  document.getElementById('edit-surv-mgmt').value = s.ratings?.managementSupport || 4;
+  document.getElementById('edit-surv-salary').value = s.ratings?.salaryFairness || 4;
+  document.getElementById('edit-surv-growth').value = s.ratings?.careerGrowth || 4;
+  document.getElementById('edit-surv-comments').value = s.comments || '';
+  document.getElementById('edit-surv-modal-label').textContent = `${s.id}`;
+
+  openSmartModal('modal-edit-survey');
+}
+
+async function saveEditSurveyForm(e) {
+  e.preventDefault();
+  const id = document.getElementById('edit-surv-id').value;
+  const s = (appData.surveys || []).find(x => x.id === id);
+  if (!s) return;
+
+  s.employeeName = document.getElementById('edit-surv-employeeName').value;
+  const tsRaw = document.getElementById('edit-surv-timestamp').value;
+  if (tsRaw) s.timestamp = tsRaw.replace('T', ' ');
+
+  const w = parseInt(document.getElementById('edit-surv-work').value, 10) || 4;
+  const m = parseInt(document.getElementById('edit-surv-mgmt').value, 10) || 4;
+  const sal = parseInt(document.getElementById('edit-surv-salary').value, 10) || 4;
+  const g = parseInt(document.getElementById('edit-surv-growth').value, 10) || 4;
+
+  s.ratings = {
+    workEnvironment: w,
+    managementSupport: m,
+    salaryFairness: sal,
+    careerGrowth: g
+  };
+  s.averageScore = Number(((w + m + sal + g) / 4).toFixed(1));
+  s.comments = document.getElementById('edit-surv-comments').value || '';
+
+  await persistData();
+  closeSmartModal('modal-edit-survey');
+  renderSatisfactionModule();
+  alert(currentLang === 'si' ? '✅ සමීක්ෂණ සටහන සාර්ථකව සංස්කරණය කරන ලදී!' : 'Survey updated successfully!');
+}
+
+async function deleteSingleSurvey(id) {
+  const conf = confirm(currentLang === 'si'
+    ? `"${id}" - මෙම සමීක්ෂණ සටහන ස්ථිරවම ඉවත් කිරීමට අවශ්‍යද?`
+    : `Permanently delete survey "${id}"?`);
+  if (!conf) return;
+
+  const prev = JSON.parse(localStorage.getItem('sanasa_deleted_surv_ids') || '[]');
+  localStorage.setItem('sanasa_deleted_surv_ids', JSON.stringify([...new Set([...prev, id])]));
+
+  appData.surveys = (appData.surveys || []).filter(x => x.id !== id);
+  await persistData();
+  renderSatisfactionModule();
+
+  try {
+    const cloudUrl = typeof getCloudSyncUrl === 'function' ? getCloudSyncUrl() : '';
+    if (cloudUrl) {
+      fetch(cloudUrl, {
+        method: 'POST', mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ type: 'delete_survey', id: id })
+      });
+    }
+  } catch (err) {}
+
+  alert(currentLang === 'si' ? '✅ සමීක්ෂණ සටහන ඉවත් කරන ලදී.' : 'Survey deleted.');
+}
+
+async function clearAllSurveys() {
+  if (!appData.surveys || appData.surveys.length === 0) {
+    alert(currentLang === 'si' ? 'ඉවත් කිරීමට සමීක්ෂණ ප්‍රතිචාර කිසිවක් නැත.' : 'No surveys to clear.');
+    return;
+  }
+  const conf = confirm(currentLang === 'si'
+    ? '⚠️ අවධානයට!\n\nසියලුම සේවක තෘප්තිමත් සමීක්ෂණ ප්‍රතිචාර ස්ථිරවම ඉවත් කිරීමට අවශ්‍ය බව තහවුරු කරන්නද?'
+    : 'Are you sure you want to clear ALL wellbeing survey responses?');
+  if (!conf) return;
+
+  const allIds = appData.surveys.map(x => x.id).filter(Boolean);
+  const prev = JSON.parse(localStorage.getItem('sanasa_deleted_surv_ids') || '[]');
+  localStorage.setItem('sanasa_deleted_surv_ids', JSON.stringify([...new Set([...prev, ...allIds])]));
+
+  appData.surveys = [];
+  await persistData();
+  renderSatisfactionModule();
+
+  try {
+    const cloudUrl = typeof getCloudSyncUrl === 'function' ? getCloudSyncUrl() : '';
+    if (cloudUrl) {
+      fetch(cloudUrl, {
+        method: 'POST', mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ type: 'clear_survey_data' })
+      });
+    }
+  } catch (err) {}
+
+  alert(currentLang === 'si' ? '✅ සියලුම සමීක්ෂණ දත්ත සාර්ථකව ඉවත් කරන ලදී.' : 'All survey data cleared.');
 }
 
 // =========================================================================
@@ -3345,7 +3605,7 @@ function renderProjectsView() {
   const container = document.getElementById('projects-container');
   if (!container) return;
 
-  const tasks = (appData?.tasks && appData.tasks.length > 0) ? appData.tasks : defaultSeedData.tasks;
+  const tasks = appData?.tasks || [];
   if (!tasks || tasks.length === 0) {
     container.innerHTML = `
       <div style="text-align:center; padding:50px 20px; color:#94a3b8;">
@@ -3501,7 +3761,7 @@ function renderMeetingsView() {
   const container = document.getElementById('meetings-container');
   if (!container) return;
 
-  const meetings = (appData?.meetings && appData.meetings.length > 0) ? appData.meetings : defaultSeedData.meetings;
+  const meetings = appData?.meetings || [];
   if (!meetings || meetings.length === 0) {
     container.innerHTML = `
       <div style="text-align:center; padding:50px 20px; color:#94a3b8;">
@@ -4720,15 +4980,30 @@ async function promptResetSystemData() {
 
   if (!conf2) return;
 
-  // Clear deleted-ID tracking
+  // Clear deleted-ID and backup tracking
   localStorage.removeItem('sanasa_deleted_grv_ids');
   localStorage.removeItem('sanasa_deleted_fb_ids');
+  localStorage.removeItem('sanasa_deleted_surv_ids');
+  localStorage.removeItem('sanasa_last_cloud_backup_time');
+  localStorage.removeItem('sanasa_total_cloud_backups');
   // Mark current time as the clear timestamp so cloud sync skips old QR entries
   localStorage.setItem('sanasa_qr_cleared_time', String(Date.now()));
 
-  appData = JSON.parse(JSON.stringify(defaultSeedData));
-  appData.grievances = [];
-  appData.memberFeedbacks = [];
+  // Completely clean all collections
+  appData = {
+    organization: JSON.parse(JSON.stringify(defaultSeedData.organization)),
+    employees: [],
+    grievances: [],
+    memberFeedbacks: [],
+    tasks: [],
+    meetings: [],
+    appraisals: [],
+    surveys: [],
+    payrollHistory: [],
+    incentiveRecords: [],
+    epfRemittances: [],
+    users: JSON.parse(JSON.stringify(defaultSeedData.users))
+  };
 
   await persistData();
 
@@ -5073,6 +5348,16 @@ window.saveEditMemberFeedbackForm = saveEditMemberFeedbackForm;
 window.deleteSingleMemberFeedback = deleteSingleMemberFeedback;
 window.formatTimestamp = formatTimestamp;
 window.toIsoDateTimeLocal = toIsoDateTimeLocal;
+window.openWellbeingWhatsAppModal = openWellbeingWhatsAppModal;
+window.copyWellbeingSurveyLink = copyWellbeingSurveyLink;
+window.copyWellbeingWhatsAppGroupMessage = copyWellbeingWhatsAppGroupMessage;
+window.openWellbeingQRModal = openWellbeingQRModal;
+window.openAddManualSurveyModal = openAddManualSurveyModal;
+window.saveManualSurveyForm = saveManualSurveyForm;
+window.openEditSurveyModal = openEditSurveyModal;
+window.saveEditSurveyForm = saveEditSurveyForm;
+window.deleteSingleSurvey = deleteSingleSurvey;
+window.clearAllSurveys = clearAllSurveys;
 
 // =========================================================================
 // ULTRA-MODERN SMART TOAST & NOTIFICATION SYSTEM
