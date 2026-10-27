@@ -107,6 +107,11 @@
           <i class="fa-solid fa-user-shield"></i>
           <span>Admin Panel (පරිපාලක පාලනය)</span>
         </a>
+
+        <a class="menu-item" data-target="backup-restore">
+          <i class="fa-solid fa-database"></i>
+          <span>Backup & Restore (දත්ත උපස්ථ)</span>
+        </a>
       </nav>
 
       <!-- Glowing CTA Action Button (As in Reference UI) -->
@@ -1181,6 +1186,219 @@
               </table>
             </div>
           </div>
+
+          <!-- Backup & Restore Quick Access Card in Admin Panel -->
+          <div class="card-box" style="margin-top:20px; background:linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border:1.5px solid #a7f3d0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+              <div>
+                <h3 style="font-size:15px; font-weight:800; color:#065f46; margin-bottom:4px;">
+                  <i class="fa-solid fa-database" style="color:#059669; margin-right:8px;"></i> දත්ත උපස්ථ හා ප්‍රතිසාධන මධ්‍යස්ථානය (Data Backup & Restore Center)
+                </h3>
+                <p style="font-size:12px; color:#047857; margin:0;">Google Sheet Cloud වෙත හෝ පරිගණකයට සම්පූර්ණ පද්ධති Backup එකක් ලබාගෙන දත්ත සුරක්ෂිතව තබාගන්න.</p>
+              </div>
+              <div style="display:flex; gap:10px;">
+                <button type="button" class="btn-smart btn-smart-primary" style="background:#059669;" onclick="performCloudBackup()">
+                  <i class="fa-solid fa-cloud-arrow-up"></i> Cloud Backup
+                </button>
+                <button type="button" class="btn-smart btn-smart-light" onclick="switchView('backup-restore')">
+                  <i class="fa-solid fa-gear"></i> සම්පූර්ණ පාලනය (Manage)
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- VIEW 13: BACKUP & RESTORE CENTER               -->
+        <!-- ============================================== -->
+        <section class="view-section" id="view-backup-restore">
+          <div class="card-box" style="margin-bottom:20px; background:linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%); border-left:4px solid #0284c7;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+              <div>
+                <h2 style="font-size:19px; font-weight:800; color:#1e1b4b; margin-bottom:4px;">
+                  <i class="fa-solid fa-database" style="color:#0284c7; margin-right:8px;"></i> දත්ත උපස්ථ සහ ප්‍රතිසාධනය (Data Backup & Restore)
+                </h2>
+                <p style="font-size:12.5px; color:#64748b; margin:0;">
+                  Google Apps Script / Google Sheets Cloud මාර්ගයෙන් හෝ නොබැඳි JSON ගොනු මගින් සම්පූර්ණ පද්ධතියේ දත්ත ආරක්ෂිතව Backup සහ Restore කරගන්න.
+                </p>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button class="btn-smart btn-smart-light" onclick="openSmartModal('modal-online-settings')">
+                  <i class="fa-solid fa-sliders"></i> Cloud Settings
+                </button>
+                <button class="btn-smart btn-smart-primary" style="background:#059669;" onclick="performCloudBackup()">
+                  <i class="fa-solid fa-cloud-arrow-up"></i> Quick Cloud Backup
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Grid: Cloud Backup vs Local File Backup -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px;">
+            
+            <!-- 1. Google Cloud / Apps Script Backup & Restore -->
+            <div class="card-box" style="display:flex; flex-direction:column; justify-content:space-between; border-top:4px solid #7c3aed;">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                  <h3 style="font-size:15px; font-weight:800; color:#1e1b4b; display:flex; align-items:center; gap:8px;">
+                    <i class="fa-brands fa-google-drive" style="color:#7c3aed; font-size:18px;"></i> Google Sheets Cloud Backup & Restore
+                  </h3>
+                  <span class="badge-pill badge-purple" id="badge-cloud-config-status">Cloud Ready</span>
+                </div>
+
+                <p style="font-size:12px; color:#64748b; line-height:1.5; margin-bottom:14px;">
+                  ඔබගේ සේවක නාමාවලිය, වැටුප්, ව්‍යාපෘති, අධ්‍යක්ෂ මණ්ඩල රැස්වීම් සහ QR ගැටළු සියල්ල <strong>Google Apps Script</strong> මගින් Google Sheet එකට තත්‍ය කාලීනව සුරැකේ. Google Sheet එකෙහි <code>Employees</code>, <code>Payroll</code>, <code>Tasks</code>, <code>Meetings</code> ලෙස පැහැදිලි Spreadsheets ද ස්වයංක්‍රීයව යාවත්කාලීන වේ.
+                </p>
+
+                <!-- Cloud Backup Status Overview -->
+                <div style="background:#f5f3ff; border:1px solid #ddd6fe; border-radius:12px; padding:12px; margin-bottom:16px;">
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:11.5px;">
+                    <div>
+                      <span style="color:#6d28d9; font-weight:600;">නවතම Cloud Backup දිනය:</span>
+                      <div id="display-cloud-last-backup" style="font-weight:700; color:#4c1d95; font-size:12px; margin-top:2px;">පරීක්ෂා කර නොමැත</div>
+                    </div>
+                    <div>
+                      <span style="color:#6d28d9; font-weight:600;">Google Sheet එකේ ඇති මුළු Backups:</span>
+                      <div id="display-cloud-total-backups" style="font-weight:700; color:#4c1d95; font-size:12px; margin-top:2px;">-</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Buttons for Cloud -->
+              <div style="display:flex; flex-direction:column; gap:10px;">
+                <button type="button" class="btn-smart btn-smart-primary" style="background:#7c3aed; width:100%; justify-content:center;" onclick="performCloudBackup()" id="btn-cloud-backup-action">
+                  <i class="fa-solid fa-cloud-arrow-up"></i> Google Sheet වෙත දැන් Backup කරන්න (Backup to Cloud)
+                </button>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                  <button type="button" class="btn-smart btn-smart-light" style="justify-content:center; border-color:#c4b5fd; color:#6d28d9;" onclick="performCloudRestore()" id="btn-cloud-restore-action">
+                    <i class="fa-solid fa-rotate-left"></i> Cloud වෙතින් Restore (නවතම)
+                  </button>
+                  <button type="button" class="btn-smart btn-smart-light" style="justify-content:center;" onclick="openCloudBackupsHistoryModal()">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Backups ඉතිහාසය (History)
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Local File Backup & Restore (JSON) -->
+            <div class="card-box" style="display:flex; flex-direction:column; justify-content:space-between; border-top:4px solid #059669;">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                  <h3 style="font-size:15px; font-weight:800; color:#1e1b4b; display:flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-file-shield" style="color:#059669; font-size:18px;"></i> පරිගණක ගොනු උපස්ථය (Offline JSON Backup)
+                  </h3>
+                  <span class="badge-pill badge-green">100% Offline Safe</span>
+                </div>
+
+                <p style="font-size:12px; color:#64748b; line-height:1.5; margin-bottom:14px;">
+                  අන්තර්ජාල පහසුකම් නොමැති අවස්ථාවකදී පවා පද්ධතියේ සම්පූර්ණ දත්ත <code>.json</code> ගොනුවක් ලෙස ඔබගේ පරිගණකයට හෝ Pen Drive එකකට බාගත කර තබාගත හැක. අවශ්‍ය විටෙක එම ගොනුව තෝරා එක ක්ලික් එකකින් දත්ත ප්‍රතිසාධනය කළ හැක.
+                </p>
+
+                <!-- Local File Info Box -->
+                <div style="background:#ecfdf5; border:1px solid #a7f3d0; border-radius:12px; padding:12px; margin-bottom:16px;">
+                  <div style="font-size:11.5px; color:#065f46;">
+                    <i class="fa-solid fa-circle-check" style="color:#059669; margin-right:6px;"></i>
+                    <strong>ආරක්ෂිත බාගත කිරීම:</strong> සේවකයින්ගේ සියලුම පැතිකඩ, නිපුණතා, වැටුප් ඉතිහාසය සහ QR ගැටළු අඩංගු සංකේතාත්මක දත්ත ගොනුවක් බාගත වේ.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Buttons for Local File -->
+              <div style="display:flex; flex-direction:column; gap:10px;">
+                <button type="button" class="btn-smart btn-smart-primary" style="background:#059669; width:100%; justify-content:center;" onclick="downloadLocalBackup()">
+                  <i class="fa-solid fa-download"></i> පද්ධති Backup ගොනුව බාගන්න (Download .json)
+                </button>
+
+                <div>
+                  <input type="file" id="local-backup-file-input" accept=".json" style="display:none;" onchange="handleLocalBackupFileSelected(event)">
+                  <button type="button" class="btn-smart btn-smart-light" style="width:100%; justify-content:center; border-color:#86efac; color:#166534;" onclick="document.getElementById('local-backup-file-input').click()">
+                    <i class="fa-solid fa-upload"></i> Backup ගොනුවකින් Restore කරන්න (Choose File)
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Grid: Current Database Statistics & Server Snapshot -->
+          <div style="display:grid; grid-template-columns:1.2fr 0.8fr; gap:20px; margin-bottom:24px;">
+            
+            <!-- System Data Counts -->
+            <div class="card-box">
+              <h3 style="font-size:15px; font-weight:800; color:#1e1b4b; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+                <i class="fa-solid fa-chart-pie" style="color:#0284c7;"></i> වත්මන් පද්ධති දත්ත ගබඩා සාරාංශය (Current System Database)
+              </h3>
+              
+              <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px; text-align:center;">
+                  <div style="font-size:11px; color:#64748b; font-weight:700;">සේවක සංඛ්‍යාව</div>
+                  <div id="stat-count-employees" style="font-size:20px; font-weight:800; color:#1e1b4b; margin-top:4px;">0</div>
+                  <div style="font-size:10px; color:#94a3b8;">Active Staff</div>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px; text-align:center;">
+                  <div style="font-size:11px; color:#64748b; font-weight:700;">වැටුප් වාර්තා</div>
+                  <div id="stat-count-payroll" style="font-size:20px; font-weight:800; color:#881337; margin-top:4px;">0</div>
+                  <div style="font-size:10px; color:#94a3b8;">Payroll History</div>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px; text-align:center;">
+                  <div style="font-size:11px; color:#64748b; font-weight:700;">ව්‍යාපෘති හා කාර්යයන්</div>
+                  <div id="stat-count-tasks" style="font-size:20px; font-weight:800; color:#0284c7; margin-top:4px;">0</div>
+                  <div style="font-size:10px; color:#94a3b8;">Tasks & Projects</div>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px; text-align:center;">
+                  <div style="font-size:11px; color:#64748b; font-weight:700;">රැස්වීම් වාර්තා</div>
+                  <div id="stat-count-meetings" style="font-size:20px; font-weight:800; color:#7c3aed; margin-top:4px;">0</div>
+                  <div style="font-size:10px; color:#94a3b8;">Board Meetings</div>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px; text-align:center;">
+                  <div style="font-size:11px; color:#64748b; font-weight:700;">QR ගැටළු / යෝජනා</div>
+                  <div id="stat-count-grievances" style="font-size:20px; font-weight:800; color:#f59e0b; margin-top:4px;">0</div>
+                  <div style="font-size:10px; color:#94a3b8;">Board Submissions</div>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px; text-align:center;">
+                  <div style="font-size:11px; color:#64748b; font-weight:700;">සාමාජික ප්‍රතිචාර</div>
+                  <div id="stat-count-feedbacks" style="font-size:20px; font-weight:800; color:#059669; margin-top:4px;">0</div>
+                  <div style="font-size:10px; color:#94a3b8;">Member Feedbacks</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Server Snapshot & Reset Danger Zone -->
+            <div class="card-box" style="display:flex; flex-direction:column; justify-content:space-between;">
+              <div>
+                <h3 style="font-size:15px; font-weight:800; color:#1e1b4b; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                  <i class="fa-solid fa-server" style="color:#64748b;"></i> පරිගණක සේවාදායක Snapshot
+                </h3>
+                <p style="font-size:12px; color:#64748b; line-height:1.5; margin-bottom:14px;">
+                  දේශීය C# සේවාදායකයේ (Kestrel) <code>data/backups/</code> ෆෝල්ඩරය තුළ snapshot පිටපතක් ක්ෂණිකව සුරකින්න.
+                </p>
+                <button type="button" class="btn-smart btn-smart-light" style="width:100%; justify-content:center; margin-bottom:16px;" onclick="createLocalServerSnapshot()">
+                  <i class="fa-solid fa-hard-drive"></i> සේවාදායක Snapshot එකක් සුරකින්න (Save to Server)
+                </button>
+              </div>
+
+              <!-- Reset to Defaults Warning Box -->
+              <div style="border-top:1px dashed #e2e8f0; padding-top:14px;">
+                <div style="font-size:12px; font-weight:700; color:#dc2626; margin-bottom:4px;">
+                  <i class="fa-solid fa-triangle-exclamation"></i> අනතුරුදායක කලාපය (Danger Zone)
+                </div>
+                <p style="font-size:11px; color:#64748b; margin-bottom:10px;">
+                  සියලුම දත්ත මුල් ආදර්ශන තත්වයට (Seed Defaults) පත් කිරීමට අවශ්‍ය නම් පමණක් මෙය භාවිත කරන්න.
+                </p>
+                <button type="button" class="btn-smart btn-smart-light" style="color:#dc2626; border-color:#fecaca; width:100%; justify-content:center; font-size:12px;" onclick="promptResetSystemData()">
+                  <i class="fa-solid fa-trash-can"></i> පද්ධතිය පෙරනිමි තත්වයට පත් කරන්න (Factory Reset)
+                </button>
+              </div>
+            </div>
+
+          </div>
         </section>
 
       </div>
@@ -1199,26 +1417,17 @@
       </div>
       <h2 style="color:#1e3a6e;">ගලපිටියාගම සණස HRMS</h2>
       <p style="color:#881337; font-weight:700; font-size:13px; margin-bottom:4px;">පරිපාලක පිවිසුම (Admin Login)</p>
-      <p style="margin-bottom:16px;">පද්ධතිය කළමනාකරණය සඳහා කරුණාකර පරිපාලක ගිණුමෙන් පිවිසෙන්න.</p>
-
-      <!-- Admin Credentials Info Pill -->
-      <div style="background:#eef2ff; border:1px solid #c7d2fe; border-radius:14px; padding:10px 14px; margin-bottom:18px; text-align:left; display:flex; align-items:center; gap:12px;">
-        <i class="fa-solid fa-shield-halved" style="color:#1e3a6e; font-size:22px;"></i>
-        <div>
-          <div style="font-size:12px; font-weight:700; color:#1e3a6e;">පෙරනිමි පරිපාලක ගිණුම (Default Admin)</div>
-          <div style="font-size:11px; color:#881337; font-family:monospace;">Username: <strong>admin</strong> | Password: <strong>admin123</strong></div>
-        </div>
-      </div>
+      <p style="margin-bottom:18px;">පද්ධතිය කළමනාකරණය සඳහා කරුණාකර පරිපාලක ගිණුමෙන් පිවිසෙන්න.</p>
 
       <form id="smart-login-form">
-        <div style="margin-bottom:12px; text-align:left;">
+        <div style="margin-bottom:14px; text-align:left;">
           <label style="font-size:11.5px; font-weight:700; color:#1e3a6e; display:block; margin-bottom:5px;">පරිශීලක නාමය (Username)</label>
-          <input type="text" id="login-username" class="form-input-pill" value="admin" required placeholder="admin">
+          <input type="text" id="login-username" class="form-input-pill" required placeholder="පරිශීලක නාමය ඇතුළත් කරන්න" autocomplete="username">
         </div>
-        <div style="margin-bottom:18px; text-align:left;">
+        <div style="margin-bottom:20px; text-align:left;">
           <label style="font-size:11.5px; font-weight:700; color:#1e3a6e; display:block; margin-bottom:5px;">මුරපදය (Password)</label>
           <div style="position:relative;">
-            <input type="password" id="login-password" class="form-input-pill" value="admin123" required placeholder="••••••••">
+            <input type="password" id="login-password" class="form-input-pill" required placeholder="මුරපදය ඇතුළත් කරන්න" autocomplete="current-password">
             <i class="fa-solid fa-eye" id="toggle-pwd-btn" style="position:absolute; right:14px; top:12px; color:#94a3b8; cursor:pointer;" onclick="togglePasswordVisibility()"></i>
           </div>
         </div>
@@ -2158,6 +2367,121 @@
       </div>
     </div>
   </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: RESTORE PREVIEW & CONFIRMATION          -->
+  <!-- ============================================== -->
+  <div class="smart-modal-overlay" id="modal-restore-preview">
+    <div class="smart-modal-box medium">
+      <div class="smart-modal-header" style="background:#fffbeb; border-bottom:1px solid #fef3c7;">
+        <h3 style="color:#92400e;"><i class="fa-solid fa-triangle-exclamation" style="color:#d97706; margin-right:8px;"></i> දත්ත ප්‍රතිසාධනය තහවුරු කරන්න (Confirm Restore)</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-restore-preview')">&times;</button>
+      </div>
+      <div class="smart-modal-body">
+        <div style="background:#fefce8; border:1px solid #fef08a; border-radius:12px; padding:12px; margin-bottom:16px;">
+          <div style="font-size:12px; color:#854d0e; line-height:1.5;">
+            <strong>අවවාදයයි:</strong> මෙම උපස්ථය (Backup) Restore කිරීමෙන් පසු වත්මන් පද්ධතියේ ඇති සියලුම දත්ත මෙම Backup එකෙහි ඇති දත්ත මගින් ප්‍රතිස්ථාපනය වේ.
+          </div>
+        </div>
+
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:14px; margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span style="font-size:12px; color:#64748b; font-weight:600;">උපස්ථ ප්‍රභවය (Source):</span>
+            <span id="restore-preview-source" style="font-size:12px; font-weight:700; color:#1e1b4b;">Google Sheet Cloud Backup</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+            <span style="font-size:12px; color:#64748b; font-weight:600;">උපස්ථ දිනය හා වේලාව:</span>
+            <span id="restore-preview-time" style="font-size:12px; font-weight:700; color:#0284c7;">2026-10-27 10:45:00</span>
+          </div>
+
+          <div style="border-top:1px dashed #cbd5e1; padding-top:10px;">
+            <span style="font-size:11.5px; font-weight:700; color:#475569; display:block; margin-bottom:8px;">අන්තර්ගත වාර්තා සංඛ්‍යාව:</span>
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; text-align:center;">
+              <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:6px;">
+                <span style="font-size:10px; color:#64748b;">සේවකයින්</span><br>
+                <strong id="restore-preview-emp" style="color:#059669; font-size:14px;">0</strong>
+              </div>
+              <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:6px;">
+                <span style="font-size:10px; color:#64748b;">වැටුප් වාර්තා</span><br>
+                <strong id="restore-preview-pay" style="color:#881337; font-size:14px;">0</strong>
+              </div>
+              <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:6px;">
+                <span style="font-size:10px; color:#64748b;">ව්‍යාපෘති</span><br>
+                <strong id="restore-preview-tasks" style="color:#0284c7; font-size:14px;">0</strong>
+              </div>
+              <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:6px;">
+                <span style="font-size:10px; color:#64748b;">රැස්වීම්</span><br>
+                <strong id="restore-preview-meetings" style="color:#7c3aed; font-size:14px;">0</strong>
+              </div>
+              <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:6px;">
+                <span style="font-size:10px; color:#64748b;">QR ගැටළු</span><br>
+                <strong id="restore-preview-grv" style="color:#f59e0b; font-size:14px;">0</strong>
+              </div>
+              <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:6px;">
+                <span style="font-size:10px; color:#64748b;">ප්‍රතිචාර</span><br>
+                <strong id="restore-preview-fb" style="color:#10b981; font-size:14px;">0</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="smart-modal-footer">
+        <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-restore-preview')">අවලංගු කරන්න (Cancel)</button>
+        <button type="button" class="btn-smart btn-smart-primary" style="background:#d97706;" onclick="executeConfirmedRestore()">
+          <i class="fa-solid fa-rotate-left"></i> ඔව්, දත්ත Restore කරන්න (Proceed)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: CLOUD BACKUPS HISTORY LIST              -->
+  <!-- ============================================== -->
+  <div class="smart-modal-overlay" id="modal-cloud-backups-list">
+    <div class="smart-modal-box large">
+      <div class="smart-modal-header">
+        <h3><i class="fa-brands fa-google-drive" style="color:#7c3aed; margin-right:8px;"></i> Google Sheets Cloud Backups ඉතිහාසය</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-cloud-backups-list')">&times;</button>
+      </div>
+      <div class="smart-modal-body">
+        <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:12px; color:#64748b;">Google Sheet එකෙහි ඇති පෙර ලබාගත් උපස්ථ පිටපත් ලැයිස්තුව:</span>
+          <button type="button" class="btn-smart btn-smart-light" style="font-size:11px; padding:4px 10px;" onclick="loadCloudBackupsHistory()">
+            <i class="fa-solid fa-arrows-rotate" id="icon-refresh-cloud-backups"></i> යාවත්කාලීන කරන්න
+          </button>
+        </div>
+
+        <div class="data-table-container" style="max-height:360px; overflow-y:auto; padding:0;">
+          <table class="smart-table">
+            <thead>
+              <tr>
+                <th>දිනය හා වේලාව</th>
+                <th>Backup ID</th>
+                <th>සේවකයින්</th>
+                <th>වැටුප්</th>
+                <th>ව්‍යාපෘති</th>
+                <th>ගැටළු</th>
+                <th>ක්‍රියාමාර්ග</th>
+              </tr>
+            </thead>
+            <tbody id="table-cloud-backups-body">
+              <tr>
+                <td colspan="7" style="text-align:center; padding:24px; color:#94a3b8;">
+                  <i class="fa-solid fa-spinner fa-spin"></i> උපස්ථ දත්ත කියවමින් පවතී...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="smart-modal-footer">
+        <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-cloud-backups-list')">වසන්න</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Smart Floating Notification Container -->
+  <div id="smart-toast-container"></div>
 
   <script src="js/config.js"></script>
   <script src="js/app.js?v=5.8"></script>
