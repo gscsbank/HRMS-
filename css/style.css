@@ -375,7 +375,7 @@ body {
   gap: 12px;
 }
 
-/* Online QR Cloud Status Pill */
+/* Online QR Cloud Status Indicator (Display Only) */
 .online-pill {
   background: #ecfdf5;
   color: #059669;
@@ -387,12 +387,8 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.online-pill:hover {
-  background: #d1fae5;
+  cursor: default;
+  user-select: none;
 }
 
 .online-pill .status-dot {
@@ -1601,4 +1597,12 @@ body {
 @keyframes toastProgressBar {
   from { transform: scaleX(1); }
   to { transform: scaleX(0); }
+}
+
+/* Mobile Auto-Zoom Prevention & Fit */
+@media (max-width: 768px) {
+  input, select, textarea, .form-input-pill, .form-control {
+    font-size: 16px !important;
+    touch-action: manipulation;
+  }
 }

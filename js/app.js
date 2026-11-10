@@ -227,18 +227,8 @@ function setupOnlineUrlDetection() {
 function updateOnlinePillUI() {
   const pill = document.getElementById('online-status-pill');
   if (pill) {
-    const isCloudSynced = typeof getCloudSyncUrl === 'function' && getCloudSyncUrl();
-    const isGithub = customOnlineBaseUrl.includes('github.io');
-    if (isCloudSynced) {
-      pill.innerHTML = `<span class="status-dot" style="background:#10b981;"></span> Cloud Sync Active`;
-      pill.title = `Google Sheet Realtime Sync Active & Hosted at: ${customOnlineBaseUrl}`;
-    } else if (isGithub) {
-      pill.innerHTML = `<span class="status-dot" style="background:#3b82f6;"></span> GitHub Pages Online`;
-      pill.title = `Online URL: ${customOnlineBaseUrl}`;
-    } else {
-      pill.innerHTML = `<span class="status-dot"></span> QR Configured`;
-      pill.title = `Target URL: ${customOnlineBaseUrl}`;
-    }
+    pill.innerHTML = `<span class="status-dot" style="background:#10b981;"></span> System Online`;
+    pill.title = `System Online & Active`;
   }
 }
 
