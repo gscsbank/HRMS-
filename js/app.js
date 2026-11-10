@@ -797,40 +797,109 @@ function renderDashboard() {
     }
   }
 
-  // 3. Birthdays List (Mockup Col 3)
-  const bdayList = document.getElementById('dashboard-birthdays-list');
-  if (bdayList) {
-    if (!emps || emps.length === 0) {
-      bdayList.innerHTML = `
-        <div style="text-align:center; padding:28px 12px; color:#9ca3af; font-size:12px;">
-          <i class="fa-solid fa-cake-candles" style="font-size:26px; margin-bottom:8px; display:block; opacity:0.5;"></i>
-          උපන් දින නොමැත (No upcoming birthdays)
-        </div>
-      `;
-    } else {
-      bdayList.innerHTML = emps.slice(0, 4).map(e => {
-        const hasPhoto = e.photo && e.photo.length > 20;
-        return `
-          <div style="background:#f9fafb; border:1px solid #f3f4f6; border-radius:12px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center;">
-            <div style="display:flex; align-items:center; gap:10px;">
-              <div style="width:34px; height:34px; border-radius:50%; background:#059669; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px; overflow:hidden; flex-shrink:0;">
-                ${hasPhoto ? `<img src="${e.photo}" style="width:100%; height:100%; object-fit:cover;">` : (e.callingName || e.fullName || 'S').charAt(0)}
-              </div>
-              <div>
-                <div style="font-size:12px; font-weight:700; color:#111827;">${e.callingName || e.fullName}</div>
-                <div style="font-size:10.5px; color:#6b7280;">${e.designation || ''}</div>
-              </div>
-            </div>
-            <div style="font-size:10.5px; font-weight:700; color:#059669; background:#e6f4ea; padding:3px 8px; border-radius:12px;">
-              ${e.dob || ''}
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-  }
+  // 3. Birthdays List (Mockup Col 3) - Filtered by Month
+  renderDashboardBirthdays();
 
   renderDashboardCharts();
+}
+
+// Render Birthdays Filtered by Selected Month
+function renderDashboardBirthdays() {
+  const bdayList = document.getElementById('dashboard-birthdays-list');
+  if (!bdayList) return;
+
+  const filterSelect = document.getElementById('dashboard-birthday-filter');
+  const filterVal = filterSelect ? filterSelect.value : 'this-month';
+
+  const emps = appData?.employees || [];
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1; // 1 - 12
+  const nextMonth = currentMonth === 12 ? 1 : currentMonth + 1;
+
+  function parseEmpBirth(dobStr) {
+    if (!dobStr) return null;
+    const parts = String(dobStr).trim().split(/[-/.]/);
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        // YYYY-MM-DD
+        return { month: parseInt(parts[1], 10), day: parseInt(parts[2], 10) };
+      } else if (parts[2].length === 4) {
+        // DD-MM-YYYY
+        return { month: parseInt(parts[1], 10), day: parseInt(parts[0], 10) };
+      }
+    }
+    const d = new Date(dobStr);
+    if (!isNaN(d.getTime())) {
+      return { month: d.getMonth() + 1, day: d.getDate() };
+    }
+    return null;
+  }
+
+  // Filter employees according to selected filter
+  const filtered = emps.filter(e => {
+    const b = parseEmpBirth(e.dob);
+    if (!b || isNaN(b.month)) return false;
+    if (filterVal === 'this-month') {
+      return b.month === currentMonth;
+    } else if (filterVal === 'next-month') {
+      return b.month === nextMonth;
+    } else if (filterVal === 'all') {
+      return true; // All Year
+    } else {
+      const targetMonth = parseInt(filterVal, 10);
+      return !isNaN(targetMonth) ? b.month === targetMonth : true;
+    }
+  });
+
+  // Sort chronologically by day
+  filtered.sort((a, b) => {
+    const bA = parseEmpBirth(a.dob) || { day: 99 };
+    const bB = parseEmpBirth(b.dob) || { day: 99 };
+    return bA.day - bB.day;
+  });
+
+  if (filtered.length === 0) {
+    const monthNames = ['', 'ජනවාරි', 'පෙබරවාරි', 'මාර්තු', 'අප්‍රේල්', 'මැයි', 'ජූනි', 'ජූලි', 'අගෝස්තු', 'සැප්තැම්බර්', 'ඔක්තෝබර්', 'නොවැම්බර්', 'දෙසැම්බර්'];
+    let emptyMsg = 'උපන් දින සටහන් කර නොමැත (No birthdays found)';
+    if (filterVal === 'this-month') {
+      emptyMsg = 'මෙම මාසයේ උපන් දින නොමැත (No birthdays this month)';
+    } else if (filterVal === 'next-month') {
+      emptyMsg = 'ලබන මාසයේ උපන් දින නොමැත (No birthdays next month)';
+    } else if (!isNaN(parseInt(filterVal, 10))) {
+      const mIdx = parseInt(filterVal, 10);
+      emptyMsg = `${monthNames[mIdx] || ''} මාසයේ උපන් දින නොමැත (No birthdays in selected month)`;
+    }
+    bdayList.innerHTML = `
+      <div style="text-align:center; padding:28px 12px; color:#9ca3af; font-size:12px;">
+        <i class="fa-solid fa-cake-candles" style="font-size:26px; margin-bottom:8px; display:block; opacity:0.5; color:#f59e0b;"></i>
+        ${emptyMsg}
+      </div>
+    `;
+    return;
+  }
+
+  bdayList.innerHTML = filtered.map(e => {
+    const hasPhoto = e.photo && e.photo.length > 20;
+    const bInfo = parseEmpBirth(e.dob);
+    const isToday = bInfo && bInfo.month === currentMonth && bInfo.day === now.getDate();
+
+    return `
+      <div style="background:${isToday ? '#fef3c7' : '#f9fafb'}; border:1px solid ${isToday ? '#fcd34d' : '#f3f4f6'}; border-radius:12px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:34px; height:34px; border-radius:50%; background:#059669; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px; overflow:hidden; flex-shrink:0;">
+            ${hasPhoto ? `<img src="${e.photo}" style="width:100%; height:100%; object-fit:cover;">` : (e.callingName || e.fullName || 'S').charAt(0)}
+          </div>
+          <div>
+            <div style="font-size:12px; font-weight:700; color:#111827;">${e.callingName || e.fullName}</div>
+            <div style="font-size:10.5px; color:#6b7280;">${e.designation || ''}</div>
+          </div>
+        </div>
+        <div style="font-size:10.5px; font-weight:700; color:${isToday ? '#b45309' : '#059669'}; background:${isToday ? '#fde68a' : '#e6f4ea'}; padding:3px 8px; border-radius:12px; white-space:nowrap;">
+          ${isToday ? '🎂 Today! ' : ''}${e.dob || ''}
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 function renderDashboardCharts() {
@@ -6317,5 +6386,6 @@ window.showSmartNotification = showSmartNotification;
 window.showNotification = showSmartNotification;
 window.showToast = showSmartNotification;
 window.escapeHtml = escapeHtml;
+window.renderDashboardBirthdays = renderDashboardBirthdays;
 
 

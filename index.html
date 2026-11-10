@@ -324,9 +324,24 @@
             <div class="card-box" style="padding:16px; border-radius:18px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                 <h3 style="font-size:15px; font-weight:800; color:#111827;">Birthdays</h3>
-                <select class="form-input-pill" style="padding:3px 8px; font-size:11px; width:auto;">
-                  <option>This month</option>
-                  <option>Next month</option>
+                <select id="dashboard-birthday-filter" class="form-input-pill" style="padding:3px 8px; font-size:11px; width:auto; cursor:pointer; font-weight:600; color:#374151;" onchange="renderDashboardBirthdays()">
+                  <option value="this-month">මෙම මාසය (This month)</option>
+                  <option value="next-month">ලබන මාසය (Next month)</option>
+                  <option value="all">සම්පූර්ණ වසර (All Year)</option>
+                  <optgroup label="මාසය අනුව (By Month)">
+                    <option value="1">ජනවාරි (Jan)</option>
+                    <option value="2">පෙබරවාරි (Feb)</option>
+                    <option value="3">මාර්තු (Mar)</option>
+                    <option value="4">අප්‍රේල් (Apr)</option>
+                    <option value="5">මැයි (May)</option>
+                    <option value="6">ජූනි (Jun)</option>
+                    <option value="7">ජූලි (Jul)</option>
+                    <option value="8">අගෝස්තු (Aug)</option>
+                    <option value="9">සැප්තැම්බර් (Sep)</option>
+                    <option value="10">ඔක්තෝබර් (Oct)</option>
+                    <option value="11">නොවැම්බර් (Nov)</option>
+                    <option value="12">දෙසැම්බර් (Dec)</option>
+                  </optgroup>
                 </select>
               </div>
               <div id="dashboard-birthdays-list" style="display:flex; flex-direction:column; gap:10px;">
