@@ -133,7 +133,7 @@
         <i class="fa-solid fa-lock" style="font-size:16px;"></i>
         <div>
           <strong>100% රහස්‍යභාවය සහතික කෙරේ</strong><br>
-          මෙම පෝරමය මගින් ඔබ යොමු කරන අදහස් සභාපතිතුමාගේ සෘජු අවධානයට පමණක් යොමු වේ.
+          <span id="confidential-text">මෙම පෝරමය මගින් ඔබ යොමු කරන අදහස් සභාපතිතුමාගේ සෘජු අවධානයට පමණක් යොමු වේ.</span>
         </div>
       </div>
 
@@ -172,8 +172,7 @@
           <label class="form-label">යොමු කළ යුතු පාර්ශවය</label>
           <select id="inp-target" class="form-control">
             <option value="ගරු සභාපතිතුමා (Hon. Chairman)">ගරු සභාපතිතුමා (Hon. Chairman)</option>
-            <option value="අධ්‍යක්ෂ මණ්ඩලය (Board of Directors)">අධ්‍යක්ෂ මණ්ඩලය (Board of Directors)</option>
-            <option value="මානව සම්පත් කමිටුව (HR Committee)">මානව සම්පත් කමිටුව (HR Committee)</option>
+            <option value="කළමනාකාරතුමා (Manager)">කළමනාකාරතුමා (Manager)</option>
           </select>
         </div>
 
@@ -197,8 +196,8 @@
           <textarea id="inp-desc" class="form-control" rows="5" required placeholder="ඔබගේ ගැටලුව හෝ සංවර්ධන යෝජනාව මෙහි සටහන් කරන්න..."></textarea>
         </div>
 
-        <button type="submit" class="submit-btn">
-          <i class="fa-solid fa-paper-plane"></i> සභාපතිතුමා වෙත යොමු කරන්න
+        <button type="submit" class="submit-btn" id="btn-submit">
+          <i class="fa-solid fa-paper-plane"></i> <span id="submit-btn-text">සභාපතිතුමා වෙත යොමු කරන්න</span>
         </button>
       </form>
     </div>
@@ -209,8 +208,8 @@
         <i class="fa-solid fa-check"></i>
       </div>
       <h3 style="font-size:20px; font-weight:800; color:#1e1b4b;">යොමු කිරීම සාර්ථකයි!</h3>
-      <p style="font-size:13px; color:#64748b; margin:8px 0 20px;">
-        ඔබගේ පණිවිඩය ආරක්ෂිතව ගලපිටියාගම සණස සමුපකාර සමිතියේ ගරු සභාපතිතුමා හා අධ්‍යක්ෂ මණ්ඩලයේ සෘජු අවධානයට යොමු විය.
+      <p style="font-size:13px; color:#64748b; margin:8px 0 20px;" id="success-target-msg">
+        ඔබගේ පණිවිඩය ආරක්ෂිතව ගලපිටියාගම සණස සමුපකාර සමිතියේ ගරු සභාපතිතුමාගේ සෘජු අවධානයට යොමු විය.
       </p>
       <div style="background:#f8fafc; padding:12px; border-radius:12px; font-weight:700; color:#7c3aed; margin-bottom:20px; font-size:14px;">
         යොමු අංකය: <span id="ref-display">GRV-2026-000</span>
@@ -295,13 +294,42 @@
       } catch (e) {}
 
       document.getElementById('ref-display').textContent = refNo;
+      const targetLabel = payload.targetRecipient.includes('Manager') ? 'කළමනාකාරතුමාගේ' : 'ගරු සභාපතිතුමාගේ';
+      const successTargetMsg = document.getElementById('success-target-msg');
+      if (successTargetMsg) {
+        successTargetMsg.textContent = `ඔබගේ පණිවිඩය ආරක්ෂිතව ගලපිටියාගම සණස සමුපකාර සමිතියේ ${targetLabel} සෘජු අවධානයට යොමු විය.`;
+      }
       document.getElementById('form-container').style.display = 'none';
       document.getElementById('success-screen').style.display = 'block';
     });
 
+    const targetSelect = document.getElementById('inp-target');
+    if (targetSelect) {
+      targetSelect.addEventListener('change', function() {
+        const isManager = this.value.includes('Manager');
+        const submitBtnText = document.getElementById('submit-btn-text');
+        const confText = document.getElementById('confidential-text');
+        if (isManager) {
+          if (submitBtnText) submitBtnText.textContent = 'කළමනාකාරතුමා වෙත යොමු කරන්න';
+          if (confText) confText.textContent = 'මෙම පෝරමය මගින් ඔබ යොමු කරන අදහස් කළමනාකාරතුමාගේ සෘජු අවධානයට පමණක් යොමු වේ.';
+        } else {
+          if (submitBtnText) submitBtnText.textContent = 'සභාපතිතුමා වෙත යොමු කරන්න';
+          if (confText) confText.textContent = 'මෙම පෝරමය මගින් ඔබ යොමු කරන අදහස් සභාපතිතුමාගේ සෘජු අවධානයට පමණක් යොමු වේ.';
+        }
+      });
+    }
+
     function resetForm() {
       document.getElementById('mobile-grv-form').reset();
       setAnon(true);
+      const submitBtn = document.getElementById('btn-submit');
+      const submitBtnText = document.getElementById('submit-btn-text');
+      const confText = document.getElementById('confidential-text');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        if (submitBtnText) submitBtnText.textContent = 'සභාපතිතුමා වෙත යොමු කරන්න';
+      }
+      if (confText) confText.textContent = 'මෙම පෝරමය මගින් ඔබ යොමු කරන අදහස් සභාපතිතුමාගේ සෘජු අවධානයට පමණක් යොමු වේ.';
       document.getElementById('form-container').style.display = 'block';
       document.getElementById('success-screen').style.display = 'none';
     }

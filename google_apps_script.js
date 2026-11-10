@@ -29,7 +29,7 @@ function doPost(e) {
     }
 
     var type = contents.type || contents.action;
-    var data = contents.data;
+    var data = contents.data || contents;
 
     // ---------------------------------------------------------------------
     // A. FULL SYSTEM BACKUP (පූර්ණ පද්ධති උපස්ථය)
@@ -208,8 +208,8 @@ function doPost(e) {
     // ---------------------------------------------------------------------
     // D. EMPLOYEE WELLBEING SURVEY (සේවක තෘප්තිමත්භාවය හා සුවතාවය)
     // ---------------------------------------------------------------------
-    if (type === "survey" || type === "wellbeing") {
-      var wlbSheet = ss.getSheetByName("Wellbeing");
+    if (type === "survey" || type === "wellbeing" || type === "employee_wellbeing") {
+      var wlbSheet = ss.getSheetByName("Wellbeing") || ss.getSheetByName("wellbeing") || ss.getSheetByName("WellBeing");
       if (!wlbSheet) {
         wlbSheet = ss.insertSheet("Wellbeing");
         wlbSheet.appendRow([
@@ -364,7 +364,7 @@ function doGet(e) {
     }
 
     var surveys = [];
-    var wlbSheet = ss.getSheetByName("Wellbeing");
+    var wlbSheet = ss.getSheetByName("Wellbeing") || ss.getSheetByName("wellbeing") || ss.getSheetByName("WellBeing");
     if (wlbSheet && wlbSheet.getLastRow() > 1) {
       var wlbValues = wlbSheet.getDataRange().getValues();
       for (var k = 1; k < wlbValues.length; k++) {

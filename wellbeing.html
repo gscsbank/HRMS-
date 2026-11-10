@@ -437,15 +437,16 @@
         });
       } catch (err) {}
 
-      // 3. LocalStorage persistence
+      // 3. LocalStorage persistence (Local real-time fallback)
       try {
+        let parsed = {};
         const stored = localStorage.getItem('galapitiyagama_sanasa_hrms');
         if (stored) {
-          const parsed = JSON.parse(stored);
-          parsed.surveys = parsed.surveys || [];
-          parsed.surveys.unshift(payload);
-          localStorage.setItem('galapitiyagama_sanasa_hrms', JSON.stringify(parsed));
+          try { parsed = JSON.parse(stored) || {}; } catch (e) {}
         }
+        parsed.surveys = parsed.surveys || [];
+        parsed.surveys.unshift(payload);
+        localStorage.setItem('galapitiyagama_sanasa_hrms', JSON.stringify(parsed));
       } catch (err) {}
 
       document.getElementById('survey-ref').textContent = refNo;

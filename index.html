@@ -152,10 +152,6 @@
         </div>
 
         <div class="top-bar-right">
-          <!-- Print A4 Official Report Button -->
-          <button class="btn-smart btn-smart-light no-print" onclick="window.print()" title="Print A4 Black & White Official Report" style="padding:6px 12px; font-size:12px; border:1px solid #cbd5e1; background:#ffffff;">
-            <i class="fa-solid fa-print" style="color:#10b981;"></i> 🖨️ A4 නිල වාර්තාව
-          </button>
 
           <!-- Cloud / Online QR Status Pill (No Wi-Fi needed!) -->
           <div class="online-pill" id="online-status-pill" onclick="openSmartModal('modal-online-settings')" title="Click to configure online GitHub Pages URL">
@@ -352,6 +348,8 @@
                 <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;">සේවක නාමාවලිය සහ ඩිජිටල් පැතිකඩ</h2>
                 <p style="font-size:12.5px; color:#64748b;">ගලපිටියාගම සණස සමුපකාර සමිතියේ සියලුම සේවකයින්ගේ විස්තර</p>
               </div>
+              
+              <button class="btn-smart btn-smart-light no-print" onclick="printCurrentPageReport()" style="padding:6px 14px; font-size:12px; border:1.5px solid #10b981; color:#059669; background:#f0fdf4; font-weight:700;" title="Print A4 Official Report"><i class="fa-solid fa-print"></i> Print Report</button>
               <button class="btn-smart btn-smart-primary" onclick="openAddEmployeeModal()">
                 <i class="fa-solid fa-user-plus"></i> + නව සේවකයෙකු ලියාපදිංචි කිරීම
               </button>
@@ -399,6 +397,7 @@
                 <p style="font-size:12.5px; color:#64748b;" data-i18n="skillsMatrixDesc">සේවක නිපුණතා ඇගයීම (1-5), පුහුණු අවශ්‍යතා හඳුනා ගැනීම (TNA) සහ AI පදනම් කරගත් ස්මාර්ට් රාජකාරි ගැළපීම</p>
               </div>
               <span class="badge-pill badge-purple"><i class="fa-solid fa-graduation-cap"></i> Competency &amp; TNA System</span>
+              <button class="btn-smart btn-smart-light no-print" onclick="printCurrentPageReport()" style="padding:6px 14px; font-size:12px; border:1.5px solid #10b981; color:#059669; background:#f0fdf4; font-weight:700;" title="Print A4 Official Report"><i class="fa-solid fa-print"></i> Print Report</button>
             </div>
 
             <!-- Sub Navigation Tabs for Skills & Training View -->
@@ -426,14 +425,16 @@
                 <thead>
                   <tr>
                     <th>සේවක නම</th>
-                    <th>අධ්‍යාපනය</th>
-                    <th>ක්ෂුද්‍ර මූල්‍ය</th>
-                    <th>ණය තක්සේරු</th>
-                    <th>ගිණුම්කරණය</th>
-                    <th>බැංකු MIS</th>
-                    <th>Excel / IT</th>
-                    <th>නායකත්වය</th>
-                    <th>සාමාජික සත්කාරය</th>
+                    <th title="අධ්‍යාපනය / න්‍යායාත්මක දැනුම (Education / Knowledge)">1. අධ්‍යාපනය</th>
+                    <th title="ක්ෂුද්‍ර මූල්‍ය හා තැන්පතු කළමනාකරණය (Microfinance & Deposits)">2. ක්ෂුද්‍ර මූල්‍ය</th>
+                    <th title="ණය තක්සේරුව හා අවදානම් කළමනාකරණය (Credit Assessment & Risk)">3. ණය තක්සේරු</th>
+                    <th title="ගිණුම්කරණය (Accounting)">4. ගිණුම්කරණය</th>
+                    <th title="විගණනය හා අභ්‍යන්තර පාලනය (Audit & Compliance)">5. විගණනය</th>
+                    <th title="බැංකු MIS / මෘදුකාංග භාවිතය (Banking MIS & Software)">6. බැංකු MIS</th>
+                    <th title="Excel / තොරතුරු තාක්ෂණය (Excel / IT Skills)">7. Excel / IT</th>
+                    <th title="නායකත්වය හා තීරණ ගැනීමේ හැකියාව (Leadership & Decision Making)">8. නායකත්වය</th>
+                    <th title="සාමාජික සත්කාර හා සන්නිවේදනය (Member Care & Communication)">9. සාමාජික සත්කාර</th>
+                    <th title="නීතිමය හා අයකරගැනීම් (Legal & Recovery)">10. නීතිමය</th>
                     <th>වෙනස්කම්</th>
                   </tr>
                 </thead>
@@ -462,12 +463,40 @@
               <div id="tna-recommendations-list"></div>
             </div>
 
+            <!-- Approved Cooperative Training Programs (10 Courses) -->
+            <div class="card-box" style="margin-bottom:20px; border-left:4px solid #7c3aed; background:linear-gradient(135deg, #ffffff 0%, #faf5ff 100%);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+                <div>
+                  <h3 style="font-size:15px; font-weight:800; color:#1e1b4b; display:flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-graduation-cap" style="color:#7c3aed;"></i>
+                    <span>අනුමත සමුපකාර පුහුණු පාඨමාලා නාමාවලිය (Approved Training Programs)</span>
+                    <span id="training-courses-count-badge" class="badge-pill badge-purple" style="font-size:11px;">10 Courses</span>
+                  </h3>
+                  <p style="font-size:12px; color:#64748b; margin-top:2px;">
+                    සේවකයින්ගේ නිපුණතා හා වෘත්තීය ප්‍රගතිය සඳහා නිර්දේශිත නිල සමුපකාර පුහුණු පාඨමාලා
+                  </p>
+                </div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <button class="btn-smart btn-smart-success" onclick="openAddCourseModal()" style="font-size:12px; padding:8px 14px; background:#10b981; color:#fff; border:none; box-shadow:0 2px 6px rgba(16,185,129,0.25);">
+                    <i class="fa-solid fa-folder-plus"></i> + නව පාඨමාලාවක් එක් කරන්න
+                  </button>
+                  <button class="btn-smart btn-smart-primary" onclick="openManualNominationModal()" style="font-size:12px; padding:8px 14px;">
+                    <i class="fa-solid fa-user-plus"></i> + සේවකයෙකු පුහුණුවට යොමු කරන්න
+                  </button>
+                </div>
+              </div>
+              <div id="approved-training-catalog-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:12px;"></div>
+            </div>
+
             <div class="card-box data-table-container" style="padding:0;">
-              <div style="padding:16px 20px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
+              <div style="padding:16px 20px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                 <h3 style="font-size:15px; font-weight:800; color:#1e1b4b;">
                   <i class="fa-solid fa-award" style="color:#7c3aed; margin-right:6px;"></i>
                   ලියාපදිංචි පුහුණු නාමාවලිය සහ ලොගය (Training Nominations Log)
                 </h3>
+                <button class="btn-smart btn-smart-light" onclick="openManualNominationModal()" style="font-size:12px; padding:6px 12px; color:#7c3aed; border-color:#e9d5ff;">
+                  <i class="fa-solid fa-plus"></i> නව යොමු කිරීමක්
+                </button>
               </div>
               <table class="smart-table">
                 <thead>
@@ -528,6 +557,7 @@
                 <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;">Employee Issues & Suggestions QR System<br><span style="font-size:13px; font-weight:600; color:#7c3aed;">සේවක ගැටළු හා යෝජනා QR පද්ධතිය</span></h2>
                 <p style="font-size:12.5px; color:#64748b;">සේවකයින්ට නාමිකව හෝ 100% නිර්නාමිකව (Anonymous) සේවක ගැටළු හා යෝජනා සෘජුවම යොමු කළ හැක.</p>
               </div>
+              <button class="btn-smart btn-smart-light no-print" onclick="printCurrentPageReport()" style="padding:6px 14px; font-size:12px; border:1.5px solid #10b981; color:#059669; background:#f0fdf4; font-weight:700;" title="Print A4 Official Report"><i class="fa-solid fa-print"></i> Print Report</button>
               <a href="grievance.html" target="_blank" class="btn-smart btn-smart-primary">
                 <i class="fa-solid fa-mobile-screen"></i> ජංගම පෝරමය විවෘත කරන්න
               </a>
@@ -546,7 +576,7 @@
                   මෙම QR කේතය අන්තර්ජාලය (Online) හරහා කෙලින්ම ක්‍රියාත්මක වේ. සේවකයින්ට QR කේතය ස්කෑන් කර නාමිකව හෝ නිර්නාමිකව ගැටළු, සුභසාධන ඉල්ලීම් හා සංවර්ධන යෝජනා යොමු කළ හැක.
                 </p>
                 <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-                  <button class="btn-smart btn-smart-primary" style="background:#7c3aed;" onclick="syncFromCloud()"><i class="fa-solid fa-arrows-rotate" id="sync-icon-grv"></i> Google Sheet දත්ත Sync කරන්න</button>
+                  <button class="btn-smart btn-smart-primary" style="background:#7c3aed;" onclick="syncFromCloud()"><i class="fa-solid fa-arrows-rotate" id="sync-icon-grv"></i> Cloud data sync</button>
                   <button class="btn-smart btn-smart-light" onclick="switchView('posters')"><i class="fa-solid fa-print"></i> A4 පෝස්ටරය මුද්‍රණය</button>
                 </div>
               </div>
@@ -587,6 +617,7 @@
                 <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;">සාමාජික අදහස් විමසීම් Online QR පද්ධතිය</h2>
                 <p style="font-size:12.5px; color:#64748b;">සමුපකාර සාමාජිකයින්ට කවුන්ටරයේදී හෝ නිවසේ සිට සභාපතිතුමා වෙත අදහස් යොමු කළ හැක.</p>
               </div>
+              <button class="btn-smart btn-smart-light no-print" onclick="printCurrentPageReport()" style="padding:6px 14px; font-size:12px; border:1.5px solid #10b981; color:#059669; background:#f0fdf4; font-weight:700;" title="Print A4 Official Report"><i class="fa-solid fa-print"></i> Print Report</button>
               <a href="feedback.html" target="_blank" class="btn-smart btn-smart-primary" style="background:#059669;">
                 <i class="fa-solid fa-mobile-screen"></i> සාමාජික පෝරමය විවෘත කරන්න
               </a>
@@ -605,7 +636,7 @@
                   ණය හා තැන්පතු සේවා වේගය, කාර්ය මණ්ඩල සුහදශීලීත්වය හා ශාඛාවේ පිරිසිදුකම/ පිළිවෙල පිළිබඳ සාමාජික අදහස් සහ තරු ලකුණු ඇගයීම් ලබාගැනීම. (මෙය මානව සම්පත් කළමණාකරන අංශය විසින් ගරු සභාපති ඇතුළු අධ්යක්ෂ මණ්ඩලය වෙත ඉදිරිපත් කල යුතුය.)
                 </p>
                 <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-                  <button class="btn-smart btn-smart-primary" style="background:#059669;" onclick="syncFromCloud()"><i class="fa-solid fa-arrows-rotate" id="sync-icon-fb"></i> Google Sheet දත්ත Sync කරන්න</button>
+                  <button class="btn-smart btn-smart-primary" style="background:#059669;" onclick="syncFromCloud()"><i class="fa-solid fa-arrows-rotate" id="sync-icon-fb"></i> Cloud data sync</button>
                   <button class="btn-smart btn-smart-light" onclick="switchView('posters')"><i class="fa-solid fa-print"></i> කවුන්ටර පෝස්ටරය මුද්‍රණය</button>
                 </div>
               </div>
@@ -693,6 +724,7 @@
               <button class="payroll-subtab-btn" id="btn-tab-payroll-epf" onclick="switchPayrollSubTab('epf')">
                 <i class="fa-solid fa-file-shield"></i> EPF / ETF ගිණුම් හා ගෙවීම් පාලනය (Remittance Tracker)
               </button>
+              <button class="btn-smart btn-smart-light no-print" onclick="printCurrentPageReport()" style="padding:6px 14px; font-size:12px; border:1.5px solid #10b981; color:#059669; background:#f0fdf4; font-weight:700;" title="Print A4 Official Report"><i class="fa-solid fa-print"></i> Print Report</button>
             </div>
           </div>
 
@@ -938,6 +970,7 @@
                 <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;" data-i18n="appraisalHeader">සේවක කාර්යසාධන ඇගයීම් සහ ලකුණු මට්ටම් (Performance Appraisals)</h2>
                 <p style="font-size:12.5px; color:#64748b;" data-i18n="appraisalSub">රාජකාරි කාර්යක්ෂමතාව, ණය අයවීම්, සාමාජික සත්කාරය සහ ඉලක්ක ජයගැනීමේ KPI ලකුණු මට්ටම්</p>
               </div>
+              <button class="btn-smart btn-smart-light no-print" onclick="printCurrentPageReport()" style="padding:6px 14px; font-size:12px; border:1.5px solid #10b981; color:#059669; background:#f0fdf4; font-weight:700;" title="Print A4 Official Report"><i class="fa-solid fa-print"></i> Print Report</button>
               <button class="btn-smart btn-smart-primary" onclick="openAddAppraisalModal()">
                 <i class="fa-solid fa-award"></i> + නව කාර්යසාධන ඇගයීමක් සිදු කරන්න
               </button>
@@ -1025,6 +1058,7 @@
               <button class="btn-smart btn-smart-light" style="color:#059669; border-color:#a7f3d0;" onclick="openAddManualSurveyModal()">
                 <i class="fa-solid fa-plus"></i> + සටහනක් එක් කරන්න
               </button>
+              <button class="btn-smart btn-smart-light no-print" onclick="printCurrentPageReport()" style="padding:6px 14px; font-size:12px; border:1.5px solid #10b981; color:#059669; background:#f0fdf4; font-weight:700;" title="Print A4 Official Report"><i class="fa-solid fa-print"></i> Print Report</button>
               <button class="btn-smart btn-smart-light" style="color:#dc2626; border-color:#fecaca;" onclick="clearAllSurveys()">
                 <i class="fa-solid fa-trash-can"></i> සියල්ල ඉවත් කරන්න
               </button>
@@ -1144,6 +1178,7 @@
                 <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;">ක්‍රියාත්මක ව්‍යාපෘති සහ රාජකාරි ප්‍රගතිය (Work Progress)</h2>
                 <p style="font-size:12.5px; color:#64748b;">සමිතියේ විශේෂ ව්‍යාපෘති, ක්ෂේත්‍ර ඉලක්ක සහ අංශ අනුව ප්‍රගතිය කළමනාකරණය</p>
               </div>
+              <button class="btn-smart btn-smart-light no-print" onclick="printCurrentPageReport()" style="padding:6px 14px; font-size:12px; border:1.5px solid #10b981; color:#059669; background:#f0fdf4; font-weight:700;" title="Print A4 Official Report"><i class="fa-solid fa-print"></i> Print Report</button>
               <button class="btn-smart btn-smart-primary" onclick="openAddProjectModal()">
                 <i class="fa-solid fa-plus"></i> + නව ව්‍යාපෘතියක් එක් කරන්න
               </button>
@@ -1165,6 +1200,7 @@
                 <h2 style="font-size:18px; font-weight:800; color:#1e1b4b;">නිල රැස්වීම් සහ දින දර්ශනය (Upcoming Meetings)</h2>
                 <p style="font-size:12.5px; color:#64748b;">අධ්‍යක්ෂ මණ්ඩල, ණය කමිටු, සහ කාර්ය මණ්ඩල රැස්වීම් සැලසුම් කිරීම</p>
               </div>
+              <button class="btn-smart btn-smart-light no-print" onclick="printCurrentPageReport()" style="padding:6px 14px; font-size:12px; border:1.5px solid #10b981; color:#059669; background:#f0fdf4; font-weight:700;" title="Print A4 Official Report"><i class="fa-solid fa-print"></i> Print Report</button>
               <button class="btn-smart btn-smart-primary" onclick="openAddMeetingModal()">
                 <i class="fa-solid fa-calendar-plus"></i> + නව රැස්වීමක් සැලසුම් කරන්න
               </button>
@@ -1269,7 +1305,7 @@
                 <h3 style="font-size:15px; font-weight:800; color:#065f46; margin-bottom:4px;">
                   <i class="fa-solid fa-database" style="color:#059669; margin-right:8px;"></i> දත්ත උපස්ථ හා ප්‍රතිසාධන මධ්‍යස්ථානය (Data Backup & Restore Center)
                 </h3>
-                <p style="font-size:12px; color:#047857; margin:0;">Google Sheet Cloud වෙත හෝ පරිගණකයට සම්පූර්ණ පද්ධති Backup එකක් ලබාගෙන දත්ත සුරක්ෂිතව තබාගන්න.</p>
+                <p style="font-size:12px; color:#047857; margin:0;">Iraasoft Cloud වෙත හෝ පරිගණකයට සම්පූර්ණ පද්ධති Backup එකක් ලබාගෙන දත්ත සුරක්ෂිතව තබාගන්න.</p>
               </div>
               <div style="display:flex; gap:10px;">
                 <button type="button" class="btn-smart btn-smart-primary" style="background:#059669;" onclick="performCloudBackup()">
@@ -1294,13 +1330,10 @@
                   <i class="fa-solid fa-database" style="color:#0284c7; margin-right:8px;"></i> දත්ත උපස්ථ සහ ප්‍රතිසාධනය (Data Backup & Restore)
                 </h2>
                 <p style="font-size:12.5px; color:#64748b; margin:0;">
-                  Google Apps Script / Google Sheets Cloud මාර්ගයෙන් හෝ නොබැඳි JSON ගොනු මගින් සම්පූර්ණ පද්ධතියේ දත්ත ආරක්ෂිතව Backup සහ Restore කරගන්න.
+                  Iraasoft Cloud මාර්ගයෙන් සම්පූර්ණ පද්ධතියේ දත්ත ආරක්ෂිතව Backup සහ Restore කරගන්න.
                 </p>
               </div>
               <div style="display:flex; gap:8px;">
-                <button class="btn-smart btn-smart-light" onclick="openSmartModal('modal-online-settings')">
-                  <i class="fa-solid fa-sliders"></i> Cloud Settings
-                </button>
                 <button class="btn-smart btn-smart-primary" style="background:#059669;" onclick="performCloudBackup()">
                   <i class="fa-solid fa-cloud-arrow-up"></i> Quick Cloud Backup
                 </button>
@@ -1316,7 +1349,7 @@
               <div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
                   <h3 style="font-size:15px; font-weight:800; color:#1e1b4b; display:flex; align-items:center; gap:8px;">
-                    <i class="fa-brands fa-google-drive" style="color:#7c3aed; font-size:18px;"></i> Google Sheets Cloud Backup & Restore
+                    <i class="fa-solid fa-cloud" style="color:#7c3aed; font-size:18px;"></i> Iraasoft Cloud Backup
                   </h3>
                   <span class="badge-pill badge-purple" id="badge-cloud-config-status">Cloud Ready</span>
                 </div>
@@ -1333,7 +1366,7 @@
                       <div id="display-cloud-last-backup" style="font-weight:700; color:#4c1d95; font-size:12px; margin-top:2px;">පරීක්ෂා කර නොමැත</div>
                     </div>
                     <div>
-                      <span style="color:#6d28d9; font-weight:600;">Google Sheet එකේ ඇති මුළු Backups:</span>
+                      <span style="color:#6d28d9; font-weight:600;">Cloud එකේ ඇති මුළු Backups:</span>
                       <div id="display-cloud-total-backups" style="font-weight:700; color:#4c1d95; font-size:12px; margin-top:2px;">-</div>
                     </div>
                   </div>
@@ -1343,7 +1376,7 @@
               <!-- Action Buttons for Cloud -->
               <div style="display:flex; flex-direction:column; gap:10px;">
                 <button type="button" class="btn-smart btn-smart-primary" style="background:#7c3aed; width:100%; justify-content:center;" onclick="performCloudBackup()" id="btn-cloud-backup-action">
-                  <i class="fa-solid fa-cloud-arrow-up"></i> Google Sheet වෙත දැන් Backup කරන්න (Backup to Cloud)
+                  <i class="fa-solid fa-cloud-arrow-up"></i> Iraasoft Cloud වෙත දැන් Backup කරන්න (Backup to Cloud)
                 </button>
 
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
@@ -1362,13 +1395,13 @@
               <div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
                   <h3 style="font-size:15px; font-weight:800; color:#1e1b4b; display:flex; align-items:center; gap:8px;">
-                    <i class="fa-solid fa-file-shield" style="color:#059669; font-size:18px;"></i> පරිගණක ගොනු උපස්ථය (Offline JSON Backup)
+                    <i class="fa-solid fa-file-shield" style="color:#059669; font-size:18px;"></i> පරිගණක ගොනු උපස්ථය (Offline Backup)
                   </h3>
                   <span class="badge-pill badge-green">100% Offline Safe</span>
                 </div>
 
                 <p style="font-size:12px; color:#64748b; line-height:1.5; margin-bottom:14px;">
-                  අන්තර්ජාල පහසුකම් නොමැති අවස්ථාවකදී පවා පද්ධතියේ සම්පූර්ණ දත්ත <code>.json</code> ගොනුවක් ලෙස ඔබගේ පරිගණකයට හෝ Pen Drive එකකට බාගත කර තබාගත හැක. අවශ්‍ය විටෙක එම ගොනුව තෝරා එක ක්ලික් එකකින් දත්ත ප්‍රතිසාධනය කළ හැක.
+                  අන්තර්ජාල පහසුකම් නොමැති අවස්ථාවකදී පවා පද්ධතියේ සම්පූර්ණ දත්ත backup ගොනුවක් ලෙස ඔබගේ පරිගණකයට හෝ Pen Drive එකකට බාගත කර තබාගත හැක. අවශ්‍ය විටෙක එම ගොනුව තෝරා එක ක්ලික් එකකින් දත්ත ප්‍රතිසාධනය කළ හැක.
                 </p>
 
                 <!-- Local File Info Box -->
@@ -1383,7 +1416,7 @@
               <!-- Action Buttons for Local File -->
               <div style="display:flex; flex-direction:column; gap:10px;">
                 <button type="button" class="btn-smart btn-smart-primary" style="background:#059669; width:100%; justify-content:center;" onclick="downloadLocalBackup()">
-                  <i class="fa-solid fa-download"></i> පද්ධති Backup ගොනුව බාගන්න (Download .json)
+                  <i class="fa-solid fa-download"></i> පද්ධති Backup ගොනුව බාගන්න (Download Backup)
                 </button>
 
                 <div>
@@ -1445,22 +1478,9 @@
               </div>
             </div>
 
-            <!-- Server Snapshot & Reset Danger Zone -->
-            <div class="card-box" style="display:flex; flex-direction:column; justify-content:space-between;">
-              <div>
-                <h3 style="font-size:15px; font-weight:800; color:#1e1b4b; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
-                  <i class="fa-solid fa-server" style="color:#64748b;"></i> පරිගණක සේවාදායක Snapshot
-                </h3>
-                <p style="font-size:12px; color:#64748b; line-height:1.5; margin-bottom:14px;">
-                  දේශීය C# සේවාදායකයේ (Kestrel) <code>data/backups/</code> ෆෝල්ඩරය තුළ snapshot පිටපතක් ක්ෂණිකව සුරකින්න.
-                </p>
-                <button type="button" class="btn-smart btn-smart-light" style="width:100%; justify-content:center; margin-bottom:16px;" onclick="createLocalServerSnapshot()">
-                  <i class="fa-solid fa-hard-drive"></i> සේවාදායක Snapshot එකක් සුරකින්න (Save to Server)
-                </button>
-              </div>
-
-              <!-- Reset to Defaults Warning Box -->
-              <div style="border-top:1px dashed #e2e8f0; padding-top:14px;">
+            <!-- Reset to Defaults Warning Box (Danger Zone) -->
+            <div class="card-box" style="display:flex; flex-direction:column; justify-content:center; border-top:4px solid #ef4444;">
+              <div style="padding-top:4px;">
                 <div style="font-size:12px; font-weight:700; color:#dc2626; margin-bottom:4px;">
                   <i class="fa-solid fa-triangle-exclamation"></i> අනතුරුදායක කලාපය (Danger Zone)
                 </div>
@@ -1683,7 +1703,7 @@
 
   <!-- Skills Edit Modal -->
   <div class="smart-modal-overlay" id="modal-smart-skills-edit">
-    <div class="smart-modal-box">
+    <div class="smart-modal-box large">
       <div class="smart-modal-header">
         <h3><i class="fa-solid fa-sliders" style="color:#7c3aed;"></i> Skills Matrix මට්ටම් (1-5) වෙනස් කිරීම</h3>
         <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-smart-skills-edit')">&times;</button>
@@ -1693,22 +1713,194 @@
           <input type="hidden" id="skill-edit-emp-id">
           <strong id="skill-edit-emp-name" style="color:#7c3aed; font-size:14px; display:block; margin-bottom:12px;"></strong>
           
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <div><label style="font-size:11.5px; font-weight:700;">අධ්‍යාපනය (1-5)</label><input type="number" id="skill-val-educationLevel" class="form-input-pill" min="1" max="5"></div>
-            <div><label style="font-size:11.5px; font-weight:700;">ක්ෂුද්‍ර මූල්‍ය (1-5)</label><input type="number" id="skill-val-microfinance" class="form-input-pill" min="1" max="5"></div>
-            <div><label style="font-size:11.5px; font-weight:700;">ණය තක්සේරු (1-5)</label><input type="number" id="skill-val-creditAppraisal" class="form-input-pill" min="1" max="5"></div>
-            <div><label style="font-size:11.5px; font-weight:700;">ගිණුම්කරණය (1-5)</label><input type="number" id="skill-val-accounting" class="form-input-pill" min="1" max="5"></div>
-            <div><label style="font-size:11.5px; font-weight:700;">විගණනය (1-5)</label><input type="number" id="skill-val-audit" class="form-input-pill" min="1" max="5"></div>
-            <div><label style="font-size:11.5px; font-weight:700;">බැංකු MIS (1-5)</label><input type="number" id="skill-val-bankingSoftware" class="form-input-pill" min="1" max="5"></div>
-            <div><label style="font-size:11.5px; font-weight:700;">Excel / IT (1-5)</label><input type="number" id="skill-val-excel" class="form-input-pill" min="1" max="5"></div>
-            <div><label style="font-size:11.5px; font-weight:700;">නායකත්වය (1-5)</label><input type="number" id="skill-val-teamLeadership" class="form-input-pill" min="1" max="5"></div>
-            <div><label style="font-size:11.5px; font-weight:700;">සාමාජික සත්කාරය (1-5)</label><input type="number" id="skill-val-customerCare" class="form-input-pill" min="1" max="5"></div>
-            <div><label style="font-size:11.5px; font-weight:700;">නීතිමය/අයකරගැනීම් (1-5)</label><input type="number" id="skill-val-legalRecovery" class="form-input-pill" min="1" max="5"></div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:4px;">1. අධ්‍යාපනය / න්‍යායාත්මක දැනුම (Education / Knowledge)</label>
+              <input type="number" id="skill-val-educationLevel" class="form-input-pill" min="1" max="5" placeholder="1-5">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:4px;">2. ක්ෂුද්‍ර මූල්‍ය හා තැන්පතු කළමනාකරණය (Microfinance & Deposits)</label>
+              <input type="number" id="skill-val-microfinance" class="form-input-pill" min="1" max="5" placeholder="1-5">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:4px;">3. ණය තක්සේරුව හා අවදානම් කළමනාකරණය (Credit Assessment & Risk)</label>
+              <input type="number" id="skill-val-creditAppraisal" class="form-input-pill" min="1" max="5" placeholder="1-5">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:4px;">4. ගිණුම්කරණය (Accounting)</label>
+              <input type="number" id="skill-val-accounting" class="form-input-pill" min="1" max="5" placeholder="1-5">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:4px;">5. විගණනය හා අභ්‍යන්තර පාලනය (Audit & Compliance)</label>
+              <input type="number" id="skill-val-audit" class="form-input-pill" min="1" max="5" placeholder="1-5">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:4px;">6. බැංකු MIS / මෘදුකාංග භාවිතය (Banking MIS & Software)</label>
+              <input type="number" id="skill-val-bankingSoftware" class="form-input-pill" min="1" max="5" placeholder="1-5">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:4px;">7. Excel / තොරතුරු තාක්ෂණය (Excel / IT Skills)</label>
+              <input type="number" id="skill-val-excel" class="form-input-pill" min="1" max="5" placeholder="1-5">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:4px;">8. නායකත්වය හා තීරණ ගැනීමේ හැකියාව (Leadership & Decision Making)</label>
+              <input type="number" id="skill-val-teamLeadership" class="form-input-pill" min="1" max="5" placeholder="1-5">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:4px;">9. සාමාජික සත්කාර හා සන්නිවේදනය (Member Care & Communication)</label>
+              <input type="number" id="skill-val-customerCare" class="form-input-pill" min="1" max="5" placeholder="1-5">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:4px;">10. නීතිමය හා අයකරගැනීම් (Legal & Recovery)</label>
+              <input type="number" id="skill-val-legalRecovery" class="form-input-pill" min="1" max="5" placeholder="1-5">
+            </div>
           </div>
         </div>
         <div class="smart-modal-footer">
           <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-skills-edit')">අවලංගු කරන්න</button>
           <button type="submit" class="btn-smart btn-smart-primary"><i class="fa-solid fa-save"></i> සුරකින්න</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  
+
+  <!-- Modal: Manual Training Nomination -->
+  <div class="smart-modal-overlay" id="modal-smart-manual-nomination">
+    <div class="smart-modal-box">
+      <div class="smart-modal-header">
+        <h3><i class="fa-solid fa-graduation-cap" style="color:#7c3aed;"></i> සේවකයෙකු පුහුණුවට යොමු කිරීම (Nominate for Training)</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-smart-manual-nomination')">&times;</button>
+      </div>
+      <form id="form-smart-manual-nomination" onsubmit="saveManualNomination(event)">
+        <div class="smart-modal-body">
+          <div style="margin-bottom:14px;">
+            <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:5px;">සේවකයා තෝරන්න (Select Staff Member) *</label>
+            <select id="nom-manual-emp" class="form-input-pill" required style="width:100%;"></select>
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:5px;">පුහුණු පාඨමාලාව තෝරන්න (Select Training Program) *</label>
+            <select id="nom-manual-course" class="form-input-pill" required style="width:100%;">
+              <option value="1. සමුපකාර සාමාන්‍ය පෙළ (Cooperative Ordinary Level)">1. සමුපකාර සාමාන්‍ය පෙළ (Cooperative Ordinary Level)</option>
+              <option value="2. සමුපකාර උසස් පෙළ (Cooperative Advanced Level)">2. සමුපකාර උසස් පෙළ (Cooperative Advanced Level)</option>
+              <option value="3. සමුපකාර කළමනාකරණ ඩිප්ලෝමා (Diploma in Cooperative Management)">3. සමුපකාර කළමනාකරණ ඩිප්ලෝමා (Diploma in Cooperative Management)</option>
+              <option value="4. ක්ෂුද්‍ර මූල්‍ය හා ණය කළමනාකරණ පුහුණු (Microfinance & Credit Management Training)">4. ක්ෂුද්‍ර මූල්‍ය හා ණය කළමනාකරණ පුහුණු (Microfinance & Credit Management Training)</option>
+              <option value="5. ගිණුම්කරණය සහ අභ්‍යන්තර විගණන පුහුණු (Accounting & Internal Audit Training)">5. ගිණුම්කරණය සහ අභ්‍යන්තර විගණන පුහුණු (Accounting & Internal Audit Training)</option>
+              <option value="6. සමිති මෘදුකාංග (MIS) සහ IT/Excel පුහුණු (Banking MIS & IT Skills Training)">6. සමිති මෘදුකාංග (MIS) සහ IT/Excel පුහුණු (Banking MIS & IT Skills Training)</option>
+              <option value="7. ණය අයකරගැනීමේ සහ නීතිමය කටයුතු පිළිබඳ පුහුණු (Debt Recovery & Legal Compliance Training)">7. ණය අයකරගැනීමේ සහ නීතිමය කටයුතු පිළිබඳ පුහුණු (Debt Recovery & Legal Compliance Training)</option>
+              <option value="8. සාමාජික සත්කාර සහ සන්නිවේදන පුහුණු (Member Care & Customer Relations Training)">8. සාමාජික සත්කාර සහ සන්නිවේදන පුහුණු (Member Care & Customer Relations Training)</option>
+              <option value="9. නායකත්ව සහ කළමනාකරණ සංවර්ධන පුහුණු (Leadership & Management Development)">9. නායකත්ව සහ කළමනාකරණ සංවර්ධන පුහුණු (Leadership & Management Development)</option>
+              <option value="10. ව්‍යවසායකත්ව ප්‍රවර්ධනය සහ ව්‍යාපෘති කළමනාකරණ පුහුණු (Entrepreneurship & Project Management Training)">10. ව්‍යවසායකත්ව ප්‍රවර්ධනය සහ ව්‍යාපෘති කළමනාකරණ පුහුණු (Entrepreneurship & Project Management Training)</option>
+            </select>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:5px;">ප්‍රමුඛතාවය (Priority)</label>
+              <select id="nom-manual-priority" class="form-input-pill" style="width:100%;">
+                <option value="High">ඉහළ (High Priority)</option>
+                <option value="Medium" selected>මධ්‍යම (Medium)</option>
+                <option value="Normal">සාමාන්‍ය (Normal)</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:5px;">යොමු කළ දිනය (Date)</label>
+              <input type="date" id="nom-manual-date" class="form-input-pill" style="width:100%;">
+            </div>
+          </div>
+
+          <div>
+            <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:5px;">විශේෂ සටහන (Optional Notes / Remarks)</label>
+            <input type="text" id="nom-manual-notes" class="form-input-pill" placeholder="උදා: සභාපතිතුමා / කළමනාකරුගේ අනුමැතිය පරිදි" style="width:100%;">
+          </div>
+        </div>
+        <div class="smart-modal-footer">
+          <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-manual-nomination')">අවලංගු කරන්න</button>
+          <button type="submit" class="btn-smart btn-smart-primary"><i class="fa-solid fa-check"></i> යොමු කිරීම තහවුරු කරන්න</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  
+
+  <!-- Modal: Add New Training Course -->
+  <div class="smart-modal-overlay" id="modal-smart-add-course">
+    <div class="smart-modal-box">
+      <div class="smart-modal-header">
+        <h3><i class="fa-solid fa-folder-plus" style="color:#10b981;"></i> නව පුහුණු පාඨමාලාවක් එක් කිරීම (Add New Course)</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-smart-add-course')">&times;</button>
+      </div>
+      <form id="form-smart-add-course" onsubmit="saveNewCourse(event)">
+        <div class="smart-modal-body">
+          <div style="margin-bottom:14px;">
+            <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:5px;">පාඨමාලාවේ නම - සිංහලෙන් (Course Name in Sinhala) *</label>
+            <input type="text" id="course-name-si" class="form-input-pill" required placeholder="උදා: ණය ප්‍රතිසාධන හා නීතිමය ක්‍රමෝපාය පුහුණුව" style="width:100%;">
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:5px;">පාඨමාලාවේ නම - ඉංග්‍රීසියෙන් (Course Name in English) *</label>
+            <input type="text" id="course-name-en" class="form-input-pill" required placeholder="e.g. Advanced Debt Recovery & Legal Strategies" style="width:100%;">
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:5px;">කාණ්ඩය (Category)</label>
+              <select id="course-category" class="form-input-pill" style="width:100%;">
+                <option value="මූලික දැනුම (Foundation)">මූලික දැනුම (Foundation)</option>
+                <option value="උසස් දැනුම (Advanced)">උසස් දැනුම (Advanced)</option>
+                <option value="ඩිප්ලෝමා (Diploma)">ඩිප්ලෝමා (Diploma)</option>
+                <option value="මූල්‍ය හා ණය මෙහෙයුම්">මූල්‍ය හා ණය මෙහෙයුම්</option>
+                <option value="ගිණුම් හා විගණනය">ගිණුම් හා විගණනය</option>
+                <option value="තොරතුරු තාක්ෂණ හා MIS">තොරතුරු තාක්ෂණ හා MIS</option>
+                <option value="නීතිමය හා අයකරගැනීම්">නීතිමය හා අයකරගැනීම්</option>
+                <option value="සාමාජික සත්කාර හා PR">සාමාජික සත්කාර හා PR</option>
+                <option value="නායකත්වය හා කළමනාකරණය">නායකත්වය හා කළමනාකරණය</option>
+                <option value="ව්‍යාපෘති හා ව්‍යවසායකත්වය">ව්‍යාපෘති හා ව්‍යවසායකත්වය</option>
+                <option value="වෙනත් විශේෂිත පුහුණු">වෙනත් විශේෂිත පුහුණු</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:5px;">ලාංඡනය / Icon</label>
+              <select id="course-icon" class="form-input-pill" style="width:100%;">
+                <option value="fa-graduation-cap">🎓 Graduation Cap</option>
+                <option value="fa-book-open">📖 Open Book</option>
+                <option value="fa-book">📕 Book</option>
+                <option value="fa-user-tie">👔 Professional</option>
+                <option value="fa-hand-holding-dollar">💰 Finance / Credit</option>
+                <option value="fa-file-invoice-dollar">🧾 Accounting / Audit</option>
+                <option value="fa-laptop-code">💻 IT / Software</option>
+                <option value="fa-scale-balanced">⚖️ Legal / Compliance</option>
+                <option value="fa-headset">🎧 Customer Service</option>
+                <option value="fa-users-gear">⚙️ Leadership / Operations</option>
+                <option value="fa-chart-line">📈 Entrepreneurship / Growth</option>
+                <option value="fa-award">🏅 Award / Certificate</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label style="font-size:12px; font-weight:700; color:#1e1b4b; display:block; margin-bottom:5px;">තේමා වර්ණය (Badge Color Theme)</label>
+            <select id="course-color" class="form-input-pill" style="width:100%;">
+              <option value="#7c3aed">දම් පාට (Purple)</option>
+              <option value="#059669">කොළ පාට (Green)</option>
+              <option value="#2563eb">නිල් පාට (Blue)</option>
+              <option value="#0891b2">සයන් නිල් (Cyan)</option>
+              <option value="#d97706">කහ/තැඹිලි (Amber)</option>
+              <option value="#dc2626">රතු පාට (Red)</option>
+              <option value="#ea580c">තැඹිලි (Orange)</option>
+              <option value="#4f46e5">ඉන්ඩිගෝ (Indigo)</option>
+              <option value="#64748b">අළු පාට (Slate)</option>
+            </select>
+          </div>
+        </div>
+        <div class="smart-modal-footer">
+          <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-add-course')">අවලංගු කරන්න</button>
+          <button type="submit" class="btn-smart btn-smart-success" style="background:#10b981; color:#fff; border:none; padding:8px 16px;">
+            <i class="fa-solid fa-check"></i> පාඨමාලාව එක් කරන්න
+          </button>
         </div>
       </form>
     </div>
@@ -1838,7 +2030,9 @@
             <div>
               <label style="font-size:12px; font-weight:700;">යොමු කළේ (Target Recipient)</label>
               <select id="edit-grv-targetRecipient" class="form-input-pill">
-                <option value="ප්‍රධාන කළමනාකරු (General Manager)">ප්‍රධාන කළමනාකරු</option>
+                <option value="ගරු සභාපතිතුමා (Hon. Chairman)">ගරු සභාපතිතුමා (Hon. Chairman)</option>
+                <option value="කළමනාකාරතුමා (Manager)">කළමනාකාරතුමා (Manager)</option>
+                <option value="ප්‍රධාන කළමනාකරු (General Manager)">ප්‍රධාන කළමනාකරු (General Manager)</option>
                 <option value="ශ්‍රී ලංකා සමුපකාර (HR Department)">HR / සමුපකාර</option>
                 <option value="SANASA Board / සනාස මණ්ඩලය">SANASA Board / සනාස මණ්ඩලය</option>
                 <option value="ශාඛා කළමනාකරු (Branch Manager)">ශාඛා කළමනාකරු</option>
@@ -2748,7 +2942,7 @@
       <div class="smart-modal-body" id="sheet-print-content" style="padding:20px; overflow-x:auto;"></div>
       <div class="smart-modal-footer">
         <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-sheet-print')">වසන්න</button>
-        <button type="button" class="btn-smart btn-smart-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> මුද්‍රණය කරන්න (Print A4)</button>
+        <button type="button" class="btn-smart btn-smart-primary" style="background:#059669;" onclick="printModalSheetContent()"><i class="fa-solid fa-print"></i> මුද්‍රණය කරන්න (Print A4)</button>
       </div>
     </div>
   </div>
@@ -2914,12 +3108,12 @@
   <div class="smart-modal-overlay" id="modal-cloud-backups-list">
     <div class="smart-modal-box large">
       <div class="smart-modal-header">
-        <h3><i class="fa-brands fa-google-drive" style="color:#7c3aed; margin-right:8px;"></i> Google Sheets Cloud Backups ඉතිහාසය</h3>
+        <h3><i class="fa-solid fa-cloud" style="color:#7c3aed; margin-right:8px;"></i> Iraasoft Cloud Backups ඉතිහාසය</h3>
         <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-cloud-backups-list')">&times;</button>
       </div>
       <div class="smart-modal-body">
         <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:12px; color:#64748b;">Google Sheet එකෙහි ඇති පෙර ලබාගත් උපස්ථ පිටපත් ලැයිස්තුව:</span>
+          <span style="font-size:12px; color:#64748b;">Cloud ගබඩාව වෙත සුරැකි සම්පූර්ණ පද්ධති උපස්ථ ලේඛනය:</span>
           <button type="button" class="btn-smart btn-smart-light" style="font-size:11px; padding:4px 10px;" onclick="loadCloudBackupsHistory()">
             <i class="fa-solid fa-arrows-rotate" id="icon-refresh-cloud-backups"></i> යාවත්කාලීන කරන්න
           </button>

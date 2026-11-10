@@ -40,26 +40,6 @@ const defaultSeedData = {
       roleTitle: "සණස ප්‍රධාන පරිපාලක (Full Admin Access)",
       role: "admin",
       password: "admin123"
-    },
-    {
-      id: "USR-002",
-      username: "manager",
-      name: "කේ. ආර්. විජේසුන්දර (General Manager)",
-      createdDate: "2026-09-24",
-      status: "Active",
-      roleTitle: "සාමාන්‍යාධිකාරී (Manager Access)",
-      role: "manager",
-      password: "sanasa123"
-    },
-    {
-      id: "USR-003",
-      username: "officer",
-      name: "ණය හා ක්ෂේත්‍ර නිලධාරී (Credit Officer)",
-      createdDate: "2026-09-24",
-      status: "Active",
-      roleTitle: "ක්ෂේත්‍ර නිලධාරී (Officer Access)",
-      role: "officer",
-      password: "officer123"
     }
   ],
   appraisals: [],
@@ -85,6 +65,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     setTimeout(() => syncFromCloud(true), 1500);
     setInterval(() => syncFromCloud(true), 25000);
   }
+
+  // Realtime cross-tab sync when QR form is submitted in another tab on same device
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'galapitiyagama_sanasa_hrms' && e.newValue) {
+      try {
+        const updated = JSON.parse(e.newValue);
+        if (updated) {
+          if (Array.isArray(updated.grievances)) appData.grievances = updated.grievances;
+          if (Array.isArray(updated.memberFeedbacks)) appData.memberFeedbacks = updated.memberFeedbacks;
+          if (Array.isArray(updated.surveys)) appData.surveys = updated.surveys;
+          renderGrievancePortal();
+          renderMemberFeedbackPortal();
+          renderSatisfactionModule();
+          renderDashboardStats();
+        }
+      } catch (err) {}
+    }
+  });
 });
 
 // =========================================================================
@@ -505,6 +503,9 @@ async function loadApplicationData() {
   if (!appData.meetings) appData.meetings = [];
   if (!appData.users || appData.users.length === 0) {
     appData.users = JSON.parse(JSON.stringify(defaultSeedData.users));
+  } else {
+    // Purge legacy default manager and officer from cache
+    appData.users = appData.users.filter(u => u.username !== 'manager' && u.username !== 'officer');
   }
   if (!appData.grievances) appData.grievances = [];
   if (!appData.memberFeedbacks) appData.memberFeedbacks = [];
@@ -1285,16 +1286,336 @@ function switchSkillsSubTab(tabName) {
 }
 
 const skillMetaMap = {
-  microfinance: { name: "ක්ෂුද්‍ර මූල්‍ය මෙහෙයුම්", course: "Microfinance & Rural Credit Mastery Workshop" },
-  creditAppraisal: { name: "ණය තක්සේරුව & අවදානම්", course: "Advanced Credit Appraisal & Risk Management" },
-  accounting: { name: "ගිණුම්කරණය & මූල්‍ය", course: "Cooperative Accounting & Statutory Audit Training" },
-  bankingSoftware: { name: "බැංකු MIS පද්ධති", course: "Bank MIS & Software Operations Certification" },
-  excel: { name: "Excel & IT හැකියාවන්", course: "Advanced Excel, Dashboards & Data Analysis" },
-  teamLeadership: { name: "නායකත්වය & කණ්ඩායම්", course: "Leadership, Team Management & HR Ethics" },
-  customerCare: { name: "සාමාජික සත්කාරය", course: "Member Care, Service Excellence & Communication" }
+  educationLevel: { name: "අධ්‍යාපනය / න්‍යායාත්මක දැනුම (Education / Knowledge)", course: "3. සමුපකාර කළමනාකරණ ඩිප්ලෝමා (Diploma in Cooperative Management)" },
+  microfinance: { name: "ක්ෂුද්‍ර මූල්‍ය හා තැන්පතු කළමනාකරණය (Microfinance & Deposits)", course: "4. ක්ෂුද්‍ර මූල්‍ය හා ණය කළමනාකරණ පුහුණු (Microfinance & Credit Management Training)" },
+  creditAppraisal: { name: "ණය තක්සේරුව හා අවදානම් කළමනාකරණය (Credit Assessment & Risk)", course: "4. ක්ෂුද්‍ර මූල්‍ය හා ණය කළමනාකරණ පුහුණු (Microfinance & Credit Management Training)" },
+  accounting: { name: "ගිණුම්කරණය (Accounting)", course: "5. ගිණුම්කරණය සහ අභ්‍යන්තර විගණන පුහුණු (Accounting & Internal Audit Training)" },
+  audit: { name: "විගණනය හා අභ්‍යන්තර පාලනය (Audit & Compliance)", course: "5. ගිණුම්කරණය සහ අභ්‍යන්තර විගණන පුහුණු (Accounting & Internal Audit Training)" },
+  bankingSoftware: { name: "බැංකු MIS / මෘදුකාංග භාවිතය (Banking MIS & Software)", course: "6. සමිති මෘදුකාංග (MIS) සහ IT/Excel පුහුණු (Banking MIS & IT Skills Training)" },
+  excel: { name: "Excel / තොරතුරු තාක්ෂණය (Excel / IT Skills)", course: "6. සමිති මෘදුකාංග (MIS) සහ IT/Excel පුහුණු (Banking MIS & IT Skills Training)" },
+  teamLeadership: { name: "නායකත්වය හා තීරණ ගැනීමේ හැකියාව (Leadership & Decision Making)", course: "9. නායකත්ව සහ කළමනාකරණ සංවර්ධන පුහුණු (Leadership & Management Development)" },
+  customerCare: { name: "සාමාජික සත්කාර හා සන්නිවේදනය (Member Care & Communication)", course: "8. සාමාජික සත්කාර සහ සන්නිවේදන පුහුණු (Member Care & Customer Relations Training)" },
+  legalRecovery: { name: "නීතිමය හා අයකරගැනීම් (Legal & Recovery)", course: "7. ණය අයකරගැනීමේ සහ නීතිමය කටයුතු පිළිබඳ පුහුණු (Debt Recovery & Legal Compliance Training)" }
 };
 
+const defaultTrainingCatalog = [
+  {
+    id: "TRN-C01",
+    no: "01",
+    nameSi: "සමුපකාර සාමාන්‍ය පෙළ",
+    nameEn: "Cooperative Ordinary Level",
+    fullName: "1. සමුපකාර සාමාන්‍ය පෙළ (Cooperative Ordinary Level)",
+    category: "මූලික දැනුම (Foundation)",
+    icon: "fa-book-open",
+    badgeColor: "#64748b",
+    isCustom: false
+  },
+  {
+    id: "TRN-C02",
+    no: "02",
+    nameSi: "සමුපකාර උසස් පෙළ",
+    nameEn: "Cooperative Advanced Level",
+    fullName: "2. සමුපකාර උසස් පෙළ (Cooperative Advanced Level)",
+    category: "උසස් දැනුම (Advanced)",
+    icon: "fa-book",
+    badgeColor: "#2563eb",
+    isCustom: false
+  },
+  {
+    id: "TRN-C03",
+    no: "03",
+    nameSi: "සමුපකාර කළමනාකරණ ඩිප්ලෝමා",
+    nameEn: "Diploma in Cooperative Management",
+    fullName: "3. සමුපකාර කළමනාකරණ ඩිප්ලෝමා (Diploma in Cooperative Management)",
+    category: "ඩිප්ලෝමා (Diploma)",
+    icon: "fa-user-tie",
+    badgeColor: "#7c3aed",
+    isCustom: false
+  },
+  {
+    id: "TRN-C04",
+    no: "04",
+    nameSi: "ක්ෂුද්‍ර මූල්‍ය හා ණය කළමනාකරණ පුහුණු",
+    nameEn: "Microfinance & Credit Management Training",
+    fullName: "4. ක්ෂුද්‍ර මූල්‍ය හා ණය කළමනාකරණ පුහුණු (Microfinance & Credit Management Training)",
+    category: "මූල්‍ය හා ණය මෙහෙයුම්",
+    icon: "fa-hand-holding-dollar",
+    badgeColor: "#059669",
+    isCustom: false
+  },
+  {
+    id: "TRN-C05",
+    no: "05",
+    nameSi: "ගිණුම්කරණය සහ අභ්‍යන්තර විගණන පුහුණු",
+    nameEn: "Accounting & Internal Audit Training",
+    fullName: "5. ගිණුම්කරණය සහ අභ්‍යන්තර විගණන පුහුණු (Accounting & Internal Audit Training)",
+    category: "ගිණුම් හා විගණනය",
+    icon: "fa-file-invoice-dollar",
+    badgeColor: "#0891b2",
+    isCustom: false
+  },
+  {
+    id: "TRN-C06",
+    no: "06",
+    nameSi: "සමිති මෘදුකාංග (MIS) සහ IT/Excel පුහුණු",
+    nameEn: "Banking MIS & IT Skills Training",
+    fullName: "6. සමිති මෘදුකාංග (MIS) සහ IT/Excel පුහුණු (Banking MIS & IT Skills Training)",
+    category: "තොරතුරු තාක්ෂණ හා MIS",
+    icon: "fa-laptop-code",
+    badgeColor: "#4f46e5",
+    isCustom: false
+  },
+  {
+    id: "TRN-C07",
+    no: "07",
+    nameSi: "ණය අයකරගැනීමේ සහ නීතිමය කටයුතු පිළිබඳ පුහුණු",
+    nameEn: "Debt Recovery & Legal Compliance Training",
+    fullName: "7. ණය අයකරගැනීමේ සහ නීතිමය කටයුතු පිළිබඳ පුහුණු (Debt Recovery & Legal Compliance Training)",
+    category: "නීතිමය හා අයකරගැනීම්",
+    icon: "fa-scale-balanced",
+    badgeColor: "#dc2626",
+    isCustom: false
+  },
+  {
+    id: "TRN-C08",
+    no: "08",
+    nameSi: "සාමාජික සත්කාර සහ සන්නිවේදන පුහුණු",
+    nameEn: "Member Care & Customer Relations Training",
+    fullName: "8. සාමාජික සත්කාර සහ සන්නිවේදන පුහුණු (Member Care & Customer Relations Training)",
+    category: "සාමාජික සත්කාර හා PR",
+    icon: "fa-headset",
+    badgeColor: "#d97706",
+    isCustom: false
+  },
+  {
+    id: "TRN-C09",
+    no: "09",
+    nameSi: "නායකත්ව සහ කළමනාකරණ සංවර්ධන පුහුණු",
+    nameEn: "Leadership & Management Development",
+    fullName: "9. නායකත්ව සහ කළමනාකරණ සංවර්ධන පුහුණු (Leadership & Management Development)",
+    category: "නායකත්වය හා කළමනාකරණය",
+    icon: "fa-users-gear",
+    badgeColor: "#9333ea",
+    isCustom: false
+  },
+  {
+    id: "TRN-C10",
+    no: "10",
+    nameSi: "ව්‍යවසායකත්ව ප්‍රවර්ධනය සහ ව්‍යාපෘති කළමනාකරණ පුහුණු",
+    nameEn: "Entrepreneurship & Project Management Training",
+    fullName: "10. ව්‍යවසායකත්ව ප්‍රවර්ධනය සහ ව්‍යාපෘති කළමනාකරණ පුහුණු (Entrepreneurship & Project Management Training)",
+    category: "ව්‍යාපෘති හා ව්‍යවසායකත්වය",
+    icon: "fa-chart-line",
+    badgeColor: "#ea580c",
+    isCustom: false
+  }
+];
+
+function getTrainingCatalog() {
+  if (!appData.trainingCatalog || !Array.isArray(appData.trainingCatalog) || appData.trainingCatalog.length === 0) {
+    appData.trainingCatalog = JSON.parse(JSON.stringify(defaultTrainingCatalog));
+  }
+  return appData.trainingCatalog;
+}
+
+function renderApprovedTrainingCatalog() {
+  const container = document.getElementById('approved-training-catalog-grid');
+  if (!container) return;
+
+  const catalog = getTrainingCatalog();
+
+  const countBadge = document.getElementById('training-courses-count-badge');
+  if (countBadge) {
+    countBadge.textContent = `${catalog.length} Courses`;
+  }
+
+  container.innerHTML = catalog.map((c, idx) => `
+    <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:12px 14px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:0 2px 6px rgba(0,0,0,0.03); transition:transform 0.2s, box-shadow 0.2s; position:relative;">
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+          <div style="width:36px; height:36px; border-radius:10px; background:${c.badgeColor}15; color:${c.badgeColor}; display:flex; align-items:center; justify-content:center; font-size:15px;">
+            <i class="fa-solid ${c.icon || 'fa-graduation-cap'}"></i>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:10px; font-weight:800; background:#f1f5f9; color:#475569; padding:2px 8px; border-radius:6px; letter-spacing:0.5px;">NO. ${c.no || String(idx + 1).padStart(2, '0')}</span>
+            ${c.isCustom ? `
+              <button onclick="deleteCatalogCourse('${c.id}')" title="පාඨමාලාව ඉවත් කරන්න (Delete Course)" style="border:none; background:#fee2e2; color:#dc2626; width:22px; height:22px; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-size:10px;">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            ` : ''}
+          </div>
+        </div>
+        <div style="font-weight:800; color:#1e1b4b; font-size:13px; line-height:1.35; margin-bottom:3px;">
+          ${c.nameSi}
+        </div>
+        <div style="font-size:11px; color:#64748b; font-style:italic; margin-bottom:8px;">
+          ${c.nameEn || ''}
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #e2e8f0; padding-top:8px; margin-top:6px;">
+        <span style="font-size:10.5px; font-weight:700; color:${c.badgeColor}; background:${c.badgeColor}12; padding:3px 8px; border-radius:8px;">
+          ${c.category}
+        </span>
+        <button class="btn-smart btn-smart-light" style="padding:4px 10px; font-size:11px; color:#7c3aed; border-color:#e9d5ff;" onclick="openManualNominationModal('${(c.fullName || `${c.nameSi} (${c.nameEn})`).replace(/'/g, "\\'")}')">
+          <i class="fa-solid fa-user-plus"></i> යොමු කරන්න
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openAddCourseModal() {
+  const form = document.getElementById('form-smart-add-course');
+  if (form) form.reset();
+  openSmartModal('modal-smart-add-course');
+}
+
+async function saveNewCourse(e) {
+  e.preventDefault();
+  const nameSi = document.getElementById('course-name-si')?.value?.trim();
+  const nameEn = document.getElementById('course-name-en')?.value?.trim();
+  const category = document.getElementById('course-category')?.value || 'වෙනත් විශේෂිත පුහුණු';
+  const icon = document.getElementById('course-icon')?.value || 'fa-graduation-cap';
+  const color = document.getElementById('course-color')?.value || '#7c3aed';
+
+  if (!nameSi || !nameEn) {
+    alert(currentLang === 'si' ? 'කරුණාකර පාඨමාලාවේ නම් සිංහලෙන් හා ඉංග්‍රීසියෙන් ඇතුළත් කරන්න.' : 'Please enter course names in both languages.');
+    return;
+  }
+
+  const catalog = getTrainingCatalog();
+  const nextNumber = catalog.length + 1;
+  const newCourse = {
+    id: `TRN-C${Date.now().toString().slice(-5)}`,
+    no: String(nextNumber).padStart(2, '0'),
+    nameSi: nameSi,
+    nameEn: nameEn,
+    fullName: `${nextNumber}. ${nameSi} (${nameEn})`,
+    category: category,
+    icon: icon,
+    badgeColor: color,
+    isCustom: true
+  };
+
+  catalog.push(newCourse);
+  appData.trainingCatalog = catalog;
+  await persistData();
+
+  closeSmartModal('modal-smart-add-course');
+  renderApprovedTrainingCatalog();
+  populateNominationCoursesDropdown(newCourse.fullName);
+
+  alert(currentLang === 'si' 
+    ? `"${nameSi}" පාඨමාලාව සාර්ථකව අනුමත නාමාවලියට එක් කරන ලදී!` 
+    : `"${nameSi}" successfully added to the course catalog!`);
+}
+
+async function deleteCatalogCourse(courseId) {
+  const catalog = getTrainingCatalog();
+  const course = catalog.find(c => c.id === courseId);
+  if (!course) return;
+
+  const msg = currentLang === 'si' 
+    ? `"${course.nameSi}" පාඨමාලාව නාමාවලියෙන් ඉවත් කිරීමට අවශ්‍යද?` 
+    : `Are you sure you want to remove "${course.nameSi}" from the catalog?`;
+  if (!confirm(msg)) return;
+
+  appData.trainingCatalog = catalog.filter(c => c.id !== courseId);
+  
+  // Re-number remaining items cleanly
+  appData.trainingCatalog.forEach((c, i) => {
+    c.no = String(i + 1).padStart(2, '0');
+    c.fullName = `${i + 1}. ${c.nameSi} (${c.nameEn})`;
+  });
+
+  await persistData();
+  renderApprovedTrainingCatalog();
+  populateNominationCoursesDropdown();
+}
+
+function populateNominationCoursesDropdown(selectedValue) {
+  const courseSelect = document.getElementById('nom-manual-course');
+  if (!courseSelect) return;
+
+  const catalog = getTrainingCatalog();
+  courseSelect.innerHTML = catalog.map(c => `
+    <option value="${c.fullName || `${c.nameSi} (${c.nameEn})`}">${c.fullName || `${c.nameSi} (${c.nameEn})`}</option>
+  `).join('');
+
+  if (selectedValue) {
+    courseSelect.value = selectedValue;
+  }
+}
+
+function openManualNominationModal(preselectedCourse) {
+  const empSelect = document.getElementById('nom-manual-emp');
+  if (empSelect) {
+    if (!appData.employees || appData.employees.length === 0) {
+      empSelect.innerHTML = '<option value="">-- සේවකයින් නොමැත --</option>';
+    } else {
+      empSelect.innerHTML = appData.employees.map(e => `
+        <option value="${e.id}">${e.callingName || e.fullName} — ${e.designation} (${e.branch || 'Head Office'})</option>
+      `).join('');
+    }
+  }
+
+  populateNominationCoursesDropdown(preselectedCourse);
+
+  const dateInput = document.getElementById('nom-manual-date');
+  if (dateInput) {
+    dateInput.value = new Date().toISOString().split('T')[0];
+  }
+
+  openSmartModal('modal-smart-manual-nomination');
+}
+
+async function saveManualNomination(e) {
+  e.preventDefault();
+  const empId = document.getElementById('nom-manual-emp').value;
+  const courseName = document.getElementById('nom-manual-course').value;
+  const priority = document.getElementById('nom-manual-priority').value;
+  const date = document.getElementById('nom-manual-date').value || new Date().toISOString().split('T')[0];
+  const notes = document.getElementById('nom-manual-notes').value;
+
+  const emp = appData.employees.find(x => x.id === empId);
+  if (!emp) {
+    alert(currentLang === 'si' ? 'කරුණාකර වලංගු සේවකයෙකු තෝරන්න.' : 'Please select an employee.');
+    return;
+  }
+
+  if (!appData.trainingNominations) appData.trainingNominations = [];
+
+  const newNom = {
+    id: `TRN-${Date.now().toString().slice(-4)}`,
+    empId: emp.id,
+    empName: emp.callingName || emp.fullName,
+    skillKey: 'general',
+    skillName: 'අනුමත පුහුණු පාඨමාලාව (Approved Course)',
+    courseName: courseName,
+    priority: priority,
+    date: date,
+    notes: notes,
+    status: "Nominated"
+  };
+
+  appData.trainingNominations.unshift(newNom);
+  await persistData();
+  closeSmartModal('modal-smart-manual-nomination');
+  renderTrainingNeedsAnalysis();
+  alert(currentLang === 'si' ? `${emp.callingName || emp.fullName} සාර්ථකව "${courseName}" පුහුණුව සඳහා ලියාපදිංචි කරන ලදී!` : `Successfully nominated ${emp.fullName} for training!`);
+}
+
+async function deleteTrainingNomination(nomId) {
+  if (!confirm(currentLang === 'si' ? 'මෙම පුහුණු සටහන ලොගයෙන් ඉවත් කිරීමට අවශ්‍යද?' : 'Are you sure you want to remove this training record?')) return;
+  appData.trainingNominations = (appData.trainingNominations || []).filter(n => n.id !== nomId);
+  await persistData();
+  renderTrainingNeedsAnalysis();
+}
+
 function renderTrainingNeedsAnalysis() {
+  renderApprovedTrainingCatalog();
+
   if (!appData.trainingNominations) {
     appData.trainingNominations = [];
   }
@@ -1307,7 +1628,7 @@ function renderTrainingNeedsAnalysis() {
       Object.keys(skillMetaMap).forEach(key => {
         const val = s[key] || 3;
         if (val < 3) {
-          const isAlreadyNominated = (appData.trainingNominations || []).some(n => n.empId === emp.id && n.skillKey === key && n.status === "Nominated");
+          const isAlreadyNominated = (appData.trainingNominations || []).some(n => n.empId === emp.id && n.courseName === skillMetaMap[key].course && n.status === "Nominated");
           gaps.push({
             emp,
             skillKey: key,
@@ -1382,14 +1703,17 @@ function renderTrainingNeedsAnalysis() {
               <span class="badge-pill badge-warning"><i class="fa-solid fa-spinner"></i> නොමිනේට් කර ඇත</span>
             `}
           </td>
-          <td>
+          <td style="white-space:nowrap;">
             ${n.status !== 'Completed' ? `
-              <button class="btn-smart btn-smart-success" onclick="markTrainingCompleted('${n.id}')">
-                <i class="fa-solid fa-check-double"></i> අවසන් බව ලකුණු කරන්න
+              <button class="btn-smart btn-smart-success" style="padding:4px 8px; font-size:11px;" onclick="markTrainingCompleted('${n.id}')">
+                <i class="fa-solid fa-check-double"></i> අවසන්
               </button>
             ` : `
-              <span style="font-size:11px; color:#166534; font-weight:700;">★ Level Upgraded</span>
+              <span style="font-size:11px; color:#166534; font-weight:700;"><i class="fa-solid fa-circle-check"></i> Upgrade</span>
             `}
+            <button class="btn-smart btn-smart-light" style="padding:4px 8px; font-size:11px; color:#dc2626; border-color:#fecaca; margin-left:4px;" onclick="deleteTrainingNomination('${n.id}')" title="ඉවත් කරන්න">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
           </td>
         </tr>
       `).join('');
@@ -1446,7 +1770,7 @@ function renderSkillsMatrix() {
   if (!appData.employees || appData.employees.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="10" style="text-align:center; padding:30px; color:#94a3b8;">
+        <td colspan="12" style="text-align:center; padding:30px; color:#94a3b8;">
           <i class="fa-solid fa-users" style="font-size:28px; margin-bottom:8px; display:block; opacity:0.6;"></i>
           දත්ත නොමැත — පළමුව සේවකයින් ලියාපදිංචි කරන්න
         </td>
@@ -1469,10 +1793,12 @@ function renderSkillsMatrix() {
         <td>${renderStars(s.microfinance || 4)}</td>
         <td>${renderStars(s.creditAppraisal || 4)}</td>
         <td>${renderStars(s.accounting || 3)}</td>
+        <td>${renderStars(s.audit || 3)}</td>
         <td>${renderStars(s.bankingSoftware || 4)}</td>
         <td>${renderStars(s.excel || 4)}</td>
         <td>${renderStars(s.teamLeadership || 4)}</td>
         <td>${renderStars(s.customerCare || 5)}</td>
+        <td>${renderStars(s.legalRecovery || 3)}</td>
         <td>
           <button class="btn-smart btn-smart-light" onclick="openEditSkillsModal('${emp.id}')">
             <i class="fa-solid fa-sliders"></i> වෙනස් කරන්න
@@ -1619,8 +1945,19 @@ function renderSkillsCharts() {
 
   if (charts['radarFull']) charts['radarFull'].destroy();
 
-  const labels = ['Microfinance', 'Credit', 'Accounting', 'Audit', 'Core Banking', 'Excel', 'Leadership', 'Member Care'];
-  const avgData = [4.5, 4.2, 3.8, 3.4, 4.4, 4.2, 4.3, 4.8];
+  const labels = [
+    'අධ්‍යාපනය (Education)',
+    'ක්ෂුද්‍ර මූල්‍ය (Microfinance)',
+    'ණය තක්සේරු (Credit)',
+    'ගිණුම්කරණය (Accounting)',
+    'විගණනය (Audit)',
+    'බැංකු MIS (Banking MIS)',
+    'Excel / IT',
+    'නායකත්වය (Leadership)',
+    'සාමාජික සත්කාර (Member Care)',
+    'නීතිමය (Legal/Recovery)'
+  ];
+  const avgData = [4.2, 4.5, 4.2, 3.8, 3.5, 4.4, 4.2, 4.3, 4.8, 3.7];
 
   charts['radarFull'] = new Chart(ctx, {
     type: 'radar',
@@ -2646,6 +2983,12 @@ function printForm1OfficialSheet() {
         <div>...................................<br>පරීක්ෂා කළේ (Internal Audit)</div>
         <div>...................................<br>අනුමත කළේ (General Manager / Chairman)</div>
       </div>
+
+      <div style="border-top:1.5px solid #000; margin-top:25px; padding-top:6px; display:flex; justify-content:space-between; font-size:9.5px; color:#333;">
+        <span>ගලපිටියාගම සණස සමුපකාර සමිතිය</span>
+        <span style="font-weight:700;">Report generated by Galapitiyagama Sanasa Cooperative HRMS System</span>
+        <span>පිටුව: 1</span>
+      </div>
     </div>
   `;
 
@@ -2720,6 +3063,12 @@ function printForm2OfficialSheet() {
         <div>...................................<br>සකස් කළේ (HR / Accounts)</div>
         <div>...................................<br>පරීක්ෂා කළේ (Internal Audit)</div>
         <div>...................................<br>අනුමත කළේ (General Manager / Chairman)</div>
+      </div>
+
+      <div style="border-top:1.5px solid #000; margin-top:25px; padding-top:6px; display:flex; justify-content:space-between; font-size:9.5px; color:#333;">
+        <span>ගලපිටියාගම සණස සමුපකාර සමිතිය</span>
+        <span style="font-weight:700;">Report generated by Galapitiyagama Sanasa Cooperative HRMS System</span>
+        <span>පිටුව: 1</span>
       </div>
     </div>
   `;
@@ -3381,6 +3730,457 @@ async function clearAllSurveys() {
 function renderPrintablePosters() {
   renderPosterQRs();
 }
+
+// =========================================================================
+// OFFICIAL REPORT PRINT PREVIEW & PRINTING (Form 1 Header Style)
+// =========================================================================
+
+// Prints the content currently inside modal-smart-sheet-print via isolated iframe
+function printModalSheetContent() {
+  const contentEl = document.getElementById('sheet-print-content');
+  if (!contentEl) {
+    window.print();
+    return;
+  }
+
+  let frame = document.getElementById('report-print-iframe');
+  if (!frame) {
+    frame = document.createElement('iframe');
+    frame.id = 'report-print-iframe';
+    frame.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;border:none;';
+    document.body.appendChild(frame);
+  }
+
+  const baseHref = window.location.href.replace(/\/[^/]*$/, '/');
+  const doc = frame.contentWindow.document;
+  doc.open();
+  doc.write(`<!DOCTYPE html>
+<html lang="si">
+<head>
+  <meta charset="UTF-8">
+  <base href="${baseHref}">
+  <title>Official Report - Galapitiyagama Sanasa HRMS</title>
+  <style>
+    @page {
+      size: A4 landscape;
+      margin: 10mm 12mm;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #000;
+      background: #fff;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    table {
+      width: 100% !important;
+      border-collapse: collapse !important;
+    }
+    th, td {
+      border: 1px solid #000 !important;
+    }
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+  </style>
+</head>
+<body>
+  ${contentEl.innerHTML}
+</body>
+</html>`);
+  doc.close();
+
+  setTimeout(() => {
+    frame.contentWindow.focus();
+    frame.contentWindow.print();
+  }, 400);
+}
+
+// Opens the Form 1 Style Preview Modal for whatever page is currently active
+function printCurrentPageReport() {
+  const activeSection = document.querySelector('.view-section.active');
+  const activeId = activeSection ? activeSection.id.replace('view-', '') : 'employees';
+
+  if (activeId === 'dashboard') {
+    showToast('Dashboard ලේඛනගත කිරීමක් නොමැත. කරුණාකර වෙනත් Page එකක් තෝරන්න.', 'info');
+    return;
+  }
+
+  // If currently in payroll, open Form 1 directly
+  if (activeId === 'payroll') {
+    printForm1OfficialSheet();
+    return;
+  }
+
+  const dateNow = new Date().toLocaleDateString('en-GB');
+  let titleSinhala = '';
+  let titleEnglish = '';
+  let tableHTML = '';
+
+  if (activeId === 'employees') {
+    titleSinhala = 'නිල සේවක නාමාවලිය සහ පැතිකඩ ලේඛනය';
+    titleEnglish = 'Official Employee Directory & Staff Register';
+    const emps = appData.employees || [];
+    tableHTML = `
+      <table style="width:100%; border-collapse:collapse; font-size:10px; text-align:center;" border="1" bordercolor="#000">
+        <thead>
+          <tr style="background:#f2f2f2; font-weight:bold;">
+            <th style="padding:6px 4px; width:35px;">අංකය</th>
+            <th style="padding:6px 4px; width:75px;">සේවා අංකය</th>
+            <th style="padding:6px 6px; text-align:left;">සේවකයාගේ නම</th>
+            <th style="padding:6px 4px;">තනතුර</th>
+            <th style="padding:6px 4px;">අංශය</th>
+            <th style="padding:6px 4px;">ජා.හැ. අංකය</th>
+            <th style="padding:6px 4px;">දුරකථන අංකය</th>
+            <th style="padding:6px 4px;">මූලික වැටුප (රු.)</th>
+            <th style="padding:6px 4px;">සේවා තත්වය</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${emps.map((e, idx) => `
+            <tr>
+              <td style="padding:5px 4px;">${idx + 1}</td>
+              <td style="padding:5px 4px; font-weight:bold;">${e.id || '-'}</td>
+              <td style="padding:5px 6px; text-align:left; font-weight:600;">${e.fullName || e.name || '-'}</td>
+              <td style="padding:5px 4px;">${e.designation || e.role || '-'}</td>
+              <td style="padding:5px 4px;">${e.department || '-'}</td>
+              <td style="padding:5px 4px;">${e.nic || '-'}</td>
+              <td style="padding:5px 4px;">${e.mobile || e.phone || '-'}</td>
+              <td style="padding:5px 4px; text-align:right;">${e.basicSalary ? Number(e.basicSalary).toLocaleString() : '-'}</td>
+              <td style="padding:5px 4px;">${e.status || 'ස්ථිර (Permanent)'}</td>
+            </tr>
+          `).join('')}
+          ${emps.length === 0 ? '<tr><td colspan="9" style="padding:16px; color:#888;">සේවක දත්ත වාර්තා වී නොමැත.</td></tr>' : ''}
+        </tbody>
+      </table>
+    `;
+  } else if (activeId === 'grievance') {
+    titleSinhala = 'සේවක ගැටළු, සංවර්ධන යෝජනා හා සුභසාධන ඉල්ලීම් ලේඛනය';
+    titleEnglish = 'Employee Grievances, Suggestions & Welfare Register';
+    const grvs = appData.grievances || [];
+    tableHTML = `
+      <table style="width:100%; border-collapse:collapse; font-size:10px; text-align:center;" border="1" bordercolor="#000">
+        <thead>
+          <tr style="background:#f2f2f2; font-weight:bold;">
+            <th style="padding:6px 4px; width:35px;">අංකය</th>
+            <th style="padding:6px 4px; width:90px;">යොමු අංකය</th>
+            <th style="padding:6px 4px; width:80px;">දිනය</th>
+            <th style="padding:6px 4px;">ඉදිරිපත් කළේ</th>
+            <th style="padding:6px 4px;">යොමු කළ පාර්ශ්වය</th>
+            <th style="padding:6px 6px; text-align:left;">ශීර්ෂය හා විස්තරය</th>
+            <th style="padding:6px 4px; width:80px;">තත්වය</th>
+            <th style="padding:6px 6px; text-align:left;">ගත් ක්‍රියාමාර්ගය</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${grvs.map((g, idx) => `
+            <tr>
+              <td style="padding:5px 4px;">${idx + 1}</td>
+              <td style="padding:5px 4px; font-weight:bold;">${g.id || '-'}</td>
+              <td style="padding:5px 4px;">${g.date || '-'}</td>
+              <td style="padding:5px 4px;">${g.isAnonymous ? '🔒 නිර්නාමික (Anonymous)' : (g.submittedBy || 'නාමික')}</td>
+              <td style="padding:5px 4px; font-weight:600;">${g.target || g.targetOfficial || 'ගරු සභාපතිතුමා'}</td>
+              <td style="padding:5px 6px; text-align:left;"><strong>${g.subject || '-'}</strong><br><span style="font-size:9px; color:#444;">${g.description || ''}</span></td>
+              <td style="padding:5px 4px;">${g.status || 'නව (New)'}</td>
+              <td style="padding:5px 6px; text-align:left;">${g.actionTaken || 'ක්‍රියාමාර්ගයක් සටහන් කර නැත'}</td>
+            </tr>
+          `).join('')}
+          ${grvs.length === 0 ? '<tr><td colspan="8" style="padding:16px; color:#888;">සේවක ගැටළු හෝ යෝජනා වාර්තා වී නොමැත.</td></tr>' : ''}
+        </tbody>
+      </table>
+    `;
+  } else if (activeId === 'member-feedback') {
+    titleSinhala = 'සාමාජික අදහස් හා තරු ලකුණු සේවා ඇගයීම් ලේඛනය';
+    titleEnglish = 'Member Feedback & Service Satisfaction Register';
+    const fbs = appData.memberFeedbacks || [];
+    tableHTML = `
+      <table style="width:100%; border-collapse:collapse; font-size:10px; text-align:center;" border="1" bordercolor="#000">
+        <thead>
+          <tr style="background:#f2f2f2; font-weight:bold;">
+            <th style="padding:6px 4px; width:35px;">අංකය</th>
+            <th style="padding:6px 4px; width:90px;">යොමු අංකය</th>
+            <th style="padding:6px 4px; width:80px;">දිනය</th>
+            <th style="padding:6px 4px;">සාමාජිකයා</th>
+            <th style="padding:6px 4px;">ශාඛාව</th>
+            <th style="padding:6px 4px; width:80px;">තරු ඇගයීම</th>
+            <th style="padding:6px 6px; text-align:left;">සාමාජික අදහස් හා යෝජනා</th>
+            <th style="padding:6px 4px; width:80px;">තත්වය</th>
+            <th style="padding:6px 6px; text-align:left;">ගත් ක්‍රියාමාර්ගය</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${fbs.map((f, idx) => `
+            <tr>
+              <td style="padding:5px 4px;">${idx + 1}</td>
+              <td style="padding:5px 4px; font-weight:bold;">${f.id || '-'}</td>
+              <td style="padding:5px 4px;">${f.date || '-'}</td>
+              <td style="padding:5px 4px; font-weight:600;">${f.memberId || f.memberName || '-'}</td>
+              <td style="padding:5px 4px;">${f.branch || 'ප්‍රධාන කාර්යාලය'}</td>
+              <td style="padding:5px 4px; font-weight:bold; color:#b45309;">${f.rating ? f.rating + ' / 5 ★' : '-'}</td>
+              <td style="padding:5px 6px; text-align:left;">${f.feedback || f.comments || '-'}</td>
+              <td style="padding:5px 4px;">${f.status || 'ලැබුණි (Received)'}</td>
+              <td style="padding:5px 6px; text-align:left;">${f.actionTaken || 'ක්‍රියාමාර්ගයක් සටහන් කර නැත'}</td>
+            </tr>
+          `).join('')}
+          ${fbs.length === 0 ? '<tr><td colspan="9" style="padding:16px; color:#888;">සාමාජික ප්‍රතිචාර වාර්තා වී නොමැත.</td></tr>' : ''}
+        </tbody>
+      </table>
+    `;
+  } else if (activeId === 'satisfaction') {
+    titleSinhala = 'සේවක තෘප්තිමත්භාවය හා සුවතා සමීක්ෂණ ලේඛනය';
+    titleEnglish = 'Employee Wellbeing & Satisfaction Survey Report';
+    const surveys = appData.surveys || [];
+    tableHTML = `
+      <table style="width:100%; border-collapse:collapse; font-size:10px; text-align:center;" border="1" bordercolor="#000">
+        <thead>
+          <tr style="background:#f2f2f2; font-weight:bold;">
+            <th style="padding:6px 4px; width:35px;">අංකය</th>
+            <th style="padding:6px 4px; width:80px;">දිනය</th>
+            <th style="padding:6px 4px;">සේවකයා</th>
+            <th style="padding:6px 4px;">වැඩ පරිසරය</th>
+            <th style="padding:6px 4px;">කළමනාකාරීත්වය</th>
+            <th style="padding:6px 4px;">වැටුප් සාධාරණත්වය</th>
+            <th style="padding:6px 4px;">දිශාව හා අභිප්‍රේරණය</th>
+            <th style="padding:6px 4px; font-weight:800;">සාමාන්‍යය</th>
+            <th style="padding:6px 6px; text-align:left;">සේවක අදහස්</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${surveys.map((s, idx) => `
+            <tr>
+              <td style="padding:5px 4px;">${idx + 1}</td>
+              <td style="padding:5px 4px;">${s.date || '-'}</td>
+              <td style="padding:5px 4px; font-weight:600;">${s.employeeName || (s.employeeId ? 'සේවක #' + s.employeeId : 'Anonymous')}</td>
+              <td style="padding:5px 4px;">${s.workEnvironment || '-'} / 5</td>
+              <td style="padding:5px 4px;">${s.managementSupport || '-'} / 5</td>
+              <td style="padding:5px 4px;">${s.salaryFairness || '-'} / 5</td>
+              <td style="padding:5px 4px;">${s.coopDirection || '-'} / 5</td>
+              <td style="padding:5px 4px; font-weight:bold;">${s.averageScore ? Number(s.averageScore).toFixed(1) + ' / 5' : '-'}</td>
+              <td style="padding:5px 6px; text-align:left;">${s.comments || '-'}</td>
+            </tr>
+          `).join('')}
+          ${surveys.length === 0 ? '<tr><td colspan="9" style="padding:16px; color:#888;">සුවතා සමීක්ෂණ දත්ත වාර්තා වී නොමැත.</td></tr>' : ''}
+        </tbody>
+      </table>
+    `;
+  } else if (activeId === 'skills') {
+    titleSinhala = 'සේවක නිපුණතා න්‍යාසය සහ පුහුණු අවශ්‍යතා ලේඛනය';
+    titleEnglish = 'Employee Competency & Skills Matrix Report';
+    const emps = appData.employees || [];
+    tableHTML = `
+      <table style="width:100%; border-collapse:collapse; font-size:9.5px; text-align:center;" border="1" bordercolor="#000">
+        <thead>
+          <tr style="background:#f2f2f2; font-weight:bold;">
+            <th style="padding:6px 3px; width:30px;">#</th>
+            <th style="padding:6px 4px; text-align:left;">සේවකයා හා තනතුර</th>
+            <th style="padding:5px 2px; font-size:8.5px;">අධ්‍යාපනය</th>
+            <th style="padding:5px 2px; font-size:8.5px;">ක්ෂුද්‍ර මූල්‍ය</th>
+            <th style="padding:5px 2px; font-size:8.5px;">ණය තක්සේරු</th>
+            <th style="padding:5px 2px; font-size:8.5px;">ගිණුම්කරණය</th>
+            <th style="padding:5px 2px; font-size:8.5px;">විගණනය</th>
+            <th style="padding:5px 2px; font-size:8.5px;">බැංකු MIS</th>
+            <th style="padding:5px 2px; font-size:8.5px;">Excel/IT</th>
+            <th style="padding:5px 2px; font-size:8.5px;">නායකත්වය</th>
+            <th style="padding:5px 2px; font-size:8.5px;">සාමාජික සත්කාර</th>
+            <th style="padding:5px 2px; font-size:8.5px;">නීති/අයකරගැනීම්</th>
+            <th style="padding:5px 3px; font-weight:800;">සාමාන්‍යය</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${emps.map((e, idx) => {
+            const sm = e.skillsMatrix || {};
+            const scores = [
+              sm.education || 3, sm.microfinance || 3, sm.creditAssessment || 3,
+              sm.accounting || 3, sm.audit || 3, sm.bankingMis || 3,
+              sm.excelIt || 3, sm.leadership || 3, sm.memberCare || 3, sm.legalRecovery || 3
+            ];
+            const avg = (scores.reduce((a, b) => a + Number(b), 0) / scores.length).toFixed(1);
+            return `
+              <tr>
+                <td style="padding:5px 2px;">${idx + 1}</td>
+                <td style="padding:5px 4px; text-align:left;"><strong>${e.id}</strong> - ${e.fullName || e.name}<br><span style="font-size:8.5px; color:#555;">${e.designation || e.role || ''}</span></td>
+                <td style="padding:5px 2px;">${scores[0]}</td>
+                <td style="padding:5px 2px;">${scores[1]}</td>
+                <td style="padding:5px 2px;">${scores[2]}</td>
+                <td style="padding:5px 2px;">${scores[3]}</td>
+                <td style="padding:5px 2px;">${scores[4]}</td>
+                <td style="padding:5px 2px;">${scores[5]}</td>
+                <td style="padding:5px 2px;">${scores[6]}</td>
+                <td style="padding:5px 2px;">${scores[7]}</td>
+                <td style="padding:5px 2px;">${scores[8]}</td>
+                <td style="padding:5px 2px;">${scores[9]}</td>
+                <td style="padding:5px 2px; font-weight:bold; font-size:10px;">${avg} / 5</td>
+              </tr>
+            `;
+          }).join('')}
+          ${emps.length === 0 ? '<tr><td colspan="13" style="padding:16px; color:#888;">දත්ත වාර්තා වී නොමැත.</td></tr>' : ''}
+        </tbody>
+      </table>
+    `;
+  } else if (activeId === 'appraisals') {
+    titleSinhala = 'නිල සේවක කාර්යසාධන ඇගයීම් ලේඛනය';
+    titleEnglish = 'Employee Performance Appraisals Report';
+    const apps = appData.appraisals || [];
+    tableHTML = `
+      <table style="width:100%; border-collapse:collapse; font-size:10px; text-align:center;" border="1" bordercolor="#000">
+        <thead>
+          <tr style="background:#f2f2f2; font-weight:bold;">
+            <th style="padding:6px 4px; width:35px;">අංකය</th>
+            <th style="padding:6px 4px; width:80px;">දිනය</th>
+            <th style="padding:6px 4px;">සේවකයා</th>
+            <th style="padding:6px 4px;">තනතුර</th>
+            <th style="padding:6px 4px;">ඇගයූ කාලසීමාව</th>
+            <th style="padding:6px 4px; font-weight:800;">මුළු ලකුණු (100)</th>
+            <th style="padding:6px 4px;">ශ්‍රේණිය</th>
+            <th style="padding:6px 6px; text-align:left;">නිරීක්ෂණ හා නිර්දේශ</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${apps.map((a, idx) => `
+            <tr>
+              <td style="padding:5px 4px;">${idx + 1}</td>
+              <td style="padding:5px 4px;">${a.date || '-'}</td>
+              <td style="padding:5px 4px; font-weight:600;">${a.employeeName || '-'}</td>
+              <td style="padding:5px 4px;">${a.designation || '-'}</td>
+              <td style="padding:5px 4px;">${a.period || '-'}</td>
+              <td style="padding:5px 4px; font-weight:bold;">${a.score || a.totalScore || '-'}%</td>
+              <td style="padding:5px 4px; font-weight:bold;">${a.grade || '-'}</td>
+              <td style="padding:5px 6px; text-align:left;">${a.comments || a.recommendations || '-'}</td>
+            </tr>
+          `).join('')}
+          ${apps.length === 0 ? '<tr><td colspan="8" style="padding:16px; color:#888;">කාර්යසාධන ඇගයීම් දත්ත වාර්තා වී නොමැත.</td></tr>' : ''}
+        </tbody>
+      </table>
+    `;
+  } else if (activeId === 'projects') {
+    titleSinhala = 'ක්‍රියාත්මක ව්‍යාපෘති සහ රාජකාරි ප්‍රගති ලේඛනය';
+    titleEnglish = 'Work Progress & Action Projects Status Report';
+    const tasks = appData.tasks || [];
+    tableHTML = `
+      <table style="width:100%; border-collapse:collapse; font-size:10px; text-align:center;" border="1" bordercolor="#000">
+        <thead>
+          <tr style="background:#f2f2f2; font-weight:bold;">
+            <th style="padding:6px 4px; width:35px;">අංකය</th>
+            <th style="padding:6px 6px; text-align:left;">ව්‍යාපෘතිය / රාජකාරිය</th>
+            <th style="padding:6px 4px;">පැවරුණු සේවකයා</th>
+            <th style="padding:6px 4px;">ප්‍රමුඛතාවය</th>
+            <th style="padding:6px 4px;">තත්වය</th>
+            <th style="padding:6px 4px;">නියමිත දිනය</th>
+            <th style="padding:6px 4px; font-weight:800;">ප්‍රගතිය %</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tasks.map((t, idx) => `
+            <tr>
+              <td style="padding:5px 4px;">${idx + 1}</td>
+              <td style="padding:5px 6px; text-align:left; font-weight:600;">${t.title || '-'}<br><span style="font-size:9px; color:#555;">${t.description || ''}</span></td>
+              <td style="padding:5px 4px;">${t.assignedTo || '-'}</td>
+              <td style="padding:5px 4px;">${t.priority || 'සාමාන්‍ය'}</td>
+              <td style="padding:5px 4px;">${t.status || 'ක්‍රියාත්මකයි'}</td>
+              <td style="padding:5px 4px;">${t.dueDate || '-'}</td>
+              <td style="padding:5px 4px; font-weight:bold;">${t.progress != null ? t.progress + '%' : '-'}</td>
+            </tr>
+          `).join('')}
+          ${tasks.length === 0 ? '<tr><td colspan="7" style="padding:16px; color:#888;">ව්‍යාපෘති දත්ත වාර්තා වී නොමැත.</td></tr>' : ''}
+        </tbody>
+      </table>
+    `;
+  } else if (activeId === 'meetings') {
+    titleSinhala = 'නිල රැස්වීම් සහ දින දර්ශන ලේඛනය';
+    titleEnglish = 'Official Meetings & Schedule Report';
+    const meetings = appData.meetings || [];
+    tableHTML = `
+      <table style="width:100%; border-collapse:collapse; font-size:10px; text-align:center;" border="1" bordercolor="#000">
+        <thead>
+          <tr style="background:#f2f2f2; font-weight:bold;">
+            <th style="padding:6px 4px; width:35px;">අංකය</th>
+            <th style="padding:6px 6px; text-align:left;">රැස්වීම් නාමය</th>
+            <th style="padding:6px 4px;">වර්ගය</th>
+            <th style="padding:6px 4px;">දිනය හා වේලාව</th>
+            <th style="padding:6px 4px;">ස්ථානය</th>
+            <th style="padding:6px 6px; text-align:left;">න්‍යාය පත්‍රය</th>
+            <th style="padding:6px 4px;">තත්වය</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${meetings.map((m, idx) => `
+            <tr>
+              <td style="padding:5px 4px;">${idx + 1}</td>
+              <td style="padding:5px 6px; text-align:left; font-weight:600;">${m.title || '-'}</td>
+              <td style="padding:5px 4px;">${m.type || '-'}</td>
+              <td style="padding:5px 4px;">${m.date || ''} ${m.time || ''}</td>
+              <td style="padding:5px 4px;">${m.venue || '-'}</td>
+              <td style="padding:5px 6px; text-align:left;">${m.agenda || '-'}</td>
+              <td style="padding:5px 4px;">${m.status || 'සැලසුම් කර ඇත'}</td>
+            </tr>
+          `).join('')}
+          ${meetings.length === 0 ? '<tr><td colspan="7" style="padding:16px; color:#888;">රැස්වීම් දත්ත වාර්තා වී නොමැත.</td></tr>' : ''}
+        </tbody>
+      </table>
+    `;
+  } else {
+    showToast('මෙම පිටුව සඳහා නිල වාර්තාවක් නොමැත.', 'info');
+    return;
+  }
+
+  // Populate the exact preview modal
+  const titleEl = document.getElementById('sheet-print-title');
+  if (titleEl) {
+    titleEl.innerHTML = `<i class="fa-solid fa-print" style="color:#7c3aed;"></i> ${titleSinhala} (${titleEnglish})`;
+  }
+
+  const content = document.getElementById('sheet-print-content');
+  if (!content) return;
+
+  content.innerHTML = `
+    <div style="background:#fff; font-family:'Segoe UI', Arial, sans-serif; color:#000; min-width:980px;">
+      <!-- GSCS Boxed Header matching Form 1 -->
+      <div style="border:2px solid #000; padding:12px; margin-bottom:16px; text-align:center;">
+        <div style="display:flex; align-items:center; justify-content:center; gap:20px;">
+          <img src="images/gscs_logo.png" alt="GSCS Logo" style="height:55px;">
+          <div>
+            <h3 style="font-size:16px; font-weight:800; margin:0 0 2px;">සීමා රහිත ගලපිටියාගම සකසුරුවම් හා ණය ගනුදෙනු පිළිබඳ සමුපකාර සමිතිය</h3>
+            <div style="font-size:13px; font-weight:700; letter-spacing:0.5px;">GALAPITIYAGAMA THRIFT & CREDIT CO-OPERATIVE SOCIETY</div>
+            <div style="font-size:11.5px; margin-top:4px;">
+              <strong>Reg No: කුලි/395</strong> &nbsp;&nbsp;|&nbsp;&nbsp; <strong>Reg Date: 1987/03/24</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:12px; font-weight:700;">
+        <span>${titleSinhala} - ${titleEnglish}</span>
+        <span>මුද්‍රණ දිනය: ${dateNow}</span>
+      </div>
+
+      ${tableHTML}
+
+      <div style="display:flex; justify-content:space-between; margin-top:40px; font-size:11px; text-align:center;">
+        <div>...................................<br>සකස් කළේ (HR / Accounts)</div>
+        <div>...................................<br>පරීක්ෂා කළේ (Internal Audit)</div>
+        <div>...................................<br>අනුමත කළේ (General Manager / Chairman)</div>
+      </div>
+
+      <div style="border-top:1.5px solid #000; margin-top:25px; padding-top:6px; display:flex; justify-content:space-between; font-size:9.5px; color:#333;">
+        <span>ගලපිටියාගම සණස සමුපකාර සමිතිය</span>
+        <span style="font-weight:700;">Report generated by Galapitiyagama Sanasa Cooperative HRMS System</span>
+        <span>පිටුව: 1</span>
+      </div>
+    </div>
+  `;
+
+  openSmartModal('modal-smart-sheet-print');
+}
+
+
 
 // Print a single poster (grievance or feedback) cleanly on A4 in full solid black
 function printPoster(type) {
@@ -4641,7 +5441,7 @@ async function performCloudBackup() {
   const btn = document.getElementById('btn-cloud-backup-action');
   const originalHtml = btn ? btn.innerHTML : '';
   if (btn) {
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Google Sheet වෙත Backup වෙමින් පවතී...';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Iraasoft Cloud වෙත Backup වෙමින් පවතී...';
     btn.disabled = true;
   }
 
@@ -4697,14 +5497,14 @@ async function performCloudBackup() {
     renderBackupRestoreView();
 
     alert(currentLang === 'si'
-      ? `✅ Google Sheets Cloud Backup එක සාර්ථකව සුරකින ලදී!\n\nඋපස්ථ අංකය: ${backupId}\nදිනය හා වේලාව: ${timestampStr}\nසේවකයින්: ${empCount}\nවැටුප් වාර්තා: ${payCount}\nගැටළු හා යෝජනා: ${grvCount}\n\nGoogle Sheet එකෙහි Employees, Payroll, Tasks, Meetings යන Sheets ද ස්වයංක්‍රීයව යාවත්කාලීන විය.`
-      : `✅ Cloud Backup successfully created in Google Sheets!\n\nBackup ID: ${backupId}\nTime: ${timestampStr}\nEmployees: ${empCount}\nPayroll Records: ${payCount}`);
+      ? `✅ Iraasoft Cloud Backup එක සාර්ථකව සුරකින ලදී!\n\nඋපස්ථ අංකය: ${backupId}\nදිනය හා වේලාව: ${timestampStr}\nසේවකයින්: ${empCount}\nවැටුප් වාර්තා: ${payCount}\nගැටළු හා යෝජනා: ${grvCount}`
+      : `✅ Iraasoft Cloud Backup successfully created!\n\nBackup ID: ${backupId}\nTime: ${timestampStr}\nEmployees: ${empCount}\nPayroll Records: ${payCount}`);
 
   } catch (err) {
     console.error('Cloud backup error:', err);
     alert(currentLang === 'si'
-      ? 'Google Sheet Cloud Backup කිරීමේදී දෝෂයක් මතු විය: ' + err.message
-      : 'Error creating Cloud Backup: ' + err.message);
+      ? 'Iraasoft Cloud Backup කිරීමේදී දෝෂයක් මතු විය: ' + err.message
+      : 'Error creating Iraasoft Cloud Backup: ' + err.message);
   } finally {
     if (btn) {
       btn.innerHTML = originalHtml;

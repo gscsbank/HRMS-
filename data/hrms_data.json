@@ -29,26 +29,6 @@
                       "status":  "Active",
                       "createdDate":  "2026-09-24",
                       "password":  "admin123"
-                  },
-                  {
-                      "id":  "USR-002",
-                      "username":  "manager",
-                      "name":  "කේ. ආර්. විජේසුන්දර (General Manager)",
-                      "role":  "manager",
-                      "roleTitle":  "සාමාන්‍යාධිකාරී (Manager Access)",
-                      "status":  "Active",
-                      "createdDate":  "2026-09-24",
-                      "password":  "sanasa123"
-                  },
-                  {
-                      "id":  "USR-003",
-                      "username":  "officer",
-                      "name":  "ණය හා ක්ෂේත්‍ර නිලධාරී (Credit Officer)",
-                      "role":  "officer",
-                      "roleTitle":  "ක්ෂේත්‍ර නිලධාරී (Officer Access)",
-                      "status":  "Active",
-                      "createdDate":  "2026-09-24",
-                      "password":  "officer123"
                   }
               ],
     "grievances":  [
