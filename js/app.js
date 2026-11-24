@@ -386,6 +386,8 @@ async function syncFromCloud(silent = false) {
           });
         }
 
+        if (newGrievancesCount > 0) localStorage.removeItem('sanasa_grv_all_cleared');
+        if (newSurveysCount > 0) localStorage.removeItem('sanasa_surveys_all_cleared');
         if (newGrievancesCount > 0 || newFeedbacksCount > 0 || newSurveysCount > 0) {
           await persistData();
           renderGrievancePortal();
@@ -501,9 +503,162 @@ async function loadApplicationData() {
   if (!appData.memberFeedbacks) appData.memberFeedbacks = [];
   if (!appData.appraisals) appData.appraisals = [];
   if (!appData.surveys) appData.surveys = [];
+
+  // Track and apply deleted IDs and cleared states so deleted items NEVER resurrect
+  const deletedSurvIds = new Set(JSON.parse(localStorage.getItem('sanasa_deleted_surv_ids') || '[]'));
+  const deletedGrvIds = new Set(JSON.parse(localStorage.getItem('sanasa_deleted_grv_ids') || '[]'));
+  const isSurveysCleared = localStorage.getItem('sanasa_surveys_all_cleared') === 'true';
+  const isGrvCleared = localStorage.getItem('sanasa_grv_all_cleared') === 'true';
+
+  if (isSurveysCleared) {
+    appData.surveys = [];
+  } else if (deletedSurvIds.size > 0 && Array.isArray(appData.surveys)) {
+    appData.surveys = appData.surveys.filter(s => !deletedSurvIds.has(s.id));
+  }
+
+  if (isGrvCleared) {
+    appData.grievances = [];
+  } else if (deletedGrvIds.size > 0 && Array.isArray(appData.grievances)) {
+    appData.grievances = appData.grievances.filter(g => !deletedGrvIds.has(g.id));
+  }
+
+  // Initial one-time seed for wellbeing surveys (only when not yet seeded, never after user deleted or cleared)
+  const wellbeingSeedDone = localStorage.getItem('sanasa_wellbeing_seed_done');
+  if (!wellbeingSeedDone && !isSurveysCleared) {
+    if (typeof seedWellbeingSurveys !== 'undefined' && Array.isArray(seedWellbeingSurveys) && seedWellbeingSurveys.length > 0) {
+      const existingIds = new Set(appData.surveys.map(s => s.id));
+      let added = 0;
+      seedWellbeingSurveys.forEach(s => {
+        if (!existingIds.has(s.id) && !deletedSurvIds.has(s.id)) {
+          appData.surveys.push(s);
+          added++;
+        }
+      });
+      if (added > 0) {
+        appData.surveys.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+        try { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appData)); } catch(e){}
+      }
+    }
+    localStorage.setItem('sanasa_wellbeing_seed_done', 'true');
+  }
   if (!appData.payrollHistory) appData.payrollHistory = [];
   if (!appData.incentiveRecords) appData.incentiveRecords = [];
   if (!appData.epfRemittances) appData.epfRemittances = [];
+  if (!appData.payroll2026Configs) appData.payroll2026Configs = {};
+  if (!appData.payroll2026History) appData.payroll2026History = [];
+
+  // Initial one-time seed for grievances (only when not yet seeded, never after user deleted or cleared)
+  const grvSeedDone = localStorage.getItem('sanasa_grv_seed_done');
+  if (!grvSeedDone && !isGrvCleared) {
+    if (typeof seedGrievances !== 'undefined' && Array.isArray(seedGrievances) && seedGrievances.length > 0) {
+      const existingIds = new Set(appData.grievances.map(g => g.id));
+      let added = 0;
+      seedGrievances.forEach(g => {
+        if (!existingIds.has(g.id) && !deletedGrvIds.has(g.id)) {
+          appData.grievances.unshift(g);
+          added++;
+        }
+      });
+      if (added > 0) {
+        appData.grievances.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+        try { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appData)); } catch(e){}
+      }
+    }
+    localStorage.setItem('sanasa_grv_seed_done', 'true');
+  }
+
+  // Consolidate & normalize Nisansala Dulanjani's employee ID to 'Y14806 - 03'
+  normalizeNisansalaEmpId(appData);
+}
+
+function normalizeNisansalaEmpId(data) {
+  if (!data) return;
+  const isTarget = (id) => /^Y14806\s*-\s*0?3$/i.test(String(id || '').trim());
+  const TARGET_ID = 'Y14806 - 03';
+
+  // 1. Employees: merge Y14806 - 3 into Y14806 - 03
+  if (Array.isArray(data.employees)) {
+    const targetEmps = data.employees.filter(e => isTarget(e.id) || (e.fullName && e.fullName.includes('Nisansala')));
+    if (targetEmps.length > 0) {
+      let primary = targetEmps.find(e => e.id === TARGET_ID) || targetEmps[0];
+      primary.id = TARGET_ID;
+      primary.designation = 'Assistant Manager';
+      data.employees = data.employees.filter(e => (!isTarget(e.id) && !(e.fullName && e.fullName.includes('Nisansala'))) || e === primary);
+    }
+  }
+
+  // 2. payrollHistory (2025 and earlier)
+  if (Array.isArray(data.payrollHistory)) {
+    data.payrollHistory.forEach(p => {
+      if (isTarget(p.empId) || (p.empName && p.empName.includes('Nisansala'))) {
+        p.empId = TARGET_ID;
+      }
+    });
+  }
+
+  // 3. payroll2026History
+  if (Array.isArray(data.payroll2026History)) {
+    data.payroll2026History.forEach(p => {
+      if (isTarget(p.empId) || (p.empName && p.empName.includes('Nisansala'))) {
+        p.empId = TARGET_ID;
+        if (p.id && p.id.includes('Y14806 - 3')) {
+          p.id = p.id.replace('Y14806 - 3', TARGET_ID);
+        }
+      }
+    });
+  }
+
+  // 4. payroll2026Configs
+  if (data.payroll2026Configs && typeof data.payroll2026Configs === 'object') {
+    Object.keys(data.payroll2026Configs).forEach(key => {
+      if (isTarget(key) && key !== TARGET_ID) {
+        if (!data.payroll2026Configs[TARGET_ID]) {
+          data.payroll2026Configs[TARGET_ID] = data.payroll2026Configs[key];
+        }
+        delete data.payroll2026Configs[key];
+      }
+    });
+  }
+
+  // 5. appraisals
+  if (Array.isArray(data.appraisals)) {
+    data.appraisals.forEach(a => {
+      if (isTarget(a.employeeId) || (a.employeeName && a.employeeName.includes('Nisansala'))) {
+        a.employeeId = TARGET_ID;
+      }
+    });
+  }
+
+  // 6. incentiveRecords
+  if (Array.isArray(data.incentiveRecords)) {
+    data.incentiveRecords.forEach(inc => {
+      if (isTarget(inc.empId) || (inc.empName && inc.empName.includes('Nisansala'))) {
+        inc.empId = TARGET_ID;
+      }
+    });
+  }
+
+  // 7. epfRemittances
+  if (Array.isArray(data.epfRemittances)) {
+    data.epfRemittances.forEach(r => {
+      if (isTarget(r.empId) || (r.empName && r.empName.includes('Nisansala'))) {
+        r.empId = TARGET_ID;
+      }
+    });
+  }
+
+  // 8. tasks
+  if (Array.isArray(data.tasks)) {
+    data.tasks.forEach(t => {
+      if (isTarget(t.assignedTo)) {
+        t.assignedTo = TARGET_ID;
+      }
+    });
+  }
+
+  try {
+    localStorage.setItem('galapitiyagama_sanasa_hrms', JSON.stringify(data));
+  } catch(e) {}
 }
 
 async function persistData() {
@@ -597,7 +752,8 @@ function switchView(targetId) {
     skills: 'Skills Matrix (නිපුණතා න්‍යාසය)',
     grievance: 'Employee Issues & Suggestions QR (සේවක ගැටළු හා යෝජනා)',
     'member-feedback': 'Member Feedback QR',
-    payroll: 'Payroll & EPF/ETF (වැටුප්)',
+    payroll: '2025 වර්ෂය මාසික වැටුප්, EPF/ETF (වැටුප් ලේඛනය)',
+    'payroll-2026': '2026 වර්ෂයේ සිට මාසික වැටුප් හා EPF/ETF (ස්වයංක්‍රීය පද්ධතිය)',
     appraisals: 'Appraisals (කාර්යසාධනය)',
     satisfaction: 'Wellbeing (සේවක තෘප්තිය)',
     posters: 'QR පෝස්ටර් (Print-Ready)',
@@ -633,6 +789,8 @@ function switchView(targetId) {
     setTimeout(renderBackupRestoreView, 50);
   } else if (targetId === 'satisfaction') {
     setTimeout(renderSatisfactionModule, 50);
+  } else if (targetId === 'payroll-2026') {
+    setTimeout(renderPayroll2026Module, 50);
   }
 }
 
@@ -1155,6 +1313,7 @@ function openAddEmployeeModal() {
   document.getElementById('form-smart-employee').reset();
   document.getElementById('emp-id-input').value = `EMP-00${(appData.employees || []).length + 1}`;
   document.getElementById('emp-mode').value = 'create';
+  document.getElementById('emp-original-id').value = '';
   document.getElementById('emp-photo-data').value = '';
 
   const img = document.getElementById('emp-photo-preview');
@@ -1171,6 +1330,7 @@ function editEmployee(id) {
 
   document.getElementById('emp-mode').value = 'edit';
   document.getElementById('emp-id-input').value = emp.id;
+  document.getElementById('emp-original-id').value = emp.id;
   document.getElementById('emp-full-name').value = emp.fullName || '';
   document.getElementById('emp-calling-name').value = emp.callingName || '';
   document.getElementById('emp-nic').value = emp.nic || '';
@@ -1202,7 +1362,7 @@ function editEmployee(id) {
 async function saveSmartEmployeeForm(e) {
   e.preventDefault();
   const mode = document.getElementById('emp-mode').value;
-  const id = document.getElementById('emp-id-input').value;
+  const id = (document.getElementById('emp-id-input').value || '').trim();
 
   const empData = {
     id: id,
@@ -1255,11 +1415,19 @@ async function saveSmartEmployeeForm(e) {
   if (mode === 'create') {
     appData.employees.push(empData);
   } else {
-    const idx = appData.employees.findIndex(e => e.id === id);
+    // Use original ID to find the employee (in case the user changed the EMP ID)
+    const originalId = (document.getElementById('emp-original-id').value || '').trim();
+    let idx = appData.employees.findIndex(e => e.id === originalId);
+    if (idx === -1) idx = appData.employees.findIndex(e => e.id.trim() === originalId.trim());
+    if (idx === -1) idx = appData.employees.findIndex(e => e.id === id); // fallback: search by new id
     if (idx !== -1) {
       empData.skills = appData.employees[idx].skills || empData.skills;
       empData.deductions = appData.employees[idx].deductions || empData.deductions;
       appData.employees[idx] = empData;
+    } else {
+      // Fallback: push if somehow not found (should not happen)
+      console.warn('Edit mode: employee not found by id, pushing as new:', id);
+      appData.employees.push(empData);
     }
   }
 
@@ -2099,7 +2267,7 @@ function renderGrievancePortal() {
       <td><span style="font-size:11px; color:#64748b;">${fmtTime}</span></td>
       <td>
         <strong style="color:${g.isAnonymous ? '#7c3aed' : '#1e1b4b'};">
-          ${g.isAnonymous ? '🔒 නිර්නාමික (Anonymous)' : g.employeeName}
+          ${g.isAnonymous ? '<i class="fa-solid fa-user-shield" style="margin-right:4px; color:#7c3aed;"></i>නිර්නාමික (Anonymous)' : g.employeeName}
         </strong>
       </td>
       <td><span class="badge-pill badge-purple">${g.targetRecipient}</span></td>
@@ -2158,7 +2326,7 @@ function openGrievanceReviewModal(id) {
 
   document.getElementById('review-grv-id').value = g.id;
   document.getElementById('review-grv-title').innerHTML = `<i class="fa-solid fa-gavel" style="color:#7c3aed;"></i> ${g.id}: ${g.title}`;
-  document.getElementById('review-grv-sender').textContent = g.isAnonymous ? '🔒 නිර්නාමික (100% Confidential Anonymous Staff)' : g.employeeName;
+  document.getElementById('review-grv-sender').innerHTML = g.isAnonymous ? '<i class="fa-solid fa-user-shield" style="color:#7c3aed; margin-right:4px;"></i> නිර්නාමික (100% Confidential Anonymous Staff)' : escapeHtml(g.employeeName);
   document.getElementById('review-grv-target').textContent = g.targetRecipient;
   document.getElementById('review-grv-desc').textContent = g.description;
   document.getElementById('review-grv-status').value = g.status;
@@ -2381,25 +2549,84 @@ function filterPayrollSchedule(type) {
   renderPayrollModule();
 }
 
-// RENDER FORM 1 - MAIN PAYROLL
+// =========================================================================
+// 2025 RENDER FORM 1 - MAIN PAYROLL (MANUAL DATA ENTRY & EXACT 2025 COLUMNS)
+// =========================================================================
 function renderPayrollModule() {
   const tbody = document.querySelector('#table-payroll-body');
   if (!tbody) return;
 
   const monthSelect = document.getElementById('payroll-month-select');
-  const selectedMonth = monthSelect ? monthSelect.value : '2026-09';
+  const selectedMonth = monthSelect ? monthSelect.value : '2025-12';
+  const isYearView = (selectedMonth === '2025-YEAR');
 
+  const history = appData.payrollHistory || [];
+  const monthRecords = isYearView
+    ? history.filter(r => (r.month || '').startsWith('2025-'))
+    : history.filter(r => r.month === selectedMonth);
+
+  // Registered employees
   let emps = appData.employees || [];
 
-  if (emps.length === 0) {
+  // Filter based on schedule if selected
+  if (currentPayrollFilter === 'perm') {
+    emps = emps.filter(isPermanentEmp);
+  } else if (currentPayrollFilter === 'nonperm') {
+    emps = emps.filter(e => !isPermanentEmp(e));
+  }
+
+  const normEmpId = (id) => /^Y14806\s*-\s*0?3$/i.test(String(id || '').trim()) ? 'Y14806 - 03' : String(id || '').trim();
+
+  let allDisplayList = [];
+  if (isYearView) {
+    allDisplayList = [...emps];
+    monthRecords.forEach(rec => {
+      const rNorm = normEmpId(rec.empId);
+      if (!allDisplayList.some(e => normEmpId(e.id) === rNorm)) {
+        allDisplayList.push({
+          id: rNorm,
+          fullName: rec.empName || rNorm,
+          designation: rec.designation || 'සේවකයා',
+          employmentType: 'අතින් ඇතුළත් කළ',
+          basicSalary: rec.basic || 0
+        });
+      }
+    });
+  } else {
+    // In a specific month view, display only employees who actually have a salary record in this month's ledger
+    allDisplayList = monthRecords.map(rec => {
+      const rNorm = normEmpId(rec.empId);
+      const matchedEmp = emps.find(e => normEmpId(e.id) === rNorm);
+      return {
+        ...(matchedEmp || {}),
+        id: rec.empId,
+        fullName: rec.empName || matchedEmp?.fullName || rec.empId,
+        designation: rec.designation || matchedEmp?.designation || 'සේවකයා',
+        employmentType: matchedEmp?.employmentType || 'අතින් ඇතුළත් කළ',
+        basicSalary: rec.basic || matchedEmp?.basicSalary || 0
+      };
+    });
+
+    if (currentPayrollFilter === 'perm') {
+      allDisplayList = allDisplayList.filter(isPermanentEmp);
+    } else if (currentPayrollFilter === 'nonperm') {
+      allDisplayList = allDisplayList.filter(e => !isPermanentEmp(e));
+    }
+  }
+
+  allDisplayList.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
+
+  if (allDisplayList.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="19" style="text-align:center; padding:35px; color:#94a3b8;">
+        <td colspan="20" style="text-align:center; padding:35px; color:#94a3b8;">
           <i class="fa-solid fa-file-invoice-dollar" style="font-size:32px; margin-bottom:10px; display:block; opacity:0.6;"></i>
-          දත්ත නොමැත — පළමුව සේවකයින් ලියාපදිංචි කර හෝ ඉහත <strong>'+ වැටුප් දත්ත ඇතුළත් කරන්න'</strong> බොත්තම ඔබා මාසික වැටුප් සටහන් කරන්න.
+          ${isYearView ? '2025 වර්ෂය සඳහා වැටුප් දත්ත කිසිවක් හමු නොවීය.' : `2025 ${selectedMonth} මාසය සඳහා වැටුප් දත්ත නොමැත — ඉහත <strong>'+ 2025 වැටුප් දත්ත ඇතුළත් කරන්න'</strong> බොත්තම ඔබා සේවක වැටුප් සටහන් කරන්න.`}
         </td>
       </tr>
     `;
+    const tfoot = document.querySelector('#table-payroll-footer');
+    if (tfoot) tfoot.innerHTML = '';
     const setStat = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     setStat('payroll-stat-basic', 'රු. 0');
     setStat('payroll-stat-gross', 'රු. 0');
@@ -2410,93 +2637,168 @@ function renderPayrollModule() {
     return;
   }
 
-  // Filter based on schedule
-  if (currentPayrollFilter === 'perm') {
-    emps = emps.filter(isPermanentEmp);
-  } else if (currentPayrollFilter === 'nonperm') {
-    emps = emps.filter(e => !isPermanentEmp(e));
-  }
+  let totBasic = 0, totIncentive = 0, totAllowance1 = 0, totAllowance2 = 0, totAtt = 0, totInterim = 0;
+  let totGross = 0, totEpf20 = 0, totEmployer12 = 0;
+  let totEmployee8 = 0, totEmployer25 = 0, totEmployer3 = 0, totEmployer6 = 0, totBudget = 0, totEtf3 = 0;
+  let totDeductions = 0, totOt = 0, totNet = 0;
 
-  let totBasic = 0, totGross = 0, totEpf8 = 0, totEpf12 = 0, totPension = 0, totNet = 0;
+  tbody.innerHTML = allDisplayList.map(emp => {
+    let dateStr, basic, incentive, allowance1, allowance2, att, interim, gross, epf20, employer12, employee8, employer25, employer3, employer6, budget, etf3, deductions, ot, net, hasSaved;
 
-  tbody.innerHTML = emps.map(emp => {
-    const isPerm = isPermanentEmp(emp);
-    const payBadge = isPerm 
-      ? '<span class="badge-pill badge-green"><i class="fa-solid fa-calendar-check"></i> ස්ථිර (25 දින)</span>'
-      : '<span class="badge-pill badge-amber"><i class="fa-solid fa-calendar-day"></i> ස්ථිර නොවන (10 දින)</span>';
+    if (isYearView) {
+      const empRecs = monthRecords.filter(r => normEmpId(r.empId) === normEmpId(emp.id));
+      const monthsCount = empRecs.length;
+      dateStr = `<span class="badge" style="background:#e0e7ff; color:#3730a3; padding:2px 6px; font-weight:700; font-size:10px;">2025 (${monthsCount} මසක්)</span>`;
 
-    // Check if entered record exists for this employee + month
-    const history = appData.payrollHistory || [];
-    const savedRec = history.find(r => r.empId === emp.id && r.month === selectedMonth);
+      basic = empRecs.reduce((s, r) => s + (parseFloat(r.basic) || 0), 0);
+      incentive = empRecs.reduce((s, r) => s + (parseFloat(r.incentive) || 0), 0);
+      allowance1 = empRecs.reduce((s, r) => s + (parseFloat(r.allowance1) || 0), 0);
+      allowance2 = empRecs.reduce((s, r) => s + (parseFloat(r.allowance2) || 0), 0);
+      att = empRecs.reduce((s, r) => s + (parseFloat(r.att) || 0), 0);
+      interim = empRecs.reduce((s, r) => s + (parseFloat(r.interim) || 0), 0);
+      gross = empRecs.reduce((s, r) => s + (parseFloat(r.gross) || 0), 0);
+      epf20 = empRecs.reduce((s, r) => s + (parseFloat(r.epf20) || 0), 0);
+      employer12 = empRecs.reduce((s, r) => s + (parseFloat(r.employer12) || 0), 0);
+      employee8 = empRecs.reduce((s, r) => s + (parseFloat(r.employee8) || 0), 0);
+      employer25 = empRecs.reduce((s, r) => s + (parseFloat(r.employer25) || 0), 0);
+      employer3 = empRecs.reduce((s, r) => s + (parseFloat(r.employer3) || 0), 0);
+      employer6 = empRecs.reduce((s, r) => s + (parseFloat(r.employer6) || 0), 0);
+      budget = empRecs.reduce((s, r) => s + (parseFloat(r.budget) || 0), 0);
+      etf3 = empRecs.reduce((s, r) => s + (parseFloat(r.etf3) || 0), 0);
+      deductions = empRecs.reduce((s, r) => s + (parseFloat(r.deductions) || 0), 0);
+      ot = empRecs.reduce((s, r) => s + (parseFloat(r.ot) || 0), 0);
+      net = empRecs.reduce((s, r) => s + (parseFloat(r.net) || 0), 0);
+      hasSaved = monthsCount > 0;
+    } else {
+      const rec = monthRecords.find(r => normEmpId(r.empId) === normEmpId(emp.id));
+      const isPerm = isPermanentEmp(emp);
+      const defaultDate = isPerm ? `${selectedMonth}-25` : `${selectedMonth}-10`;
+      dateStr = rec ? (rec.date || defaultDate) : defaultDate;
 
-    const basic = savedRec ? savedRec.basic : (emp.basicSalary || 0);
-    const att = savedRec ? savedRec.att : 0;
-    const allowances = savedRec ? savedRec.allowances : 0;
-    const gross = basic + att + allowances;
-
-    const epf20 = basic * 0.20;
-    const epf12 = basic * 0.12;
-    const epf8 = basic * 0.08;
-    const pen25 = basic * 0.025;
-    const pen5 = basic * 0.05;
-    const etf3 = basic * 0.03;
-
-    const advance = savedRec ? savedRec.advance : 0;
-    const ded1 = savedRec ? savedRec.ded1 : 0;
-    const ded2 = savedRec ? savedRec.ded2 : 0;
-    const totDeductions = epf8 + pen5 + advance + ded1 + ded2;
-    const otherAdd = savedRec ? savedRec.otherAdd : 0;
-    const net = (gross - totDeductions) + otherAdd;
+      basic = rec ? (parseFloat(rec.basic) || 0) : 0;
+      incentive = rec ? (parseFloat(rec.incentive) || 0) : 0;
+      allowance1 = rec ? (parseFloat(rec.allowance1) || 0) : 0;
+      allowance2 = rec ? (parseFloat(rec.allowance2) || 0) : 0;
+      att = rec ? (parseFloat(rec.att) || 0) : 0;
+      interim = rec ? (parseFloat(rec.interim) || 0) : 0;
+      gross = rec ? (parseFloat(rec.gross) || 0) : (basic + incentive + allowance1 + allowance2 + att + interim);
+      epf20 = rec ? (parseFloat(rec.epf20) || 0) : 0;
+      employer12 = rec ? (parseFloat(rec.employer12) || 0) : 0;
+      employee8 = rec ? (parseFloat(rec.employee8) || 0) : 0;
+      employer25 = rec ? (parseFloat(rec.employer25) || 0) : 0;
+      employer3 = rec ? (parseFloat(rec.employer3) || 0) : 0;
+      employer6 = rec ? (parseFloat(rec.employer6) || 0) : 0;
+      budget = rec ? (parseFloat(rec.budget) || 0) : 0;
+      etf3 = rec ? (parseFloat(rec.etf3) || 0) : 0;
+      deductions = rec ? (parseFloat(rec.deductions) || 0) : 0;
+      ot = rec ? (parseFloat(rec.ot) || 0) : 0;
+      net = rec ? (parseFloat(rec.net) || 0) : ((gross + budget + ot) - deductions);
+      hasSaved = !!rec;
+    }
 
     totBasic += basic;
+    totIncentive += incentive;
+    totAllowance1 += allowance1;
+    totAllowance2 += allowance2;
+    totAtt += att;
+    totInterim += interim;
     totGross += gross;
-    totEpf8 += epf8;
-    totEpf12 += epf12;
-    totPension += (pen25 + pen5);
+    totEpf20 += epf20;
+    totEmployer12 += employer12;
+    totEmployee8 += employee8;
+    totEmployer25 += employer25;
+    totEmployer3 += employer3;
+    totEmployer6 += employer6;
+    totBudget += budget;
+    totEtf3 += etf3;
+    totDeductions += deductions;
+    totOt += ot;
     totNet += net;
 
     return `
-      <tr>
-        <td><strong style="color:var(--primary); font-family:monospace;">${emp.id}</strong></td>
+      <tr style="${hasSaved ? '' : 'opacity:0.92;'}">
+        <td style="font-family:monospace; font-size:11px; white-space:nowrap;">${dateStr}</td>
         <td>
           <div style="font-weight:700; color:#1e1b4b;">${emp.fullName}</div>
-          <div style="font-size:11px; color:#64748b;">${emp.designation}</div>
+          <div style="font-size:10.5px; color:#64748b;">${emp.id} • ${emp.designation || 'සේවක'}</div>
         </td>
-        <td>${payBadge}</td>
-        <td>රු. ${basic.toLocaleString()}</td>
-        <td>රු. ${att.toLocaleString()}</td>
-        <td>රු. ${allowances.toLocaleString()}</td>
-        <td style="background:#f5f3ff; font-weight:700; color:#7c3aed;">රු. ${gross.toLocaleString()}</td>
-        <td>රු. ${Math.round(epf20).toLocaleString()}</td>
-        <td style="color:#16a34a; font-weight:700;">රු. ${Math.round(epf12).toLocaleString()}</td>
-        <td style="color:#dc2626; font-weight:700;">රු. ${Math.round(epf8).toLocaleString()}</td>
-        <td>රු. ${Math.round(pen25).toLocaleString()}</td>
-        <td style="color:#dc2626;">රු. ${Math.round(pen5).toLocaleString()}</td>
-        <td style="color:#0284c7; font-weight:700;">රු. ${Math.round(etf3).toLocaleString()}</td>
-        <td>${advance > 0 ? `රු. ${advance.toLocaleString()}` : '-'}</td>
-        <td>${(ded1 + ded2) > 0 ? `රු. ${(ded1 + ded2).toLocaleString()}` : '-'}</td>
-        <td style="color:#dc2626; font-weight:700;">රු. ${Math.round(totDeductions).toLocaleString()}</td>
-        <td>${otherAdd > 0 ? `රු. ${otherAdd.toLocaleString()}` : '-'}</td>
-        <td style="background:#f0fdf4; font-weight:800; color:#15803d; font-size:12.5px;">රු. ${Math.round(net).toLocaleString()}</td>
+        <td style="text-align:right;">${basic > 0 ? 'රු. ' + basic.toLocaleString() : '-'}</td>
+        <td style="text-align:right;">${incentive > 0 ? 'රු. ' + incentive.toLocaleString() : '-'}</td>
+        <td style="text-align:right;">${allowance1 > 0 ? 'රු. ' + allowance1.toLocaleString() : '-'}</td>
+        <td style="text-align:right;">${allowance2 > 0 ? 'රු. ' + allowance2.toLocaleString() : '-'}</td>
+        <td style="text-align:right;">${att > 0 ? 'රු. ' + att.toLocaleString() : '-'}</td>
+        <td style="text-align:right;">${interim > 0 ? 'රු. ' + interim.toLocaleString() : '-'}</td>
+        <td style="text-align:right; background:#f5f3ff; font-weight:700; color:#7c3aed;">${gross > 0 ? 'රු. ' + gross.toLocaleString() : '-'}</td>
+        <td style="text-align:right;">${epf20 > 0 ? 'රු. ' + epf20.toLocaleString() : '-'}</td>
+        <td style="text-align:right; color:#16a34a; font-weight:700;">${employer12 > 0 ? 'රු. ' + employer12.toLocaleString() : '-'}</td>
+        <td style="text-align:right; color:#dc2626; font-weight:700;">${employee8 > 0 ? 'රු. ' + employee8.toLocaleString() : '-'}</td>
+        <td style="text-align:right;">${employer25 > 0 ? 'රු. ' + employer25.toLocaleString() : '-'}</td>
+        <td style="text-align:right; color:#7c3aed;">${employer3 > 0 ? 'රු. ' + employer3.toLocaleString() : '-'}</td>
+        <td style="text-align:right; color:#7c3aed;">${employer6 > 0 ? 'රු. ' + employer6.toLocaleString() : '-'}</td>
+        <td style="text-align:right;">${budget > 0 ? 'රු. ' + budget.toLocaleString() : '-'}</td>
+        <td style="text-align:right; color:#0284c7; font-weight:700;">${etf3 > 0 ? 'රු. ' + etf3.toLocaleString() : '-'}</td>
+        <td style="text-align:right; color:#dc2626; font-weight:700; background:#fef2f2;">${deductions > 0 ? 'රු. ' + deductions.toLocaleString() : '-'}</td>
+        <td style="text-align:right;">${ot > 0 ? 'රු. ' + ot.toLocaleString() : '-'}</td>
+        <td style="text-align:right; background:#f0fdf4; font-weight:800; color:#15803d; font-size:12.5px;">${net > 0 ? 'රු. ' + net.toLocaleString() : '-'}</td>
         <td style="text-align:center; white-space:nowrap;">
-          <button class="btn-smart btn-smart-primary" onclick="viewPayslipForEmp('${emp.id}', '${selectedMonth}')" title="පඩිපත බලන්න" style="padding:4px 8px; font-size:11px; margin-right:4px;">
-            <i class="fa-solid fa-file-invoice"></i> පඩිපත
-          </button>
-          <button class="btn-smart btn-smart-light" onclick="openAddPayrollEntryModal('${emp.id}', '${selectedMonth}')" title="දත්ත ඇතුළත් / සංස්කරණය" style="padding:4px 8px; font-size:11px;">
-            <i class="fa-solid fa-pen"></i>
-          </button>
+          ${isYearView ? `
+            <button class="btn-smart btn-smart-primary" onclick="viewEmployeeAnnualStatement('${emp.id}')" title="2025 සේවක වාර්ෂික විස්තරය බලන්න" style="padding:4px 8px; font-size:11px;">
+              <i class="fa-solid fa-file-invoice"></i> වාර්ෂික පත්‍රිකාව
+            </button>
+          ` : `
+            <button class="btn-smart btn-smart-light" onclick="openAddPayrollEntryModal('${emp.id}', '${selectedMonth}')" title="දත්ත ඇතුළත් / සංස්කරණය" style="padding:4px 7px; font-size:11px; margin-right:3px;">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button class="btn-smart btn-smart-primary" onclick="viewPayslipForEmp('${emp.id}', '${selectedMonth}')" title="පඩිපත බලන්න" style="padding:4px 7px; font-size:11px; margin-right:3px;">
+              <i class="fa-solid fa-file-invoice"></i>
+            </button>
+            ${hasSaved ? `
+              <button class="btn-smart btn-smart-light" onclick="deletePayrollEntry('${emp.id}', '${selectedMonth}')" title="මෙම මාසයේ දත්ත ඉවත් කරන්න" style="padding:4px 6px; font-size:11px; color:#dc2626;">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            ` : ''}
+          `}
         </td>
       </tr>
     `;
   }).join('');
 
+  // Table Footer Grand Totals Row
+  const tfoot = document.querySelector('#table-payroll-footer');
+  if (tfoot) {
+    tfoot.innerHTML = `
+      <tr style="background:#f1f5f9; font-weight:bold; border-top:2px solid #cbd5e1; font-size:11.5px;">
+        <td colspan="2" style="text-align:center; padding:8px 4px;">එකතුව (Grand Total)</td>
+        <td style="text-align:right; padding:8px 4px;">රු. ${totBasic.toLocaleString()}</td>
+        <td style="text-align:right; padding:8px 4px;">රු. ${totIncentive.toLocaleString()}</td>
+        <td style="text-align:right; padding:8px 4px;">රු. ${totAllowance1.toLocaleString()}</td>
+        <td style="text-align:right; padding:8px 4px;">රු. ${totAllowance2.toLocaleString()}</td>
+        <td style="text-align:right; padding:8px 4px;">රු. ${totAtt.toLocaleString()}</td>
+        <td style="text-align:right; padding:8px 4px;">රු. ${totInterim.toLocaleString()}</td>
+        <td style="text-align:right; padding:8px 4px; color:#7c3aed;">රු. ${totGross.toLocaleString()}</td>
+        <td style="text-align:right; padding:8px 4px;">රු. ${totEpf20.toLocaleString()}</td>
+        <td style="text-align:right; padding:8px 4px; color:#16a34a;">රු. ${totEmployer12.toLocaleString()}</td>
+        <td style="text-align:right; padding:8px 4px; color:#dc2626;">රු. ${totEmployee8.toLocaleString()}</td>
+        <td style="text-align:right; padding:8px 4px;">රු. ${totEmployer25.toLocaleString()}</td>
+        <td style="text-align:right; padding:8px 4px;">රු. ${totEmployer3.toLocaleString()}</td>
+        <td style="text-align:right; padding:8px 4px;">රු. ${totEmployer6.toLocaleString()}</td>
+        <td style="text-align:right; padding:8px 4px;">රු. ${totBudget.toLocaleString()}</td>
+        <td style="text-align:right; padding:8px 4px; color:#0284c7;">රු. ${totEtf3.toLocaleString()}</td>
+        <td style="text-align:right; padding:8px 4px; color:#dc2626;">රු. ${totDeductions.toLocaleString()}</td>
+        <td style="text-align:right; padding:8px 4px;">රු. ${totOt.toLocaleString()}</td>
+        <td style="text-align:right; padding:8px 4px; color:#15803d; font-size:12.5px;">රු. ${totNet.toLocaleString()}</td>
+        <td></td>
+      </tr>
+    `;
+  }
+
   // Update Summary Stats
   const setStat = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   setStat('payroll-stat-basic', `රු. ${Math.round(totBasic).toLocaleString()}`);
   setStat('payroll-stat-gross', `රු. ${Math.round(totGross).toLocaleString()}`);
-  setStat('payroll-stat-epf8', `රු. ${Math.round(totEpf8).toLocaleString()}`);
-  setStat('payroll-stat-epf12', `රු. ${Math.round(totEpf12).toLocaleString()}`);
-  setStat('payroll-stat-pension', `රු. ${Math.round(totPension).toLocaleString()}`);
+  setStat('payroll-stat-epf8', `රු. ${Math.round(totEmployee8).toLocaleString()}`);
+  setStat('payroll-stat-epf12', `රු. ${Math.round(totEmployer12).toLocaleString()}`);
+  setStat('payroll-stat-pension', `රු. ${Math.round(totEmployer25 + totEmployer3 + totEmployer6 + totEtf3).toLocaleString()}`);
   setStat('payroll-stat-net', `රු. ${Math.round(totNet).toLocaleString()}`);
 }
 
@@ -2505,17 +2807,18 @@ function openAddPayrollEntryModal(empId = '', month = '') {
   const monthInput = document.getElementById('pay-entry-month');
   if (!empSelect || !monthInput) return;
 
-  const currentMonth = month || (document.getElementById('payroll-month-select')?.value || '2026-09');
+  const rawMonth = month || (document.getElementById('payroll-month-select')?.value || '2025-12');
+  const currentMonth = (rawMonth === '2025-YEAR') ? '2025-12' : rawMonth;
   monthInput.value = currentMonth;
 
   const emps = appData.employees || [];
   empSelect.innerHTML = '<option value="">-- සේවකයෙකු තෝරන්න --</option>' +
     emps.map(e => {
       const isPerm = isPermanentEmp(e);
-      const tag = isPerm ? '[ස්ථිර - 25 වන දින]' : '[ස්ථිර නොවන - 10 වන දින]';
-      return `<option value="${e.id}" ${e.id === empId ? 'selected' : ''}>${e.fullName} (${e.designation}) ${tag}</option>`;
+      const tag = isPerm ? '[ස්ථිර]' : '[ස්ථිර නොවන]';
+      return `<option value="${e.id}" ${e.id === empId ? 'selected' : ''}>${e.fullName} (${e.designation || 'සේවක'}) ${tag}</option>`;
     }).join('') +
-    '<option value="NEW_MANUAL" style="font-weight:bold; color:#7c3aed; border-top:1px solid #e2e8f0;">➕ නව සේවකයෙකු අතින් ඇතුළත් කරන්න (Manual Entry)</option>';
+    '<option value="NEW_MANUAL" style="font-weight:bold; color:#7c3aed; border-top:1px solid #e2e8f0;">+ නව සේවකයෙකු අතින් ඇතුළත් කරන්න (Manual Staff Entry)</option>';
 
   if (empId) {
     empSelect.value = empId;
@@ -2527,95 +2830,117 @@ function openAddPayrollEntryModal(empId = '', month = '') {
   openSmartModal('modal-smart-payroll-entry');
 }
 
+function onPayrollEntryMonthChange() {
+  const month = document.getElementById('pay-entry-month')?.value || '2025-12';
+  const dateInput = document.getElementById('pay-entry-date');
+  if (dateInput && !dateInput.value) {
+    dateInput.value = `${month}-25`;
+  }
+  onPayrollEntryEmpChange();
+}
+
 function onPayrollEntryEmpChange() {
   const empId = document.getElementById('pay-entry-emp')?.value;
-  const month = document.getElementById('pay-entry-month')?.value || '2026-09';
-  const notice = document.getElementById('pay-entry-policy-notice');
-  const calcDateBadge = document.getElementById('pay-entry-calc-date');
+  const month = document.getElementById('pay-entry-month')?.value || '2025-12';
   const manualRow = document.getElementById('pay-manual-emp-row');
+  const dateInput = document.getElementById('pay-entry-date');
 
   // Handle NEW_MANUAL selection
   if (empId === 'NEW_MANUAL') {
     if (manualRow) manualRow.style.display = 'block';
-    if (notice) notice.innerHTML = '🟣 <strong>නව සේවකයෙකු (Manual Entry)</strong>: පහත ක්ෂේත්‍ර පුරවා සේවකයා ලියාපදිංචි කරන්න. මෙම සේවකයා ස්ථිරව පද්ධතියේ සුරකිනු ලැබේ.';
-    if (calcDateBadge) {
-      calcDateBadge.textContent = 'Manual Entry';
-      calcDateBadge.className = 'badge-pill badge-amber';
-    }
-    // Clear payroll form fields for new entry
-    ['pay-entry-basic','pay-entry-att','pay-entry-allowances','pay-entry-advance','pay-entry-ded1','pay-entry-ded2','pay-entry-other-add']
+    if (dateInput) dateInput.value = `${month}-25`;
+    // Clear fields
+    ['pay-entry-basic','pay-entry-incentive','pay-entry-allowance1','pay-entry-allowance2','pay-entry-att','pay-entry-interim','pay-entry-gross','pay-entry-epf20','pay-entry-employer12','pay-entry-employee8','pay-entry-employer25','pay-entry-employer3','pay-entry-employer6','pay-entry-budget','pay-entry-etf3','pay-entry-deductions','pay-entry-ot','pay-entry-net']
       .forEach(id => { const el = document.getElementById(id); if (el) el.value = 0; });
-    recalculatePayrollForm1();
     return;
   }
 
   if (manualRow) manualRow.style.display = 'none';
 
   const emp = (appData.employees || []).find(e => e.id === empId);
-  if (!emp) {
-    if (notice) notice.innerHTML = 'කරුණාකර සේවකයෙකු තෝරන්න.';
-    return;
-  }
-
-  const isPerm = isPermanentEmp(emp);
-  if (isPerm) {
-    if (notice) notice.innerHTML = `🟢 <strong>ස්ථිර සේවකයෙකි (Permanent Staff)</strong>: රෙගුලාසි අනුව මෙම පත්‍රිකාවේ වැටුප් ගණනය වන්නේ <strong>සෑම මසකම 25 වන දිනටය</strong>. (මීට අමතරව 10 වන දින දිරි දීමනා හිමිවේ).`;
-    if (calcDateBadge) {
-      calcDateBadge.textContent = 'ගෙවීම් දිනය: 25 වන දින';
-      calcDateBadge.className = 'badge-pill badge-green';
-    }
-  } else {
-    if (notice) notice.innerHTML = `🟡 <strong>ස්ථිර නොවන සේවකයෙකි (Probation / Contract)</strong>: රෙගුලාසි අනුව මෙම පත්‍රිකාවේ වැටුප් ගණනය වන්නේ <strong>සෑම මසකම 10 වන දිනටය</strong>. (දිරි දීමනා හිමි නොවේ).`;
-    if (calcDateBadge) {
-      calcDateBadge.textContent = 'ගෙවීම් දිනය: 10 වන දින';
-      calcDateBadge.className = 'badge-pill badge-amber';
-    }
-  }
-
-  // Check if saved record exists
   const history = appData.payrollHistory || [];
-  const rec = history.find(r => r.empId === emp.id && r.month === month);
+  const rec = history.find(r => r.empId === empId && r.month === month);
 
-  document.getElementById('pay-entry-basic').value = rec ? rec.basic : (emp.basicSalary || 0);
-  document.getElementById('pay-entry-att').value = rec ? rec.att : 0;
-  document.getElementById('pay-entry-allowances').value = rec ? rec.allowances : 0;
-  document.getElementById('pay-entry-advance').value = rec ? rec.advance : 0;
-  document.getElementById('pay-entry-ded1').value = rec ? rec.ded1 : 0;
-  document.getElementById('pay-entry-ded2').value = rec ? rec.ded2 : 0;
-  document.getElementById('pay-entry-other-add').value = rec ? rec.otherAdd : 0;
+  const isPerm = emp ? isPermanentEmp(emp) : true;
+  const defaultDate = isPerm ? `${month}-25` : `${month}-10`;
 
-  recalculatePayrollForm1();
+  if (dateInput) {
+    dateInput.value = rec ? (rec.date || defaultDate) : defaultDate;
+  }
+
+  const basic = rec ? (rec.basic ?? (emp?.basicSalary || 0)) : (emp?.basicSalary || 0);
+  const incentive = rec ? (rec.incentive || 0) : 0;
+  const allowance1 = rec ? (rec.allowance1 || 0) : 0;
+  const allowance2 = rec ? (rec.allowance2 || 0) : 0;
+  const att = rec ? (rec.att || 0) : 0;
+  const interim = rec ? (rec.interim || 0) : 0;
+  const gross = rec ? (rec.gross ?? (basic + incentive + allowance1 + allowance2 + att + interim)) : (basic + incentive + allowance1 + allowance2 + att + interim);
+  const epf20 = rec ? (rec.epf20 || 0) : 0;
+  const employer12 = rec ? (rec.employer12 || 0) : 0;
+  const employee8 = rec ? (rec.employee8 || 0) : 0;
+  const employer25 = rec ? (rec.employer25 || 0) : 0;
+  const employer3 = rec ? (rec.employer3 || 0) : 0;
+  const employer6 = rec ? (rec.employer6 || 0) : 0;
+  const budget = rec ? (rec.budget || 0) : 0;
+  const etf3 = rec ? (rec.etf3 || 0) : 0;
+  const deductions = rec ? (rec.deductions || 0) : 0;
+  const ot = rec ? (rec.ot || 0) : 0;
+  const net = rec ? (rec.net || 0) : ((gross + budget + ot) - deductions);
+
+  const setV = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+  setV('pay-entry-basic', basic);
+  setV('pay-entry-incentive', incentive);
+  setV('pay-entry-allowance1', allowance1);
+  setV('pay-entry-allowance2', allowance2);
+  setV('pay-entry-att', att);
+  setV('pay-entry-interim', interim);
+  setV('pay-entry-gross', gross);
+  setV('pay-entry-epf20', epf20);
+  setV('pay-entry-employer12', employer12);
+  setV('pay-entry-employee8', employee8);
+  setV('pay-entry-employer25', employer25);
+  setV('pay-entry-employer3', employer3);
+  setV('pay-entry-employer6', employer6);
+  setV('pay-entry-budget', budget);
+  setV('pay-entry-etf3', etf3);
+  setV('pay-entry-deductions', deductions);
+  setV('pay-entry-ot', ot);
+  setV('pay-entry-net', net);
 }
 
-function recalculatePayrollForm1() {
+// Optional helper to prefill standard calculated numbers if the user wants quick assistance
+function autoFillPayroll2025Values() {
   const basic = parseFloat(document.getElementById('pay-entry-basic')?.value) || 0;
+  const incentive = parseFloat(document.getElementById('pay-entry-incentive')?.value) || 0;
+  const allowance1 = parseFloat(document.getElementById('pay-entry-allowance1')?.value) || 0;
+  const allowance2 = parseFloat(document.getElementById('pay-entry-allowance2')?.value) || 0;
   const att = parseFloat(document.getElementById('pay-entry-att')?.value) || 0;
-  const allowances = parseFloat(document.getElementById('pay-entry-allowances')?.value) || 0;
-  const advance = parseFloat(document.getElementById('pay-entry-advance')?.value) || 0;
-  const ded1 = parseFloat(document.getElementById('pay-entry-ded1')?.value) || 0;
-  const ded2 = parseFloat(document.getElementById('pay-entry-ded2')?.value) || 0;
-  const otherAdd = parseFloat(document.getElementById('pay-entry-other-add')?.value) || 0;
+  const interim = parseFloat(document.getElementById('pay-entry-interim')?.value) || 0;
+  const budget = parseFloat(document.getElementById('pay-entry-budget')?.value) || 0;
+  const ot = parseFloat(document.getElementById('pay-entry-ot')?.value) || 0;
 
-  const gross = basic + att + allowances;
-  const epf20 = basic * 0.20;
-  const epf12 = basic * 0.12;
-  const epf8 = basic * 0.08;
-  const pen25 = basic * 0.025;
-  const pen5 = basic * 0.05;
-  const etf3 = basic * 0.03;
-  const totDed = epf8 + pen5 + advance + ded1 + ded2;
-  const net = (gross - totDed) + otherAdd;
+  const gross = Math.round(basic + incentive + allowance1 + allowance2 + att + interim);
+  const epf20 = Math.round(basic * 0.20);
+  const employer12 = Math.round(basic * 0.12);
+  const employee8 = Math.round(basic * 0.08);
+  const employer25 = Math.round(basic * 0.025);
+  const employer3 = Math.round(basic * 0.03);
+  const employer6 = Math.round(basic * 0.06);
+  const etf3 = Math.round(basic * 0.03);
+  const deductions = Math.round(employee8 + employer25);
+  const net = Math.round((gross + budget + ot) - deductions);
 
-  const setT = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  setT('pay-calc-gross', `රු. ${gross.toLocaleString()}`);
-  setT('pay-calc-epf20', `රු. ${Math.round(epf20).toLocaleString()}`);
-  setT('pay-calc-epf12', `රු. ${Math.round(epf12).toLocaleString()}`);
-  setT('pay-calc-epf8', `රු. ${Math.round(epf8).toLocaleString()}`);
-  setT('pay-calc-pen25', `රු. ${Math.round(pen25).toLocaleString()}`);
-  setT('pay-calc-pen5', `රු. ${Math.round(pen5).toLocaleString()}`);
-  setT('pay-calc-etf3', `රු. ${Math.round(etf3).toLocaleString()}`);
-  setT('pay-calc-tot-ded', `රු. ${Math.round(totDed).toLocaleString()}`);
-  setT('pay-calc-net', `රු. ${Math.round(net).toLocaleString()}`);
+  const setV = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+  setV('pay-entry-gross', gross);
+  setV('pay-entry-epf20', epf20);
+  setV('pay-entry-employer12', employer12);
+  setV('pay-entry-employee8', employee8);
+  setV('pay-entry-employer25', employer25);
+  setV('pay-entry-employer3', employer3);
+  setV('pay-entry-employer6', employer6);
+  setV('pay-entry-etf3', etf3);
+  setV('pay-entry-deductions', deductions);
+  setV('pay-entry-net', net);
 }
 
 async function savePayrollEntry(e) {
@@ -2624,12 +2949,15 @@ async function savePayrollEntry(e) {
   const month = document.getElementById('pay-entry-month').value;
   if (!empId || !month) return;
 
+  let empName = '';
+  let empDesig = '';
+
   // Handle manual new employee creation
   if (empId === 'NEW_MANUAL') {
     const manualId = document.getElementById('pay-manual-id')?.value?.trim();
     const manualName = document.getElementById('pay-manual-name')?.value?.trim();
     const manualDesig = document.getElementById('pay-manual-desig')?.value?.trim();
-    const manualType = document.getElementById('pay-manual-type')?.value?.trim() || 'ස්ථිර නොවන';
+    const manualType = document.getElementById('pay-manual-type')?.value?.trim() || 'ස්ථිර';
 
     if (!manualId || !manualName) {
       alert('සේවා අංකය සහ සම්පූර්ණ නම ඇතුළත් කරන්න!');
@@ -2647,21 +2975,41 @@ async function savePayrollEntry(e) {
         basicSalary: parseFloat(document.getElementById('pay-entry-basic')?.value) || 0,
         department: 'සාමාන්‍ය',
         branch: 'ප්‍රධාන',
-        startDate: new Date().toISOString().split('T')[0],
+        startDate: '2025-01-01',
         status: 'Active',
         createdAt: new Date().toISOString()
       });
     }
     empId = manualId;
+    empName = manualName;
+    empDesig = manualDesig;
+  } else {
+    const foundEmp = (appData.employees || []).find(e => e.id === empId);
+    if (foundEmp) {
+      empName = foundEmp.fullName;
+      empDesig = foundEmp.designation;
+    }
   }
 
-  const basic = parseFloat(document.getElementById('pay-entry-basic').value) || 0;
-  const att = parseFloat(document.getElementById('pay-entry-att').value) || 0;
-  const allowances = parseFloat(document.getElementById('pay-entry-allowances').value) || 0;
-  const advance = parseFloat(document.getElementById('pay-entry-advance').value) || 0;
-  const ded1 = parseFloat(document.getElementById('pay-entry-ded1').value) || 0;
-  const ded2 = parseFloat(document.getElementById('pay-entry-ded2').value) || 0;
-  const otherAdd = parseFloat(document.getElementById('pay-entry-other-add').value) || 0;
+  const date = document.getElementById('pay-entry-date')?.value?.trim() || `${month}-25`;
+  const basic = parseFloat(document.getElementById('pay-entry-basic')?.value) || 0;
+  const incentive = parseFloat(document.getElementById('pay-entry-incentive')?.value) || 0;
+  const allowance1 = parseFloat(document.getElementById('pay-entry-allowance1')?.value) || 0;
+  const allowance2 = parseFloat(document.getElementById('pay-entry-allowance2')?.value) || 0;
+  const att = parseFloat(document.getElementById('pay-entry-att')?.value) || 0;
+  const interim = parseFloat(document.getElementById('pay-entry-interim')?.value) || 0;
+  const gross = parseFloat(document.getElementById('pay-entry-gross')?.value) || 0;
+  const epf20 = parseFloat(document.getElementById('pay-entry-epf20')?.value) || 0;
+  const employer12 = parseFloat(document.getElementById('pay-entry-employer12')?.value) || 0;
+  const employee8 = parseFloat(document.getElementById('pay-entry-employee8')?.value) || 0;
+  const employer25 = parseFloat(document.getElementById('pay-entry-employer25')?.value) || 0;
+  const employer3 = parseFloat(document.getElementById('pay-entry-employer3')?.value) || 0;
+  const employer6 = parseFloat(document.getElementById('pay-entry-employer6')?.value) || 0;
+  const budget = parseFloat(document.getElementById('pay-entry-budget')?.value) || 0;
+  const etf3 = parseFloat(document.getElementById('pay-entry-etf3')?.value) || 0;
+  const deductions = parseFloat(document.getElementById('pay-entry-deductions')?.value) || 0;
+  const ot = parseFloat(document.getElementById('pay-entry-ot')?.value) || 0;
+  const net = parseFloat(document.getElementById('pay-entry-net')?.value) || 0;
 
   if (!appData.payrollHistory) appData.payrollHistory = [];
 
@@ -2671,21 +3019,42 @@ async function savePayrollEntry(e) {
   appData.payrollHistory.push({
     id: 'PAY-' + Date.now(),
     empId,
+    empName,
+    designation: empDesig,
     month,
+    date,
     basic,
+    incentive,
+    allowance1,
+    allowance2,
     att,
-    allowances,
-    advance,
-    ded1,
-    ded2,
-    otherAdd,
+    interim,
+    gross,
+    epf20,
+    employer12,
+    employee8,
+    employer25,
+    employer3,
+    employer6,
+    budget,
+    etf3,
+    deductions,
+    ot,
+    net,
     updatedAt: new Date().toISOString()
   });
 
   await persistData();
   closeSmartModal('modal-smart-payroll-entry');
   renderPayrollModule();
-  alert(currentLang === 'si' ? 'වැටුප් දත්ත සාර්ථකව සුරකින ලදී!' : 'Payroll data saved successfully!');
+  alert(currentLang === 'si' ? '2025 වැටුප් දත්ත සාර්ථකව සුරකින ලදී!' : '2025 payroll data saved successfully!');
+}
+
+async function deletePayrollEntry(empId, month) {
+  if (!confirm(`මෙම සේවකයාගේ (${empId}) ${month} වැටුප් දත්ත ඉවත් කිරීමට ඔබට සහතිකද?`)) return;
+  appData.payrollHistory = (appData.payrollHistory || []).filter(r => !(r.empId === empId && r.month === month));
+  await persistData();
+  renderPayrollModule();
 }
 
 // =========================================================================
@@ -2800,7 +3169,7 @@ function openAddIncentiveEntryModal(empId = '', month = '') {
   const permEmps = (appData.employees || []).filter(isPermanentEmp);
   empSelect.innerHTML = '<option value="">-- ස්ථිර සේවකයෙකු තෝරන්න --</option>' +
     permEmps.map(e => `<option value="${e.id}" ${e.id === empId ? 'selected' : ''}>${e.fullName} (${e.designation})</option>`).join('') +
-    '<option value="NEW_MANUAL" style="font-weight:bold; color:#7c3aed;">➕ නව ස්ථිර සේවකයෙකු අතින් ඇතුළත් කරන්න (Manual Staff)</option>';
+    '<option value="NEW_MANUAL" style="font-weight:bold; color:#7c3aed;">+ නව ස්ථිර සේවකයෙකු අතින් ඇතුළත් කරන්න (Manual Staff)</option>';
 
   if (empId) {
     empSelect.value = empId;
@@ -2928,124 +3297,200 @@ async function saveIncentiveEntry(e) {
 // =========================================================================
 
 function printForm1OfficialSheet() {
-  const month = document.getElementById('payroll-month-select')?.value || '2026-09';
-  const emps = appData.employees || [];
+  const month = document.getElementById('payroll-month-select')?.value || '2025-12';
+  if (month === '2025-YEAR') {
+    printAnnual2025Report();
+    return;
+  }
   const history = appData.payrollHistory || [];
+  const monthRecords = history.filter(r => r.month === month);
+
+  const emps = appData.employees || [];
+  const normEmpId = (id) => /^Y14806\s*-\s*0?3$/i.test(String(id || '').trim()) ? 'Y14806 - 03' : String(id || '').trim();
+
+  // Form 1 official report must ONLY display employees who actually have payroll records in the ledger for this month
+  const allDisplayList = monthRecords.map(rec => {
+    const matchedEmp = emps.find(e => normEmpId(e.id) === normEmpId(rec.empId));
+    return {
+      ...(matchedEmp || {}),
+      id: rec.empId,
+      fullName: rec.empName || matchedEmp?.fullName || rec.empId,
+      designation: rec.designation || matchedEmp?.designation || 'සේවකයා',
+      record: rec
+    };
+  }).sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
 
   const titleEl = document.getElementById('sheet-print-title');
-  if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-file-invoice-dollar" style="color:#7c3aed;"></i> නිල මාසික වැටුප් ලේඛනය (Form 1 - Monthly Salary Sheet)';
+  if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-file-invoice-dollar" style="color:#7c3aed;"></i> 2025 වර්ෂයේ මාසික වැටුප් සහ EPF/ETF නිල ලේඛනය (Form 1)';
 
   const content = document.getElementById('sheet-print-content');
   if (!content) return;
 
+  let totBasic = 0, totIncentive = 0, totAllowance1 = 0, totAllowance2 = 0, totAtt = 0, totInterim = 0;
+  let totGross = 0, totEpf20 = 0, totEmployer12 = 0;
+  let totEmployee8 = 0, totEmployer25 = 0, totEmployer3 = 0, totEmployer6 = 0, totBudget = 0, totEtf3 = 0;
+  let totDeductions = 0, totOt = 0, totNet = 0;
+
+  let rowsHTML = '';
+  if (allDisplayList.length === 0) {
+    rowsHTML = `<tr><td colspan="21" style="padding:25px; text-align:center; color:#64748b; font-size:12px;">2025 ${month} මාසය සඳහා නිල වැටුප් දත්ත කිසිවක් හමු නොවීය.</td></tr>`;
+  } else {
+    rowsHTML = allDisplayList.map(emp => {
+      const rec = emp.record || monthRecords.find(r => normEmpId(r.empId) === normEmpId(emp.id));
+      const isPerm = isPermanentEmp(emp);
+      const defaultDate = isPerm ? `${month}-25` : `${month}-10`;
+      const dateStr = rec ? (rec.date || defaultDate) : defaultDate;
+
+      const basic = rec ? (parseFloat(rec.basic) || 0) : 0;
+      const incentive = rec ? (parseFloat(rec.incentive) || 0) : 0;
+      const allowance1 = rec ? (parseFloat(rec.allowance1) || 0) : 0;
+      const allowance2 = rec ? (parseFloat(rec.allowance2) || 0) : 0;
+      const att = rec ? (parseFloat(rec.att) || 0) : 0;
+      const interim = rec ? (parseFloat(rec.interim) || 0) : 0;
+      const gross = rec ? (parseFloat(rec.gross) || 0) : (basic + incentive + allowance1 + allowance2 + att + interim);
+      const epf20 = rec ? (parseFloat(rec.epf20) || 0) : 0;
+      const employer12 = rec ? (parseFloat(rec.employer12) || 0) : 0;
+      const employee8 = rec ? (parseFloat(rec.employee8) || 0) : 0;
+      const employer25 = rec ? (parseFloat(rec.employer25) || 0) : 0;
+      const employer3 = rec ? (parseFloat(rec.employer3) || 0) : 0;
+      const employer6 = rec ? (parseFloat(rec.employer6) || 0) : 0;
+      const budget = rec ? (parseFloat(rec.budget) || 0) : 0;
+      const etf3 = rec ? (parseFloat(rec.etf3) || 0) : 0;
+      const deductions = rec ? (parseFloat(rec.deductions) || 0) : 0;
+      const ot = rec ? (parseFloat(rec.ot) || 0) : 0;
+      const net = rec ? (parseFloat(rec.net) || 0) : ((gross + budget + ot) - deductions);
+
+      totBasic += basic;
+      totIncentive += incentive;
+      totAllowance1 += allowance1;
+      totAllowance2 += allowance2;
+      totAtt += att;
+      totInterim += interim;
+      totGross += gross;
+      totEpf20 += epf20;
+      totEmployer12 += employer12;
+      totEmployee8 += employee8;
+      totEmployer25 += employer25;
+      totEmployer3 += employer3;
+      totEmployer6 += employer6;
+      totBudget += budget;
+      totEtf3 += etf3;
+      totDeductions += deductions;
+      totOt += ot;
+      totNet += net;
+
+      return `
+        <tr>
+          <td style="padding:4px 2px; font-size:9.5px; white-space:nowrap;">${dateStr}</td>
+          <td style="text-align:left; padding:4px; font-size:9.5px;"><strong>${emp.id}</strong> - ${emp.fullName}</td>
+          <td style="padding:4px 2px; text-align:right;">${basic > 0 ? basic.toLocaleString() : '-'}</td>
+          <td style="padding:4px 2px; text-align:right;">${incentive > 0 ? incentive.toLocaleString() : '-'}</td>
+          <td style="padding:4px 2px; text-align:right;">${allowance1 > 0 ? allowance1.toLocaleString() : '-'}</td>
+          <td style="padding:4px 2px; text-align:right;">${allowance2 > 0 ? allowance2.toLocaleString() : '-'}</td>
+          <td style="padding:4px 2px; text-align:right;">${att > 0 ? att.toLocaleString() : '-'}</td>
+          <td style="padding:4px 2px; text-align:right;">${interim > 0 ? interim.toLocaleString() : '-'}</td>
+          <td style="padding:4px 2px; text-align:right; font-weight:bold; background:#f9f9f9;">${gross > 0 ? gross.toLocaleString() : '-'}</td>
+          <td style="padding:4px 2px; text-align:right;">${epf20 > 0 ? epf20.toLocaleString() : '-'}</td>
+          <td style="padding:4px 2px; text-align:right;">${employer12 > 0 ? employer12.toLocaleString() : '-'}</td>
+          <td style="padding:4px 2px; text-align:right;">${employee8 > 0 ? employee8.toLocaleString() : '-'}</td>
+          <td style="padding:4px 2px; text-align:right;">${employer25 > 0 ? employer25.toLocaleString() : '-'}</td>
+          <td style="padding:4px 2px; text-align:right;">${employer3 > 0 ? employer3.toLocaleString() : '-'}</td>
+          <td style="padding:4px 2px; text-align:right;">${employer6 > 0 ? employer6.toLocaleString() : '-'}</td>
+          <td style="padding:4px 2px; text-align:right;">${budget > 0 ? budget.toLocaleString() : '-'}</td>
+          <td style="padding:4px 2px; text-align:right;">${etf3 > 0 ? etf3.toLocaleString() : '-'}</td>
+          <td style="padding:4px 2px; text-align:right; font-weight:bold;">${deductions > 0 ? deductions.toLocaleString() : '-'}</td>
+          <td style="padding:4px 2px; text-align:right;">${ot > 0 ? ot.toLocaleString() : '-'}</td>
+          <td style="padding:4px 2px; text-align:right; font-weight:bold; font-size:10.5px; background:#f9f9f9;">${net > 0 ? net.toLocaleString() : '-'}</td>
+          <td style="padding:4px 2px; width:70px;"></td>
+        </tr>
+      `;
+    }).join('');
+  }
+
   content.innerHTML = `
-    <div style="background:#fff; font-family:'Segoe UI',sans-serif; color:#000; min-width:980px;">
-      <!-- GSCS Boxed Header matching media_1790236815371.png -->
-      <div style="border:2px solid #000; padding:12px; margin-bottom:16px; text-align:center;">
+    <div style="background:#fff; font-family:'Segoe UI',Arial,sans-serif; color:#000; min-width:1100px;">
+      <!-- GSCS Official Boxed Header -->
+      <div style="border:2px solid #000; padding:10px 14px; margin-bottom:12px; text-align:center;">
         <div style="display:flex; align-items:center; justify-content:center; gap:20px;">
-          <img src="images/gscs_logo.png" alt="GSCS Logo" style="height:55px;">
+          <img src="images/gscs_logo.png" alt="GSCS Logo" style="height:50px;">
           <div>
-            <h3 style="font-size:16px; font-weight:800; margin:0 0 2px;">සීමා රහිත ගලපිටියාගම සකසුරුවම් හා ණය ගනුදෙනු පිළිබඳ සමුපකාර සමිතිය</h3>
-            <div style="font-size:13px; font-weight:700; letter-spacing:0.5px;">GALAPITIYAGAMA THRIFT & CREDIT CO-OPERATIVE SOCIETY</div>
-            <div style="font-size:11.5px; margin-top:4px;">
+            <h3 style="font-size:15px; font-weight:800; margin:0 0 2px;">සීමා රහිත ගලපිටියාගම සකසුරුවම් හා ණය ගනුදෙනු පිළිබඳ සමුපකාර සමිතිය</h3>
+            <div style="font-size:12px; font-weight:700; letter-spacing:0.5px;">GALAPITIYAGAMA THRIFT & CREDIT CO-OPERATIVE SOCIETY</div>
+            <div style="font-size:11px; margin-top:3px;">
               <strong>Reg No: කුලි/395</strong> &nbsp;&nbsp;|&nbsp;&nbsp; <strong>Reg Date: 1987/03/24</strong>
             </div>
           </div>
         </div>
       </div>
 
-      <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:12px; font-weight:700;">
-        <span>මාසික වැටුප්, EPF/ETF හා විශ්‍රාම අරමුදල් ලේඛනය - ${month}</span>
-        <span>මුද්‍රණ දිනය: ${new Date().toLocaleDateString('en-GB')}</span>
+      <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:11.5px; font-weight:700;">
+        <span>2025 වර්ෂයේ මාසික වැටුප්, EPF/ETF හා දීමනා නිල ලේඛනය (Monthly Salary Register - ${month})</span>
       </div>
 
-      <table style="width:100%; border-collapse:collapse; font-size:10px; text-align:center;" border="1" bordercolor="#000">
+      <table style="width:100%; border-collapse:collapse; font-size:9.5px; text-align:center;" border="1" bordercolor="#000">
         <thead>
           <tr style="background:#f2f2f2; font-weight:bold;">
-            <th rowspan="2" style="padding:6px 4px;">දිනය</th>
-            <th rowspan="2" style="padding:6px 4px;">සේවා අංකය & නම</th>
-            <th rowspan="2" style="padding:6px 4px;">මූලික වැටුප</th>
-            <th rowspan="2" style="padding:6px 4px;">පැමිණීමේ දීමනාව</th>
-            <th rowspan="2" style="padding:6px 4px;">දීමනා</th>
-            <th rowspan="2" style="padding:6px 4px;">එකතුව</th>
-            <th rowspan="2" style="padding:6px 4px;">අර්ථසාධක 20%</th>
-            <th colspan="2" style="padding:4px;">අර්ථසාධක</th>
-            <th colspan="2" style="padding:4px;">විශ්‍රාම</th>
-            <th rowspan="2" style="padding:6px 4px;">සේවක භාරකාර 3%</th>
-            <th rowspan="2" style="padding:6px 4px;">අඩුකිරීම් එකතුව</th>
-            <th rowspan="2" style="padding:6px 4px;">අත්තිකාරම්</th>
-            <th colspan="2" style="padding:4px;">වෙනත් අඩු</th>
-            <th rowspan="2" style="padding:6px 4px;">වෙනත් දීමනා</th>
-            <th rowspan="2" style="padding:6px 4px; font-weight:800;">ශුද්ධ වැටුප</th>
-            <th rowspan="2" style="padding:6px 4px; width:70px;">අත්සන</th>
-          </tr>
-          <tr style="background:#f2f2f2; font-size:9px;">
-            <th style="padding:4px;">සේවායෝජක 12%</th>
-            <th style="padding:4px;">සේවක 8%</th>
-            <th style="padding:4px;">2.5%</th>
-            <th style="padding:4px;">5%</th>
-            <th style="padding:4px;">1</th>
-            <th style="padding:4px;">2</th>
+            <th style="padding:5px 2px; width:70px;">දිනය</th>
+            <th style="padding:5px 4px; text-align:left;">සේවා අංකය සහ නම</th>
+            <th style="padding:5px 2px;">මූලික වැටුප</th>
+            <th style="padding:5px 2px;">දිරිදීමනා / වැටුප් වර්ධක</th>
+            <th style="padding:5px 2px;">දීමනා 01</th>
+            <th style="padding:5px 2px;">දීමනා 02</th>
+            <th style="padding:5px 2px;">පැමිණීමේ දීමනා</th>
+            <th style="padding:5px 2px;">අන්තර් දීමනාව</th>
+            <th style="padding:5px 2px; background:#e6e6e6;">එකතුව</th>
+            <th style="padding:5px 2px;">අර්ථසාධක 20%</th>
+            <th style="padding:5px 2px;">සේව්‍ය 12%</th>
+            <th style="padding:5px 2px;">සේවක 8%</th>
+            <th style="padding:5px 2px;">සේව්‍ය 2.5%</th>
+            <th style="padding:5px 2px;">සේව්‍ය 3%</th>
+            <th style="padding:5px 2px;">සේව්‍ය 6%</th>
+            <th style="padding:5px 2px;">අයවැය දීමනා</th>
+            <th style="padding:5px 2px;">සේවක භාරකාර 3%</th>
+            <th style="padding:5px 2px;">අඩු කිරීම් එකතුව</th>
+            <th style="padding:5px 2px;">අතිකාල ගෙවීම්</th>
+            <th style="padding:5px 2px; font-weight:bold; background:#e6e6e6;">ශුද්ධ වැටුප</th>
+            <th style="padding:5px 2px; width:70px;">අත්සන</th>
           </tr>
         </thead>
         <tbody>
-          ${emps.map(emp => {
-            const isPerm = isPermanentEmp(emp);
-            const dateStr = isPerm ? `${month}-25` : `${month}-10`;
-            const rec = history.find(r => r.empId === emp.id && r.month === month);
-            const basic = rec ? rec.basic : (emp.basicSalary || 0);
-            const att = rec ? rec.att : 0;
-            const allowances = rec ? rec.allowances : 0;
-            const gross = basic + att + allowances;
-            const epf20 = basic * 0.20;
-            const epf12 = basic * 0.12;
-            const epf8 = basic * 0.08;
-            const pen25 = basic * 0.025;
-            const pen5 = basic * 0.05;
-            const etf3 = basic * 0.03;
-            const advance = rec ? rec.advance : 0;
-            const ded1 = rec ? rec.ded1 : 0;
-            const ded2 = rec ? rec.ded2 : 0;
-            const totDed = epf8 + pen5 + advance + ded1 + ded2;
-            const otherAdd = rec ? rec.otherAdd : 0;
-            const net = (gross - totDed) + otherAdd;
-
-            return `
-              <tr>
-                <td style="padding:5px 2px;">${dateStr}</td>
-                <td style="text-align:left; padding:5px 4px;"><strong>${emp.id}</strong> - ${emp.fullName}</td>
-                <td style="padding:5px 2px;">${basic.toLocaleString()}</td>
-                <td style="padding:5px 2px;">${att > 0 ? att.toLocaleString() : '-'}</td>
-                <td style="padding:5px 2px;">${allowances > 0 ? allowances.toLocaleString() : '-'}</td>
-                <td style="padding:5px 2px; font-weight:bold;">${gross.toLocaleString()}</td>
-                <td style="padding:5px 2px;">${Math.round(epf20).toLocaleString()}</td>
-                <td style="padding:5px 2px;">${Math.round(epf12).toLocaleString()}</td>
-                <td style="padding:5px 2px;">${Math.round(epf8).toLocaleString()}</td>
-                <td style="padding:5px 2px;">${Math.round(pen25).toLocaleString()}</td>
-                <td style="padding:5px 2px;">${Math.round(pen5).toLocaleString()}</td>
-                <td style="padding:5px 2px;">${Math.round(etf3).toLocaleString()}</td>
-                <td style="padding:5px 2px; font-weight:bold;">${Math.round(totDed).toLocaleString()}</td>
-                <td style="padding:5px 2px;">${advance > 0 ? advance.toLocaleString() : '-'}</td>
-                <td style="padding:5px 2px;">${ded1 > 0 ? ded1.toLocaleString() : '-'}</td>
-                <td style="padding:5px 2px;">${ded2 > 0 ? ded2.toLocaleString() : '-'}</td>
-                <td style="padding:5px 2px;">${otherAdd > 0 ? otherAdd.toLocaleString() : '-'}</td>
-                <td style="padding:5px 2px; font-weight:bold; font-size:11px;">${Math.round(net).toLocaleString()}</td>
-                <td style="padding:5px 2px;"></td>
-              </tr>
-            `;
-          }).join('')}
+          ${rowsHTML}
         </tbody>
+        <tfoot>
+          <tr style="background:#f2f2f2; font-weight:bold; border-top:2px solid #000;">
+            <td colspan="2" style="padding:5px 4px; text-align:center;">එකතුව (Grand Total)</td>
+            <td style="padding:5px 2px; text-align:right;">${totBasic > 0 ? totBasic.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totIncentive > 0 ? totIncentive.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totAllowance1 > 0 ? totAllowance1.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totAllowance2 > 0 ? totAllowance2.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totAtt > 0 ? totAtt.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totInterim > 0 ? totInterim.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right; font-weight:bold;">${totGross > 0 ? totGross.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totEpf20 > 0 ? totEpf20.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totEmployer12 > 0 ? totEmployer12.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totEmployee8 > 0 ? totEmployee8.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totEmployer25 > 0 ? totEmployer25.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totEmployer3 > 0 ? totEmployer3.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totEmployer6 > 0 ? totEmployer6.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totBudget > 0 ? totBudget.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totEtf3 > 0 ? totEtf3.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right; font-weight:bold;">${totDeductions > 0 ? totDeductions.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totOt > 0 ? totOt.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right; font-weight:bold; font-size:10.5px;">${totNet > 0 ? totNet.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px;"></td>
+          </tr>
+        </tfoot>
       </table>
 
-      <div style="display:flex; justify-content:space-between; margin-top:40px; font-size:11px; text-align:center;">
+      <div style="display:flex; justify-content:space-between; margin-top:35px; font-size:10.5px; text-align:center;">
         <div>...................................<br>සකස් කළේ (HR / Accounts)</div>
         <div>...................................<br>පරීක්ෂා කළේ (Internal Audit)</div>
         <div>...................................<br>අනුමත කළේ (General Manager / Chairman)</div>
       </div>
 
-      <div style="border-top:1.5px solid #000; margin-top:25px; padding-top:6px; display:flex; justify-content:space-between; font-size:9.5px; color:#333;">
+      <div style="border-top:1.5px solid #000; margin-top:20px; padding-top:5px; display:flex; justify-content:space-between; font-size:9px; color:#333;">
         <span>ගලපිටියාගම සණස සමුපකාර සමිතිය</span>
-        <span style="font-weight:700;">Report generated by Galapitiyagama Sanasa Cooperative HRMS System</span>
+        <span style="font-weight:700;">Report generated by Galapitiyagama Sanasa Cooperative HRMS System (2025 Ledger)</span>
         <span>පිටුව: 1</span>
       </div>
     </div>
@@ -3053,6 +3498,608 @@ function printForm1OfficialSheet() {
 
   openSmartModal('modal-smart-sheet-print');
 }
+
+
+let currentAnnualReportTab = 'both';
+
+function switchAnnualReportTab(tab) {
+  currentAnnualReportTab = tab;
+  printAnnual2025Report(tab);
+}
+
+function printAnnual2025Report(viewMode = null) {
+  if (viewMode) currentAnnualReportTab = viewMode;
+  const tab = currentAnnualReportTab || 'both';
+
+  const history = appData.payrollHistory || [];
+  const yearRecords = history.filter(r => (r.month || '').startsWith('2025-'));
+  const emps = appData.employees || [];
+
+  const titleEl = document.getElementById('sheet-print-title');
+  if (titleEl) {
+    titleEl.innerHTML = '<i class="fa-solid fa-calendar-check" style="color:#2563eb;"></i> 2025 වර්ෂයේ වාර්ෂික වැටුප් සහ EPF/ETF නිල ලේඛනය (Annual Payroll Register - 2025)';
+  }
+
+  const content = document.getElementById('sheet-print-content');
+  if (!content) return;
+
+  const months = [
+    { code: '2025-01', name: '2025 ජනවාරි' },
+    { code: '2025-02', name: '2025 පෙබරවාරි' },
+    { code: '2025-03', name: '2025 මාර්තු' },
+    { code: '2025-04', name: '2025 අප්‍රේල්' },
+    { code: '2025-05', name: '2025 මැයි' },
+    { code: '2025-06', name: '2025 ජූනි' },
+    { code: '2025-07', name: '2025 ජූලි' },
+    { code: '2025-08', name: '2025 අගෝස්තු' },
+    { code: '2025-09', name: '2025 සැප්තැම්බර්' },
+    { code: '2025-10', name: '2025 ඔක්තෝබර්' },
+    { code: '2025-11', name: '2025 නොවැම්බර්' },
+    { code: '2025-12', name: '2025 දෙසැම්බර්' }
+  ];
+
+  let totYearBasic = 0, totYearIncentive = 0, totYearAllowance1 = 0, totYearAllowance2 = 0, totYearAtt = 0, totYearInterim = 0;
+  let totYearGross = 0, totYearEpf20 = 0, totYearEmployer12 = 0;
+  let totYearEmployee8 = 0, totYearEmployer25 = 0, totYearEmployer3 = 0, totYearEmployer6 = 0, totYearBudget = 0, totYearEtf3 = 0;
+  let totYearDeductions = 0, totYearOt = 0, totYearNet = 0;
+  let totEmpMonthsCount = 0;
+
+  const monthlyRowsHTML = months.map((m, idx) => {
+    const mRecs = yearRecords.filter(r => r.month === m.code);
+    const empCount = mRecs.length;
+    totEmpMonthsCount += empCount;
+
+    const basic = mRecs.reduce((s, r) => s + (parseFloat(r.basic) || 0), 0);
+    const incentive = mRecs.reduce((s, r) => s + (parseFloat(r.incentive) || 0), 0);
+    const allowance1 = mRecs.reduce((s, r) => s + (parseFloat(r.allowance1) || 0), 0);
+    const allowance2 = mRecs.reduce((s, r) => s + (parseFloat(r.allowance2) || 0), 0);
+    const att = mRecs.reduce((s, r) => s + (parseFloat(r.att) || 0), 0);
+    const interim = mRecs.reduce((s, r) => s + (parseFloat(r.interim) || 0), 0);
+    const gross = mRecs.reduce((s, r) => s + (parseFloat(r.gross) || 0), 0);
+    const epf20 = mRecs.reduce((s, r) => s + (parseFloat(r.epf20) || 0), 0);
+    const employer12 = mRecs.reduce((s, r) => s + (parseFloat(r.employer12) || 0), 0);
+    const employee8 = mRecs.reduce((s, r) => s + (parseFloat(r.employee8) || 0), 0);
+    const employer25 = mRecs.reduce((s, r) => s + (parseFloat(r.employer25) || 0), 0);
+    const employer3 = mRecs.reduce((s, r) => s + (parseFloat(r.employer3) || 0), 0);
+    const employer6 = mRecs.reduce((s, r) => s + (parseFloat(r.employer6) || 0), 0);
+    const budget = mRecs.reduce((s, r) => s + (parseFloat(r.budget) || 0), 0);
+    const etf3 = mRecs.reduce((s, r) => s + (parseFloat(r.etf3) || 0), 0);
+    const deductions = mRecs.reduce((s, r) => s + (parseFloat(r.deductions) || 0), 0);
+    const ot = mRecs.reduce((s, r) => s + (parseFloat(r.ot) || 0), 0);
+    const net = mRecs.reduce((s, r) => s + (parseFloat(r.net) || 0), 0);
+
+    totYearBasic += basic;
+    totYearIncentive += incentive;
+    totYearAllowance1 += allowance1;
+    totYearAllowance2 += allowance2;
+    totYearAtt += att;
+    totYearInterim += interim;
+    totYearGross += gross;
+    totYearEpf20 += epf20;
+    totYearEmployer12 += employer12;
+    totYearEmployee8 += employee8;
+    totYearEmployer25 += employer25;
+    totYearEmployer3 += employer3;
+    totYearEmployer6 += employer6;
+    totYearBudget += budget;
+    totYearEtf3 += etf3;
+    totYearDeductions += deductions;
+    totYearOt += ot;
+    totYearNet += net;
+
+    return `
+      <tr>
+        <td style="padding:5px 3px; font-weight:700;">${idx + 1}</td>
+        <td style="text-align:left; padding:5px 6px; font-weight:700;">${m.name}</td>
+        <td style="padding:5px 2px; text-align:center;">${empCount > 0 ? empCount : '<span style="color:#94a3b8;">-</span>'}</td>
+        <td style="padding:5px 2px; text-align:right;">${basic > 0 ? basic.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${incentive > 0 ? incentive.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${allowance1 > 0 ? allowance1.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${allowance2 > 0 ? allowance2.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${att > 0 ? att.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${interim > 0 ? interim.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right; font-weight:bold; background:#f9f9f9;">${gross > 0 ? gross.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${epf20 > 0 ? epf20.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${employer12 > 0 ? employer12.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${employee8 > 0 ? employee8.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${employer25 > 0 ? employer25.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${employer3 > 0 ? employer3.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${employer6 > 0 ? employer6.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${budget > 0 ? budget.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${etf3 > 0 ? etf3.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right; font-weight:bold;">${deductions > 0 ? deductions.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${ot > 0 ? ot.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right; font-weight:bold; font-size:10.5px; background:#f9f9f9;">${net > 0 ? net.toLocaleString() : '-'}</td>
+      </tr>
+    `;
+  }).join('');
+
+  // Staff-wise aggregation
+  const normEmpId = (id) => /^Y14806\s*-\s*0?3$/i.test(String(id || '').trim()) ? 'Y14806 - 03' : String(id || '').trim();
+  const allStaffMap = {};
+  emps.forEach(e => {
+    const nid = normEmpId(e.id);
+    allStaffMap[nid] = { id: nid, fullName: e.fullName || nid, designation: e.designation || '-' };
+  });
+  yearRecords.forEach(r => {
+    const nid = normEmpId(r.empId);
+    if (!allStaffMap[nid]) {
+      allStaffMap[nid] = { id: nid, fullName: r.empName || nid, designation: r.designation || '-' };
+    }
+  });
+
+  const staffList = Object.values(allStaffMap);
+  let staffTotBasic = 0, staffTotIncentive = 0, staffTotAllowance1 = 0, staffTotAllowance2 = 0, staffTotAtt = 0, staffTotInterim = 0;
+  let staffTotGross = 0, staffTotEpf20 = 0, staffTotEmployer12 = 0;
+  let staffTotEmployee8 = 0, staffTotEmployer25 = 0, staffTotEmployer3 = 0, staffTotEmployer6 = 0, staffTotBudget = 0, staffTotEtf3 = 0;
+  let staffTotDeductions = 0, staffTotOt = 0, staffTotNet = 0;
+
+  const staffRowsHTML = staffList.map((emp, sIdx) => {
+    const eRecs = yearRecords.filter(r => normEmpId(r.empId) === emp.id);
+    const monthsCount = eRecs.length;
+
+    const basic = eRecs.reduce((s, r) => s + (parseFloat(r.basic) || 0), 0);
+    const incentive = eRecs.reduce((s, r) => s + (parseFloat(r.incentive) || 0), 0);
+    const allowance1 = eRecs.reduce((s, r) => s + (parseFloat(r.allowance1) || 0), 0);
+    const allowance2 = eRecs.reduce((s, r) => s + (parseFloat(r.allowance2) || 0), 0);
+    const att = eRecs.reduce((s, r) => s + (parseFloat(r.att) || 0), 0);
+    const interim = eRecs.reduce((s, r) => s + (parseFloat(r.interim) || 0), 0);
+    const gross = eRecs.reduce((s, r) => s + (parseFloat(r.gross) || 0), 0);
+    const epf20 = eRecs.reduce((s, r) => s + (parseFloat(r.epf20) || 0), 0);
+    const employer12 = eRecs.reduce((s, r) => s + (parseFloat(r.employer12) || 0), 0);
+    const employee8 = eRecs.reduce((s, r) => s + (parseFloat(r.employee8) || 0), 0);
+    const employer25 = eRecs.reduce((s, r) => s + (parseFloat(r.employer25) || 0), 0);
+    const employer3 = eRecs.reduce((s, r) => s + (parseFloat(r.employer3) || 0), 0);
+    const employer6 = eRecs.reduce((s, r) => s + (parseFloat(r.employer6) || 0), 0);
+    const budget = eRecs.reduce((s, r) => s + (parseFloat(r.budget) || 0), 0);
+    const etf3 = eRecs.reduce((s, r) => s + (parseFloat(r.etf3) || 0), 0);
+    const deductions = eRecs.reduce((s, r) => s + (parseFloat(r.deductions) || 0), 0);
+    const ot = eRecs.reduce((s, r) => s + (parseFloat(r.ot) || 0), 0);
+    const net = eRecs.reduce((s, r) => s + (parseFloat(r.net) || 0), 0);
+
+    staffTotBasic += basic;
+    staffTotIncentive += incentive;
+    staffTotAllowance1 += allowance1;
+    staffTotAllowance2 += allowance2;
+    staffTotAtt += att;
+    staffTotInterim += interim;
+    staffTotGross += gross;
+    staffTotEpf20 += epf20;
+    staffTotEmployer12 += employer12;
+    staffTotEmployee8 += employee8;
+    staffTotEmployer25 += employer25;
+    staffTotEmployer3 += employer3;
+    staffTotEmployer6 += employer6;
+    staffTotBudget += budget;
+    staffTotEtf3 += etf3;
+    staffTotDeductions += deductions;
+    staffTotOt += ot;
+    staffTotNet += net;
+
+    return `
+      <tr>
+        <td style="padding:5px 3px;">${sIdx + 1}</td>
+        <td style="text-align:left; padding:5px 4px; font-size:9.5px;">
+          <strong>${emp.id}</strong> - ${emp.fullName}
+          <div style="font-size:8.5px; color:#555;">${emp.designation || '-'}</div>
+        </td>
+        <td style="padding:5px 2px; text-align:center;">${monthsCount > 0 ? (monthsCount === 5 ? `${monthsCount} මසක් (අගෝ - දෙසැ)` : `${monthsCount} මසක්`) : '<span style="color:#94a3b8;">-</span>'}</td>
+        <td style="padding:5px 2px; text-align:right;">${basic > 0 ? basic.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${incentive > 0 ? incentive.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${allowance1 > 0 ? allowance1.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${allowance2 > 0 ? allowance2.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${att > 0 ? att.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${interim > 0 ? interim.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right; font-weight:bold; background:#f9f9f9;">${gross > 0 ? gross.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${epf20 > 0 ? epf20.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${employer12 > 0 ? employer12.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${employee8 > 0 ? employee8.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${employer25 > 0 ? employer25.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${employer3 > 0 ? employer3.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${employer6 > 0 ? employer6.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${budget > 0 ? budget.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${etf3 > 0 ? etf3.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right; font-weight:bold;">${deductions > 0 ? deductions.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right;">${ot > 0 ? ot.toLocaleString() : '-'}</td>
+        <td style="padding:5px 2px; text-align:right; font-weight:bold; font-size:10.5px; background:#f9f9f9;">${net > 0 ? net.toLocaleString() : '-'}</td>
+      </tr>
+    `;
+  }).join('');
+
+  // Headers & Bodies
+  const sectionHeader = `
+    <!-- GSCS Official Boxed Header -->
+    <div style="border:2px solid #000; padding:10px 14px; margin-bottom:12px; text-align:center;">
+      <div style="display:flex; align-items:center; justify-content:center; gap:20px;">
+        <img src="images/gscs_logo.png" alt="GSCS Logo" style="height:50px;">
+        <div>
+          <h3 style="font-size:15px; font-weight:800; margin:0 0 2px;">සීමා රහිත ගලපිටියාගම සකසුරුවම් හා ණය ගනුදෙනු පිළිබඳ සමුපකාර සමිතිය</h3>
+          <div style="font-size:12px; font-weight:700; letter-spacing:0.5px;">GALAPITIYAGAMA THRIFT & CREDIT CO-OPERATIVE SOCIETY</div>
+          <div style="font-size:11px; margin-top:3px;">
+            <strong>Reg No: කුලි/395</strong> &nbsp;&nbsp;|&nbsp;&nbsp; <strong>Reg Date: 1987/03/24</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const monthlyTableHTML = `
+    <div style="margin-bottom:20px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:11.5px; font-weight:700;">
+        <span><i class="fa-solid fa-calendar-days" style="color:#2563eb; margin-right:6px;"></i>1. 2025 මාසික සාරාංශ ලේඛනය (Month-by-Month Annual Breakdown - 12 Months)</span>
+        <span>වාර්ෂික ලේඛනය: 2025</span>
+      </div>
+      <table style="width:100%; border-collapse:collapse; font-size:9.5px; text-align:center;" border="1" bordercolor="#000">
+        <thead>
+          <tr style="background:#f2f2f2; font-weight:bold;">
+            <th style="padding:5px 2px; width:28px;">#</th>
+            <th style="padding:5px 4px; text-align:left;">මාසය</th>
+            <th style="padding:5px 2px; width:45px;">සේවක ගණන</th>
+            <th style="padding:5px 2px;">මූලික වැටුප</th>
+            <th style="padding:5px 2px;">දිරිදීමනා / වැටුප් වර්ධක</th>
+            <th style="padding:5px 2px;">දීමනා 01</th>
+            <th style="padding:5px 2px;">දීමනා 02</th>
+            <th style="padding:5px 2px;">පැමිණීමේ දීමනා</th>
+            <th style="padding:5px 2px;">අන්තර් දීමනාව</th>
+            <th style="padding:5px 2px; background:#e6e6e6;">එකතුව</th>
+            <th style="padding:5px 2px;">අර්ථසාධක 20%</th>
+            <th style="padding:5px 2px;">සේව්‍ය 12%</th>
+            <th style="padding:5px 2px;">සේවක 8%</th>
+            <th style="padding:5px 2px;">සේව්‍ය 2.5%</th>
+            <th style="padding:5px 2px;">සේව්‍ය 3%</th>
+            <th style="padding:5px 2px;">සේව්‍ය 6%</th>
+            <th style="padding:5px 2px;">අයවැය දීමනා</th>
+            <th style="padding:5px 2px;">සේවක භාරකාර 3%</th>
+            <th style="padding:5px 2px;">අඩු කිරීම් එකතුව</th>
+            <th style="padding:5px 2px;">අතිකාල ගෙවීම්</th>
+            <th style="padding:5px 2px; font-weight:bold; background:#e6e6e6;">ශුද්ධ වැටුප</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${monthlyRowsHTML}
+        </tbody>
+        <tfoot>
+          <tr style="background:#f2f2f2; font-weight:bold; border-top:2px solid #000;">
+            <td colspan="2" style="padding:5px 4px; text-align:center;">වසරේ මුළු එකතුව (2025 Annual Total)</td>
+            <td style="padding:5px 2px; text-align:center;">${totEmpMonthsCount}</td>
+            <td style="padding:5px 2px; text-align:right;">${totYearBasic > 0 ? totYearBasic.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totYearIncentive > 0 ? totYearIncentive.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totYearAllowance1 > 0 ? totYearAllowance1.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totYearAllowance2 > 0 ? totYearAllowance2.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totYearAtt > 0 ? totYearAtt.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totYearInterim > 0 ? totYearInterim.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right; font-weight:bold;">${totYearGross > 0 ? totYearGross.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totYearEpf20 > 0 ? totYearEpf20.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totYearEmployer12 > 0 ? totYearEmployer12.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totYearEmployee8 > 0 ? totYearEmployee8.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totYearEmployer25 > 0 ? totYearEmployer25.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totYearEmployer3 > 0 ? totYearEmployer3.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totYearEmployer6 > 0 ? totYearEmployer6.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totYearBudget > 0 ? totYearBudget.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totYearEtf3 > 0 ? totYearEtf3.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right; font-weight:bold;">${totYearDeductions > 0 ? totYearDeductions.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totYearOt > 0 ? totYearOt.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right; font-weight:bold; font-size:10.5px;">${totYearNet > 0 ? totYearNet.toLocaleString() : '-'}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  `;
+
+  const staffTableHTML = `
+    <div style="margin-bottom:20px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:11.5px; font-weight:700;">
+        <span><i class="fa-solid fa-users" style="color:#7c3aed; margin-right:6px;"></i>2. 2025 සේවක අනුව වාර්ෂික වැටුප් සාරාංශය (Staff Cumulative Annual Summary)</span>
+        <span>සේවකයින් ගණන: ${staffList.length}</span>
+      </div>
+      <table style="width:100%; border-collapse:collapse; font-size:9.5px; text-align:center;" border="1" bordercolor="#000">
+        <thead>
+          <tr style="background:#f2f2f2; font-weight:bold;">
+            <th style="padding:5px 2px; width:28px;">#</th>
+            <th style="padding:5px 4px; text-align:left;">සේවා අංකය සහ නම</th>
+            <th style="padding:5px 2px; width:50px;">ගෙවූ මාස</th>
+            <th style="padding:5px 2px;">මූලික වැටුප</th>
+            <th style="padding:5px 2px;">දිරිදීමනා / වැටුප් වර්ධක</th>
+            <th style="padding:5px 2px;">දීමනා 01</th>
+            <th style="padding:5px 2px;">දීමනා 02</th>
+            <th style="padding:5px 2px;">පැමිණීමේ දීමනා</th>
+            <th style="padding:5px 2px;">අන්තර් දීමනාව</th>
+            <th style="padding:5px 2px; background:#e6e6e6;">එකතුව</th>
+            <th style="padding:5px 2px;">අර්ථසාධක 20%</th>
+            <th style="padding:5px 2px;">සේව්‍ය 12%</th>
+            <th style="padding:5px 2px;">සේවක 8%</th>
+            <th style="padding:5px 2px;">සේව්‍ය 2.5%</th>
+            <th style="padding:5px 2px;">සේව්‍ය 3%</th>
+            <th style="padding:5px 2px;">සේව්‍ය 6%</th>
+            <th style="padding:5px 2px;">අයවැය දීමනා</th>
+            <th style="padding:5px 2px;">සේවක භාරකාර 3%</th>
+            <th style="padding:5px 2px;">අඩු කිරීම් එකතුව</th>
+            <th style="padding:5px 2px;">අතිකාල ගෙවීම්</th>
+            <th style="padding:5px 2px; font-weight:bold; background:#e6e6e6;">ශුද්ධ වැටුප</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${staffRowsHTML}
+        </tbody>
+        <tfoot>
+          <tr style="background:#f2f2f2; font-weight:bold; border-top:2px solid #000;">
+            <td colspan="2" style="padding:5px 4px; text-align:center;">වසරේ මුළු එකතුව (2025 Annual Total)</td>
+            <td style="padding:5px 2px; text-align:center;">-</td>
+            <td style="padding:5px 2px; text-align:right;">${staffTotBasic > 0 ? staffTotBasic.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${staffTotIncentive > 0 ? staffTotIncentive.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${staffTotAllowance1 > 0 ? staffTotAllowance1.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${staffTotAllowance2 > 0 ? staffTotAllowance2.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${staffTotAtt > 0 ? staffTotAtt.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${staffTotInterim > 0 ? staffTotInterim.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right; font-weight:bold;">${staffTotGross > 0 ? staffTotGross.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${staffTotEpf20 > 0 ? staffTotEpf20.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${staffTotEmployer12 > 0 ? staffTotEmployer12.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${staffTotEmployee8 > 0 ? staffTotEmployee8.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${staffTotEmployer25 > 0 ? staffTotEmployer25.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${staffTotEmployer3 > 0 ? staffTotEmployer3.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${staffTotEmployer6 > 0 ? staffTotEmployer6.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${staffTotBudget > 0 ? staffTotBudget.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${staffTotEtf3 > 0 ? staffTotEtf3.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right; font-weight:bold;">${staffTotDeductions > 0 ? staffTotDeductions.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${staffTotOt > 0 ? staffTotOt.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right; font-weight:bold; font-size:10.5px;">${staffTotNet > 0 ? staffTotNet.toLocaleString() : '-'}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  `;
+
+  const toolbarHTML = `
+    <div class="no-print" style="display:flex; justify-content:space-between; align-items:center; background:#f1f5f9; padding:8px 12px; border-radius:8px; margin-bottom:14px;">
+      <div style="display:flex; gap:6px; align-items:center;">
+        <span style="font-size:12px; font-weight:700; color:#334155;"><i class="fa-solid fa-filter"></i> පෙන්වන වාර්තාව:</span>
+        <button class="btn-smart ${tab === 'monthly' ? 'btn-smart-primary' : 'btn-smart-light'}" onclick="switchAnnualReportTab('monthly')" style="padding:4px 10px; font-size:11.5px; display:inline-flex; align-items:center; gap:5px;">
+          <i class="fa-solid fa-calendar-days"></i> මාස 12 සාරාංශය
+        </button>
+        <button class="btn-smart ${tab === 'staff' ? 'btn-smart-primary' : 'btn-smart-light'}" onclick="switchAnnualReportTab('staff')" style="padding:4px 10px; font-size:11.5px; display:inline-flex; align-items:center; gap:5px;">
+          <i class="fa-solid fa-users"></i> සේවක අනුව සාරාංශය
+        </button>
+        <button class="btn-smart ${tab === 'both' ? 'btn-smart-primary' : 'btn-smart-light'}" onclick="switchAnnualReportTab('both')" style="padding:4px 10px; font-size:11.5px; display:inline-flex; align-items:center; gap:5px;">
+          <i class="fa-solid fa-file-lines"></i> සම්පූර්ණ වාර්තාව (Both)
+        </button>
+      </div>
+      <div style="font-size:11.5px; color:#475569; font-weight:600;">
+        2025 මුළු ශුද්ධ වැටුප: <strong style="color:#15803d;">රු. ${totYearNet.toLocaleString()}</strong>
+      </div>
+    </div>
+  `;
+
+  const signoffHTML = `
+    <div style="display:flex; justify-content:space-between; margin-top:35px; font-size:10.5px; text-align:center;">
+      <div>...................................<br>සකස් කළේ (HR / Accounts)</div>
+      <div>...................................<br>පරීක්ෂා කළේ (Internal Audit)</div>
+      <div>...................................<br>අනුමත කළේ (General Manager / Chairman)</div>
+    </div>
+
+    <div style="border-top:1.5px solid #000; margin-top:20px; padding-top:5px; display:flex; justify-content:space-between; font-size:9px; color:#333;">
+      <span>ගලපිටියාගම සණස සමුපකාර සමිතිය</span>
+      <span style="font-weight:700;">Report generated by Galapitiyagama Sanasa Cooperative HRMS System (2025 Annual Audit Report)</span>
+    </div>
+  `;
+
+  let mainBodyHTML = '';
+  if (tab === 'monthly') {
+    mainBodyHTML = `${sectionHeader}${monthlyTableHTML}${signoffHTML}`;
+  } else if (tab === 'staff') {
+    mainBodyHTML = `${sectionHeader}${staffTableHTML}${signoffHTML}`;
+  } else {
+    // Both
+    mainBodyHTML = `
+      ${sectionHeader}
+      ${monthlyTableHTML}
+      <div style="page-break-before: always; margin-top:30px; padding-top:10px;"></div>
+      ${sectionHeader}
+      ${staffTableHTML}
+      ${signoffHTML}
+    `;
+  }
+
+  content.innerHTML = `
+    <div style="background:#fff; font-family:'Segoe UI',Arial,sans-serif; color:#000; min-width:1150px;">
+      ${toolbarHTML}
+      ${mainBodyHTML}
+    </div>
+  `;
+
+  openSmartModal('modal-smart-sheet-print');
+}
+
+function viewEmployeeAnnualStatement(empId) {
+  const normId = (id) => /^Y14806\s*-\s*0?3$/i.test(String(id || '').trim()) ? 'Y14806 - 03' : String(id || '').trim();
+  const targetId = normId(empId);
+  const emp = (appData.employees || []).find(e => normId(e.id) === targetId) || { id: targetId, fullName: targetId, designation: '-' };
+  const history = appData.payrollHistory || [];
+  const empRecords = history.filter(r => normId(r.empId) === targetId && (r.month || '').startsWith('2025-'));
+
+  const months = [
+    { code: '2025-01', name: '2025 ජනවාරි' },
+    { code: '2025-02', name: '2025 පෙබරවාරි' },
+    { code: '2025-03', name: '2025 මාර්තු' },
+    { code: '2025-04', name: '2025 අප්‍රේල්' },
+    { code: '2025-05', name: '2025 මැයි' },
+    { code: '2025-06', name: '2025 ජූනි' },
+    { code: '2025-07', name: '2025 ජූලි' },
+    { code: '2025-08', name: '2025 අගෝස්තු' },
+    { code: '2025-09', name: '2025 සැප්තැම්බර්' },
+    { code: '2025-10', name: '2025 ඔක්තෝබර්' },
+    { code: '2025-11', name: '2025 නොවැම්බර්' },
+    { code: '2025-12', name: '2025 දෙසැම්බර්' }
+  ];
+
+  let totBasic = 0, totIncentive = 0, totAllowance1 = 0, totAllowance2 = 0, totAtt = 0, totInterim = 0;
+  let totGross = 0, totEpf20 = 0, totEmployer12 = 0;
+  let totEmployee8 = 0, totEmployer25 = 0, totEmployer3 = 0, totEmployer6 = 0, totBudget = 0, totEtf3 = 0;
+  let totDeductions = 0, totOt = 0, totNet = 0;
+
+  const rowsHTML = months.map((m, idx) => {
+    const rec = empRecords.find(r => r.month === m.code);
+    const basic = rec ? (parseFloat(rec.basic) || 0) : 0;
+    const incentive = rec ? (parseFloat(rec.incentive) || 0) : 0;
+    const allowance1 = rec ? (parseFloat(rec.allowance1) || 0) : 0;
+    const allowance2 = rec ? (parseFloat(rec.allowance2) || 0) : 0;
+    const att = rec ? (parseFloat(rec.att) || 0) : 0;
+    const interim = rec ? (parseFloat(rec.interim) || 0) : 0;
+    const gross = rec ? (parseFloat(rec.gross) || 0) : 0;
+    const epf20 = rec ? (parseFloat(rec.epf20) || 0) : 0;
+    const employer12 = rec ? (parseFloat(rec.employer12) || 0) : 0;
+    const employee8 = rec ? (parseFloat(rec.employee8) || 0) : 0;
+    const employer25 = rec ? (parseFloat(rec.employer25) || 0) : 0;
+    const employer3 = rec ? (parseFloat(rec.employer3) || 0) : 0;
+    const employer6 = rec ? (parseFloat(rec.employer6) || 0) : 0;
+    const budget = rec ? (parseFloat(rec.budget) || 0) : 0;
+    const etf3 = rec ? (parseFloat(rec.etf3) || 0) : 0;
+    const deductions = rec ? (parseFloat(rec.deductions) || 0) : 0;
+    const ot = rec ? (parseFloat(rec.ot) || 0) : 0;
+    const net = rec ? (parseFloat(rec.net) || 0) : 0;
+
+    totBasic += basic;
+    totIncentive += incentive;
+    totAllowance1 += allowance1;
+    totAllowance2 += allowance2;
+    totAtt += att;
+    totInterim += interim;
+    totGross += gross;
+    totEpf20 += epf20;
+    totEmployer12 += employer12;
+    totEmployee8 += employee8;
+    totEmployer25 += employer25;
+    totEmployer3 += employer3;
+    totEmployer6 += employer6;
+    totBudget += budget;
+    totEtf3 += etf3;
+    totDeductions += deductions;
+    totOt += ot;
+    totNet += net;
+
+    return `
+      <tr>
+        <td style="padding:4px 3px;">${idx + 1}</td>
+        <td style="text-align:left; padding:4px 6px; font-weight:700;">${m.name}</td>
+        <td style="padding:4px 2px; text-align:right;">${basic > 0 ? basic.toLocaleString() : '-'}</td>
+        <td style="padding:4px 2px; text-align:right;">${incentive > 0 ? incentive.toLocaleString() : '-'}</td>
+        <td style="padding:4px 2px; text-align:right;">${allowance1 > 0 ? allowance1.toLocaleString() : '-'}</td>
+        <td style="padding:4px 2px; text-align:right;">${allowance2 > 0 ? allowance2.toLocaleString() : '-'}</td>
+        <td style="padding:4px 2px; text-align:right;">${att > 0 ? att.toLocaleString() : '-'}</td>
+        <td style="padding:4px 2px; text-align:right;">${interim > 0 ? interim.toLocaleString() : '-'}</td>
+        <td style="padding:4px 2px; text-align:right; font-weight:bold; background:#f9f9f9;">${gross > 0 ? gross.toLocaleString() : '-'}</td>
+        <td style="padding:4px 2px; text-align:right;">${epf20 > 0 ? epf20.toLocaleString() : '-'}</td>
+        <td style="padding:4px 2px; text-align:right;">${employer12 > 0 ? employer12.toLocaleString() : '-'}</td>
+        <td style="padding:4px 2px; text-align:right;">${employee8 > 0 ? employee8.toLocaleString() : '-'}</td>
+        <td style="padding:4px 2px; text-align:right;">${employer25 > 0 ? employer25.toLocaleString() : '-'}</td>
+        <td style="padding:4px 2px; text-align:right;">${employer3 > 0 ? employer3.toLocaleString() : '-'}</td>
+        <td style="padding:4px 2px; text-align:right;">${employer6 > 0 ? employer6.toLocaleString() : '-'}</td>
+        <td style="padding:4px 2px; text-align:right;">${budget > 0 ? budget.toLocaleString() : '-'}</td>
+        <td style="padding:4px 2px; text-align:right;">${etf3 > 0 ? etf3.toLocaleString() : '-'}</td>
+        <td style="padding:4px 2px; text-align:right; font-weight:bold;">${deductions > 0 ? deductions.toLocaleString() : '-'}</td>
+        <td style="padding:4px 2px; text-align:right;">${ot > 0 ? ot.toLocaleString() : '-'}</td>
+        <td style="padding:4px 2px; text-align:right; font-weight:bold; font-size:10.5px; background:#f9f9f9;">${net > 0 ? net.toLocaleString() : '-'}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const titleEl = document.getElementById('sheet-print-title');
+  if (titleEl) {
+    titleEl.innerHTML = `<i class="fa-solid fa-user-check" style="color:#2563eb;"></i> 2025 සේවක වාර්ෂික වැටුප් විස්තරය - ${emp.fullName}`;
+  }
+
+  const content = document.getElementById('sheet-print-content');
+  if (!content) return;
+
+  content.innerHTML = `
+    <div style="background:#fff; font-family:'Segoe UI',Arial,sans-serif; color:#000; min-width:1100px;">
+      <div style="border:2px solid #000; padding:10px 14px; margin-bottom:12px; text-align:center;">
+        <div style="display:flex; align-items:center; justify-content:center; gap:20px;">
+          <img src="images/gscs_logo.png" alt="GSCS Logo" style="height:50px;">
+          <div>
+            <h3 style="font-size:15px; font-weight:800; margin:0 0 2px;">සීමා රහිත ගලපිටියාගම සකසුරුවම් හා ණය ගනුදෙනු පිළිබඳ සමුපකාර සමිතිය</h3>
+            <div style="font-size:12px; font-weight:700; letter-spacing:0.5px;">GALAPITIYAGAMA THRIFT & CREDIT CO-OPERATIVE SOCIETY</div>
+            <div style="font-size:11px; margin-top:3px;">
+              <strong>Reg No: කුලි/395</strong> &nbsp;&nbsp;|&nbsp;&nbsp; <strong>Reg Date: 1987/03/24</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="border:1px solid #000; padding:8px 12px; margin-bottom:10px; background:#fafafa; display:flex; justify-content:space-between; font-size:11px;">
+        <div><strong>සේවා අංකය:</strong> ${emp.id} &nbsp;&nbsp;|&nbsp;&nbsp; <strong>සේවක නම:</strong> ${emp.fullName}</div>
+        <div><strong>තනතුර:</strong> ${emp.designation || '-'} &nbsp;&nbsp;|&nbsp;&nbsp; <strong>අදාළ වර්ෂය:</strong> 2025</div>
+      </div>
+
+      <table style="width:100%; border-collapse:collapse; font-size:9.5px; text-align:center;" border="1" bordercolor="#000">
+        <thead>
+          <tr style="background:#f2f2f2; font-weight:bold;">
+            <th style="padding:5px 2px; width:30px;">#</th>
+            <th style="padding:5px 4px; text-align:left;">මාසය</th>
+            <th style="padding:5px 2px;">මූලික වැටුප</th>
+            <th style="padding:5px 2px;">දිරිදීමනා / වැටුප් වර්ධක</th>
+            <th style="padding:5px 2px;">දීමනා 01</th>
+            <th style="padding:5px 2px;">දීමනා 02</th>
+            <th style="padding:5px 2px;">පැමිණීමේ දීමනා</th>
+            <th style="padding:5px 2px;">අන්තර් දීමනාව</th>
+            <th style="padding:5px 2px; background:#e6e6e6;">එකතුව</th>
+            <th style="padding:5px 2px;">අර්ථසාධක 20%</th>
+            <th style="padding:5px 2px;">සේව්‍ය 12%</th>
+            <th style="padding:5px 2px;">සේවක 8%</th>
+            <th style="padding:5px 2px;">සේව්‍ය 2.5%</th>
+            <th style="padding:5px 2px;">සේව්‍ය 3%</th>
+            <th style="padding:5px 2px;">සේව්‍ය 6%</th>
+            <th style="padding:5px 2px;">අයවැය දීමනා</th>
+            <th style="padding:5px 2px;">සේවක භාරකාර 3%</th>
+            <th style="padding:5px 2px;">අඩු කිරීම් එකතුව</th>
+            <th style="padding:5px 2px;">අතිකාල ගෙවීම්</th>
+            <th style="padding:5px 2px; font-weight:bold; background:#e6e6e6;">ශුද්ධ වැටුප</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rowsHTML}
+        </tbody>
+        <tfoot>
+          <tr style="background:#f2f2f2; font-weight:bold; border-top:2px solid #000;">
+            <td colspan="2" style="padding:5px 4px; text-align:center;">වසරේ එකතුව (Annual Total)</td>
+            <td style="padding:5px 2px; text-align:right;">${totBasic > 0 ? totBasic.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totIncentive > 0 ? totIncentive.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totAllowance1 > 0 ? totAllowance1.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totAllowance2 > 0 ? totAllowance2.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totAtt > 0 ? totAtt.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totInterim > 0 ? totInterim.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right; font-weight:bold;">${totGross > 0 ? totGross.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totEpf20 > 0 ? totEpf20.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totEmployer12 > 0 ? totEmployer12.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totEmployee8 > 0 ? totEmployee8.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totEmployer25 > 0 ? totEmployer25.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totEmployer3 > 0 ? totEmployer3.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totEmployer6 > 0 ? totEmployer6.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totBudget > 0 ? totBudget.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totEtf3 > 0 ? totEtf3.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right; font-weight:bold;">${totDeductions > 0 ? totDeductions.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right;">${totOt > 0 ? totOt.toLocaleString() : '-'}</td>
+            <td style="padding:5px 2px; text-align:right; font-weight:bold; font-size:10.5px;">${totNet > 0 ? totNet.toLocaleString() : '-'}</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div style="display:flex; justify-content:space-between; margin-top:35px; font-size:10.5px; text-align:center;">
+        <div>...................................<br>සකස් කළේ (HR / Accounts)</div>
+        <div>...................................<br>පරීක්ෂා කළේ (Internal Audit)</div>
+        <div>...................................<br>අනුමත කළේ (General Manager / Chairman)</div>
+      </div>
+
+      <div style="border-top:1.5px solid #000; margin-top:20px; padding-top:5px; display:flex; justify-content:space-between; font-size:9px; color:#333;">
+        <span>ගලපිටියාගම සණස සමුපකාර සමිතිය</span>
+        <span style="font-weight:700;">Report generated by Galapitiyagama Sanasa Cooperative HRMS System (2025 Employee Annual Statement)</span>
+      </div>
+    </div>
+  `;
+
+  openSmartModal('modal-smart-sheet-print');
+}
+
+
 
 function printForm2OfficialSheet() {
   const month = document.getElementById('incentive-month-select')?.value || '2026-09';
@@ -3083,7 +4130,6 @@ function printForm2OfficialSheet() {
 
       <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:12px; font-weight:700;">
         <span>සේවක දිරි දීමනා නිර්ණායක පත්‍රිකාව (ස්ථිර සේවකයින් සඳහා) - ${month} (10 වන දින)</span>
-        <span>මුද්‍රණ දිනය: ${new Date().toLocaleDateString('en-GB')}</span>
       </div>
 
       <table style="width:100%; border-collapse:collapse; font-size:11px;" border="1" bordercolor="#000">
@@ -3118,10 +4164,9 @@ function printForm2OfficialSheet() {
         </tbody>
       </table>
 
-      <div style="display:flex; justify-content:space-between; margin-top:40px; font-size:11px; text-align:center;">
+      <div style="display:flex; justify-content:space-between; margin-top:40px; font-size:11px; text-align:center; padding:0 60px;">
         <div>...................................<br>සකස් කළේ (HR / Accounts)</div>
-        <div>...................................<br>පරීක්ෂා කළේ (Internal Audit)</div>
-        <div>...................................<br>අනුමත කළේ (General Manager / Chairman)</div>
+        <div>...................................<br>පරීක්ෂා කළේ (General Manager / Chairman)</div>
       </div>
 
       <div style="border-top:1.5px solid #000; margin-top:25px; padding-top:6px; display:flex; justify-content:space-between; font-size:9.5px; color:#333;">
@@ -3136,43 +4181,51 @@ function printForm2OfficialSheet() {
 }
 
 function viewPayslipForEmp(empId, month = '') {
-  const emp = (appData.employees || []).find(e => e.id === empId);
+  const normId = (id) => /^Y14806\s*-\s*0?3$/i.test(String(id || '').trim()) ? 'Y14806 - 03' : String(id || '').trim();
+  const targetId = normId(empId);
+  let emp = (appData.employees || []).find(e => normId(e.id) === targetId);
+
+  const currentMonth = month || (document.getElementById('payroll-month-select')?.value || '2025-12');
+  const history = appData.payrollHistory || [];
+  const rec = history.find(r => normId(r.empId) === targetId && r.month === currentMonth);
+
+  if (!rec) {
+    alert(currentLang === 'si' ? `මෙම සේවකයා සඳහා ${currentMonth} මාසයේ වැටුප් දත්ත නොමැත (එම මාසයේ සේවයට එක්වී නොමැත / වැටුප් සටහන් කර නොමැත).` : `No payroll record found for this employee in ${currentMonth}.`);
+    return;
+  }
+
+  if (!emp && rec) {
+    emp = {
+      id: rec.empId,
+      fullName: rec.empName || rec.empId,
+      designation: rec.designation || 'සේවකයා',
+      employmentType: 'අතින් ඇතුළත් කළ'
+    };
+  }
   if (!emp) return;
 
-  const currentMonth = month || (document.getElementById('payroll-month-select')?.value || '2026-09');
   const isPerm = isPermanentEmp(emp);
+  const defaultDate = isPerm ? `${currentMonth}-25` : `${currentMonth}-10`;
+  const dateStr = rec.date || defaultDate;
 
-  const history = appData.payrollHistory || [];
-  const rec = history.find(r => r.empId === emp.id && r.month === currentMonth);
-
-  const basic = rec ? rec.basic : (emp.basicSalary || 0);
-  const att = rec ? rec.att : 0;
-  const allowances = rec ? rec.allowances : 0;
-  const gross = basic + att + allowances;
-
-  const epf20 = basic * 0.20;
-  const epf12 = basic * 0.12;
-  const epf8 = basic * 0.08;
-  const pen25 = basic * 0.025;
-  const pen5 = basic * 0.05;
-  const etf3 = basic * 0.03;
-
-  const advance = rec ? rec.advance : 0;
-  const ded1 = rec ? rec.ded1 : 0;
-  const ded2 = rec ? rec.ded2 : 0;
-  const totDed = epf8 + pen5 + advance + ded1 + ded2;
-  const otherAdd = rec ? rec.otherAdd : 0;
-  const net = (gross - totDed) + otherAdd;
-
-  // Check incentive if permanent
-  let incTotal = 0;
-  let incRec = null;
-  if (isPerm) {
-    incRec = (appData.incentiveRecords || []).find(r => r.empId === emp.id && r.month === currentMonth);
-    if (incRec && incRec.criteria) {
-      Object.values(incRec.criteria).forEach(v => { incTotal += (parseFloat(v) || 0); });
-    }
-  }
+  const basic = parseFloat(rec.basic) || 0;
+  const incentive = parseFloat(rec.incentive) || 0;
+  const allowance1 = parseFloat(rec.allowance1) || 0;
+  const allowance2 = parseFloat(rec.allowance2) || 0;
+  const att = parseFloat(rec.att) || 0;
+  const interim = parseFloat(rec.interim) || 0;
+  const gross = parseFloat(rec.gross) || (basic + incentive + allowance1 + allowance2 + att + interim);
+  const epf20 = parseFloat(rec.epf20) || 0;
+  const employer12 = parseFloat(rec.employer12) || 0;
+  const employee8 = parseFloat(rec.employee8) || 0;
+  const employer25 = parseFloat(rec.employer25) || 0;
+  const employer3 = parseFloat(rec.employer3) || 0;
+  const employer6 = parseFloat(rec.employer6) || 0;
+  const budget = parseFloat(rec.budget) || 0;
+  const etf3 = parseFloat(rec.etf3) || 0;
+  const deductions = parseFloat(rec.deductions) || 0;
+  const ot = parseFloat(rec.ot) || 0;
+  const net = parseFloat(rec.net) || ((gross + budget + ot) - deductions);
 
   const renderArea = document.getElementById('payslip-modal-content');
   if (!renderArea) return;
@@ -3195,74 +4248,60 @@ function viewPayslipForEmp(empId, month = '') {
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; border-bottom:1.5px solid #000; padding-bottom:12px; margin-bottom:14px; font-size:12.5px;">
         <div>
           <div><strong>සේවා අංකය:</strong> ${emp.id}</div>
-          <div style="margin-top:4px;"><strong>තනතුර:</strong> ${emp.designation}</div>
+          <div style="margin-top:4px;"><strong>තනතුර:</strong> ${emp.designation || 'සේවක'}</div>
         </div>
         <div>
           <div><strong>සම්පූර්ණ නම:</strong> ${emp.fullName}</div>
-          <div style="margin-top:4px;"><strong>ශ්‍රේණිය / සේවා තත්වය:</strong> ${emp.employmentType || (isPerm ? 'ස්ථිර (Permanent)' : 'ස්ථිර නොවන')}</div>
+          <div style="margin-top:4px;"><strong>ගෙවීම් දිනය:</strong> ${dateStr}</div>
         </div>
       </div>
 
-      <div style="text-align:center; font-weight:800; font-size:13px; color:#1e1b4b; margin-bottom:12px; background:#f1f5f9; padding:4px; border-radius:6px;">
-        නිල මාසික වැටුප් පත්‍රිකාව (Form 1) - ${currentMonth} (${isPerm ? 'ගෙවීම් දිනය: 25 වන දින' : 'ගෙවීම් දිනය: 10 වන දින'})
+      <div style="text-align:center; font-weight:800; font-size:13px; color:#1e1b4b; margin-bottom:12px; background:#f1f5f9; padding:5px; border-radius:6px;">
+        2025 වර්ෂයේ මාසික වැටුප් පත්‍රිකාව (Form 1) - ${currentMonth}
       </div>
 
-      <!-- Form 1 Breakdown Grid -->
+      <!-- 2025 Breakdown Grid -->
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; font-size:12px;">
-        <div style="border:1px solid #cbd5e1; border-radius:8px; padding:10px;">
-          <h5 style="color:#166534; font-weight:800; border-bottom:1px solid #e2e8f0; padding-bottom:4px; margin-bottom:8px;">උපැයීම් (Earnings)</h5>
-          <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>මූලික වැටුප:</span><span>රු. ${basic.toLocaleString()}</span></div>
-          <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>පැමිණීමේ දීමනාව:</span><span>රු. ${att.toLocaleString()}</span></div>
-          <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>සාමාන්‍ය දීමනා:</span><span>රු. ${allowances.toLocaleString()}</span></div>
-          ${otherAdd > 0 ? `<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>වෙනත් දීමනා:</span><span>රු. ${otherAdd.toLocaleString()}</span></div>` : ''}
-          <div style="display:flex; justify-content:space-between; font-weight:800; border-top:1px dashed #cbd5e1; padding-top:6px; margin-top:6px; color:#166534;">
-            <span>මුළු එකතුව (Gross):</span><span>රු. ${gross.toLocaleString()}</span>
+        <div style="border:1px solid #cbd5e1; border-radius:8px; padding:12px;">
+          <h5 style="color:#166534; font-weight:800; border-bottom:1px solid #e2e8f0; padding-bottom:4px; margin-bottom:8px;">උපැයීම් හා දීමනා (Earnings)</h5>
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>මූලික වැටුප:</span><span>${basic > 0 ? 'රු. ' + basic.toLocaleString() : '-'}</span></div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>දිරිදීමනා / වැටුප් වර්ධක:</span><span>${incentive > 0 ? 'රු. ' + incentive.toLocaleString() : '-'}</span></div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>දීමනා 01:</span><span>${allowance1 > 0 ? 'රු. ' + allowance1.toLocaleString() : '-'}</span></div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>දීමනා 02:</span><span>${allowance2 > 0 ? 'රු. ' + allowance2.toLocaleString() : '-'}</span></div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>පැමිණීමේ දීමනා:</span><span>${att > 0 ? 'රු. ' + att.toLocaleString() : '-'}</span></div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>අන්තර් දීමනාව:</span><span>${interim > 0 ? 'රු. ' + interim.toLocaleString() : '-'}</span></div>
+          <div style="display:flex; justify-content:space-between; font-weight:800; border-top:1px dashed #cbd5e1; padding-top:6px; margin-top:6px; color:#7c3aed;">
+            <span>එකතුව (Gross):</span><span>${gross > 0 ? 'රු. ' + gross.toLocaleString() : '-'}</span>
           </div>
+          <div style="display:flex; justify-content:space-between; margin-top:6px; margin-bottom:4px;"><span>අයවැය දීමනා:</span><span>${budget > 0 ? 'රු. ' + budget.toLocaleString() : '-'}</span></div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>අතිකාල ගෙවීම් (OT):</span><span>${ot > 0 ? 'රු. ' + ot.toLocaleString() : '-'}</span></div>
         </div>
 
-        <div style="border:1px solid #cbd5e1; border-radius:8px; padding:10px;">
-          <h5 style="color:#dc2626; font-weight:800; border-bottom:1px solid #e2e8f0; padding-bottom:4px; margin-bottom:8px;">අඩුකිරීම් (Deductions)</h5>
-          <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>සේවක EPF 8%:</span><span>රු. ${Math.round(epf8).toLocaleString()}</span></div>
-          <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>විශ්‍රාම අරමුදල 5%:</span><span>රු. ${Math.round(pen5).toLocaleString()}</span></div>
-          <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>අත්තිකාරම්:</span><span>${advance > 0 ? 'රු. ' + advance.toLocaleString() : '-'}</span></div>
-          <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>වෙනත් අඩුකිරීම්:</span><span>${(ded1 + ded2) > 0 ? 'රු. ' + (ded1 + ded2).toLocaleString() : '-'}</span></div>
-          <div style="display:flex; justify-content:space-between; font-weight:800; border-top:1px dashed #cbd5e1; padding-top:6px; margin-top:6px; color:#dc2626;">
-            <span>අඩුකිරීම් එකතුව:</span><span>රු. ${Math.round(totDed).toLocaleString()}</span>
-          </div>
+        <div style="border:1px solid #cbd5e1; border-radius:8px; padding:12px;">
+          <h5 style="color:#dc2626; font-weight:800; border-bottom:1px solid #e2e8f0; padding-bottom:4px; margin-bottom:8px;">අඩුකිරීම් හා දායකත්ව (Deductions)</h5>
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>සේවක EPF 8%:</span><span>${employee8 > 0 ? 'රු. ' + employee8.toLocaleString() : '-'}</span></div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-weight:700; color:#dc2626;"><span>අඩු කිරීම් එකතුව:</span><span>${deductions > 0 ? 'රු. ' + deductions.toLocaleString() : '-'}</span></div>
+          <h5 style="color:#2563eb; font-weight:800; border-bottom:1px solid #e2e8f0; padding-bottom:4px; margin-top:10px; margin-bottom:8px;">සමිතියේ දායකත්ව (Statutory by Society)</h5>
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>අර්ථසාධක 20% (EPF Total):</span><span>${epf20 > 0 ? 'රු. ' + epf20.toLocaleString() : '-'}</span></div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>සේව්‍ය EPF 12%:</span><span>${employer12 > 0 ? 'රු. ' + employer12.toLocaleString() : '-'}</span></div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>සේව්‍ය 2.5%:</span><span>${employer25 > 0 ? 'රු. ' + employer25.toLocaleString() : '-'}</span></div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>සේව්‍ය 3%:</span><span>${employer3 > 0 ? 'රු. ' + employer3.toLocaleString() : '-'}</span></div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>සේව්‍ය 6%:</span><span>${employer6 > 0 ? 'රු. ' + employer6.toLocaleString() : '-'}</span></div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>සේවක භාරකාර ETF 3%:</span><span>${etf3 > 0 ? 'රු. ' + etf3.toLocaleString() : '-'}</span></div>
         </div>
-      </div>
-
-      <!-- Society Contributions Summary -->
-      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; margin-bottom:14px; font-size:11px; color:#475569; display:flex; justify-content:space-between;">
-        <span><strong>අර්ථසාධක 20%:</strong> රු. ${Math.round(epf20).toLocaleString()}</span>
-        <span><strong>සේවායෝජක EPF 12%:</strong> රු. ${Math.round(epf12).toLocaleString()}</span>
-        <span><strong>සේවායෝජක ETF 3%:</strong> රු. ${Math.round(etf3).toLocaleString()}</span>
-        <span><strong>විශ්‍රාම 2.5%:</strong> රු. ${Math.round(pen25).toLocaleString()}</span>
       </div>
 
       <!-- Net Salary Box -->
-      <div style="background:#f0fdf4; border:2px solid #16a34a; border-radius:10px; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-        <strong style="font-size:13.5px; color:#166534;">ශුද්ධ වැටුප (NET SALARY PAYABLE - ${isPerm ? '25 වන දින' : '10 වන දින'}):</strong>
-        <span style="font-size:18px; font-weight:800; color:#15803d; font-family:monospace;">රු. ${Math.round(net).toLocaleString()}</span>
+      <div style="background:#f0fdf4; border:1.5px solid #16a34a; border-radius:8px; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <span style="font-weight:800; font-size:14px; color:#15803d;">සේවකයා වෙත ගෙවන ශුද්ධ වැටුප (Net Payable):</span>
+        <strong style="font-size:19px; color:#15803d; font-family:monospace;">${net > 0 ? 'රු. ' + net.toLocaleString() : '-'}</strong>
       </div>
 
-      <!-- Form 2 Incentive Section for Permanent Staff -->
-      ${isPerm ? `
-        <div style="border:1.5px dashed #7c3aed; background:#faf5ff; border-radius:10px; padding:12px; margin-bottom:16px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-            <strong style="color:#6b21a8; font-size:12.5px;">🏆 සේවක දිරි දීමනා පත්‍රිකාව (Form 2 - 10 වන දින ගෙවීම):</strong>
-            <span style="font-weight:800; color:#7c3aed; font-size:14px;">රු. ${incTotal.toLocaleString()}</span>
-          </div>
-          <div style="font-size:11px; color:#6b21a8;">
-            මෙම දිරි දීමනාව සෑම මසකම 10 වන දිනට නියමිත නිර්ණායක 14 ට අනුව වෙනම ගණනය කර ලබා දෙනු ලැබේ.
-          </div>
-        </div>
-      ` : ''}
-
-      <div style="display:flex; justify-content:space-between; margin-top:28px; font-size:11px; color:#475569; text-align:center;">
-        <div>...................................<br>සකස් කළේ (Accounts)</div>
-        <div>...................................<br>පරීක්ෂා කළේ (Audit)</div>
-        <div>...................................<br>සේවක අත්සන (Signature)</div>
+      <!-- Signatures Footer -->
+      <div style="display:flex; justify-content:space-between; margin-top:25px; font-size:11px; text-align:center;">
+        <div>...................................<br>සේවක අත්සන (Employee Signature)</div>
+        <div>...................................<br>සකස් කළේ (HR / Accounts)</div>
+        <div>...................................<br>අනුමත කළේ (Chairman / GM)</div>
       </div>
     </div>
   `;
@@ -3404,7 +4443,7 @@ async function saveAppraisalForm(e) {
     },
     totalScore: totalScore,
     grade: grade,
-    incrementRecommended: document.getElementById('appraisal-increment-check').checked,
+    incrementRecommended: document.getElementById('appraisal-increment-check')?.checked ?? (totalScore >= 70),
     remarks: document.getElementById('appraisal-remarks').value.trim() || 'කාර්යසාධන ඇගයීම සාර්ථකව අවසන් කරන ලදී.'
   };
 
@@ -3425,21 +4464,88 @@ async function deleteAppraisal(id) {
   }
 }
 
+function formatYearMonthSinhala(ym) {
+  if (!ym || ym === 'ALL') return 'සියලුම මාස (All Months)';
+  const parts = ym.split('-');
+  if (parts.length < 2) return ym;
+  const yr = parts[0];
+  const mo = parts[1];
+  const monthNames = {
+    '01': 'ජනවාරි', '02': 'පෙබරවාරි', '03': 'මාර්තු', '04': 'අප්‍රේල්',
+    '05': 'මැයි', '06': 'ජූනි', '07': 'ජූලි', '08': 'අගෝස්තු',
+    '09': 'සැප්තැම්බර්', '10': 'ඔක්තෝබර්', '11': 'නොවැම්බර්', '12': 'දෙසැම්බර්'
+  };
+  return `${yr} ${monthNames[mo] || mo} (${ym})`;
+}
+
+function formatYearMonthEnglish(ym) {
+  if (!ym || ym === 'ALL') return 'All Months';
+  const parts = ym.split('-');
+  if (parts.length < 2) return ym;
+  const yr = parts[0];
+  const mo = parts[1];
+  const monthNames = {
+    '01': 'January', '02': 'February', '03': 'March', '04': 'April',
+    '05': 'May', '06': 'June', '07': 'July', '08': 'August',
+    '09': 'September', '10': 'October', '11': 'November', '12': 'December'
+  };
+  return `${monthNames[mo] || mo} ${yr}`;
+}
+
+function onWellbeingMonthFilterChange() {
+  renderSatisfactionModule();
+}
+
+function onPrintSheetWellbeingMonthChange(val) {
+  const mainSel = document.getElementById('filter-wellbeing-month');
+  if (mainSel) mainSel.value = val;
+  renderSatisfactionModule();
+  printCurrentPageReport();
+}
+
 function renderSatisfactionModule() {
-  const surveys = appData.surveys || [];
+  const allSurveys = appData.surveys || [];
   const tbody = document.querySelector('#table-survey-body');
   if (!tbody) return;
 
-  // Update summary stats
+  // Populate Month Filter Dropdown dynamically from all surveys
+  const monthSelect = document.getElementById('filter-wellbeing-month');
+  if (monthSelect) {
+    const currentVal = monthSelect.value || 'ALL';
+    const monthsSet = new Set();
+    allSurveys.forEach(s => {
+      const ts = s.timestamp || s.date || '';
+      const m = ts.slice(0, 7);
+      if (/^\d{4}-\d{2}$/.test(m)) monthsSet.add(m);
+    });
+    const uniqueMonths = Array.from(monthsSet).sort().reverse();
+
+    const expected = ['ALL', ...uniqueMonths];
+    const existing = Array.from(monthSelect.options).map(o => o.value);
+    if (existing.join(',') !== expected.join(',')) {
+      monthSelect.innerHTML = `<option value="ALL">සියලුම මාස (All Months)</option>` +
+        uniqueMonths.map(m => `<option value="${m}">${formatYearMonthSinhala(m)}</option>`).join('');
+      if (expected.includes(currentVal)) {
+        monthSelect.value = currentVal;
+      }
+    }
+  }
+
+  const selectedMonth = monthSelect ? monthSelect.value : 'ALL';
+  const surveys = (selectedMonth && selectedMonth !== 'ALL')
+    ? allSurveys.filter(s => (s.timestamp || s.date || '').startsWith(selectedMonth))
+    : allSurveys;
+
+  // Update summary stats based on displayed surveys
   const total = surveys.length;
   let avgOverall = 0, avgWork = 0, avgMgmt = 0;
   if (total > 0) {
     let sumOverall = 0, sumWork = 0, sumMgmt = 0;
     surveys.forEach(s => {
-      const w = s.ratings?.workEnvironment || 4;
-      const m = s.ratings?.managementSupport || 4;
-      const sal = s.ratings?.salaryFairness || 4;
-      const g = s.ratings?.careerGrowth || 4;
+      const w = s.ratings?.workEnvironment ?? s.workEnvironment ?? 4;
+      const m = s.ratings?.managementSupport ?? s.managementSupport ?? 4;
+      const sal = s.ratings?.salaryFairness ?? s.salaryFairness ?? 4;
+      const g = s.ratings?.careerGrowth ?? s.ratings?.coopDirection ?? s.careerGrowth ?? s.coopDirection ?? 4;
       const avg = s.averageScore || Number(((w + m + sal + g) / 4).toFixed(1));
       sumOverall += avg;
       sumWork += w;
@@ -3465,7 +4571,7 @@ function renderSatisfactionModule() {
       <tr>
         <td colspan="10" style="text-align:center; padding:36px; color:#94a3b8;">
           <i class="fa-solid fa-heart-pulse" style="font-size:32px; margin-bottom:10px; display:block; opacity:0.6; color:#059669;"></i>
-          තෘප්තිමත්භාවය පිළිබඳ සමීක්ෂණ ප්‍රතිඵල නොමැත (No wellbeing surveys received yet)<br>
+          ${selectedMonth !== 'ALL' ? formatYearMonthSinhala(selectedMonth) + ' මාසය සඳහා ' : ''}තෘප්තිමත්භාවය පිළිබඳ සමීක්ෂණ ප්‍රතිඵල නොමැත<br>
           <span style="font-size:12px; color:#64748b; margin-top:6px; display:inline-block;">ඉහත <strong>'WhatsApp මඟින් සේවකයින්ට යවන්න'</strong> හෝ <strong>'+ සටහනක් එක් කරන්න'</strong> ඔබන්න.</span>
         </td>
       </tr>
@@ -3474,13 +4580,13 @@ function renderSatisfactionModule() {
   }
 
   tbody.innerHTML = surveys.map(s => {
-    const w = s.ratings?.workEnvironment || 4;
-    const m = s.ratings?.managementSupport || 4;
-    const sal = s.ratings?.salaryFairness || 4;
-    const g = s.ratings?.careerGrowth || 4;
+    const w = s.ratings?.workEnvironment ?? s.workEnvironment ?? 4;
+    const m = s.ratings?.managementSupport ?? s.managementSupport ?? 4;
+    const sal = s.ratings?.salaryFairness ?? s.salaryFairness ?? 4;
+    const g = s.ratings?.careerGrowth ?? s.ratings?.coopDirection ?? s.careerGrowth ?? s.coopDirection ?? 4;
     const avg = s.averageScore || Number(((w + m + sal + g) / 4).toFixed(1));
-    const fmtTime = formatTimestamp(s.timestamp);
-    const empName = s.employeeName || (s.isAnonymous ? '🔒 නිර්නාමික' : 'කාර්ය මණ්ඩලය');
+    const fmtTime = formatTimestamp(s.timestamp || s.date);
+    const empName = s.employeeName || (s.isAnonymous ? '<i class="fa-solid fa-user-shield" style="color:#7c3aed; margin-right:4px;"></i>නිර්නාමික' : 'කාර්ය මණ්ඩලය');
 
     return `
       <tr>
@@ -3511,6 +4617,28 @@ function renderSatisfactionModule() {
       </tr>
     `;
   }).join('');
+}
+
+function loadDefaultWellbeingSurveys() {
+  if (typeof seedWellbeingSurveys !== 'undefined' && Array.isArray(seedWellbeingSurveys) && seedWellbeingSurveys.length > 0) {
+    if (!appData.surveys) appData.surveys = [];
+    const existingIds = new Set(appData.surveys.map(s => s.id));
+    let added = 0;
+    seedWellbeingSurveys.forEach(s => {
+      if (!existingIds.has(s.id)) {
+        appData.surveys.push(s);
+        added++;
+      }
+    });
+    appData.surveys.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+    persistData();
+    renderSatisfactionModule();
+    alert(currentLang === 'si'
+      ? `✅ 2025/02 සිට 2026/10 දක්වා සේවක තෘප්තිමත් සමීක්ෂණ දත්ත (${appData.surveys.length}) සාර්ථකව පූරණය කරන ලදී!`
+      : `✅ Wellbeing survey data (${appData.surveys.length}) loaded successfully!`);
+  } else {
+    alert(currentLang === 'si' ? 'සමීක්ෂණ බීජ දත්ත (Seed data) සොයා ගැනීමට නොහැකි විය.' : 'Seed survey data not found.');
+  }
 }
 
 // =========================================================================
@@ -3670,6 +4798,7 @@ async function saveManualSurveyForm(e) {
   };
 
   if (!appData.surveys) appData.surveys = [];
+  localStorage.removeItem('sanasa_surveys_all_cleared');
   appData.surveys.unshift(newSurvey);
   await persistData();
   closeSmartModal('modal-add-manual-survey');
@@ -3764,6 +4893,7 @@ async function clearAllSurveys() {
   const allIds = appData.surveys.map(x => x.id).filter(Boolean);
   const prev = JSON.parse(localStorage.getItem('sanasa_deleted_surv_ids') || '[]');
   localStorage.setItem('sanasa_deleted_surv_ids', JSON.stringify([...new Set([...prev, ...allIds])]));
+  localStorage.setItem('sanasa_surveys_all_cleared', 'true');
 
   appData.surveys = [];
   await persistData();
@@ -3843,10 +4973,16 @@ function printModalSheetContent() {
     th, td {
       border: 1px solid #000 !important;
     }
+    .no-print {
+      display: none !important;
+    }
     @media print {
       body {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
+      }
+      .no-print {
+        display: none !important;
       }
     }
   </style>
@@ -3876,6 +5012,10 @@ function printCurrentPageReport() {
   // If currently in payroll, open Form 1 directly
   if (activeId === 'payroll') {
     printForm1OfficialSheet();
+    return;
+  }
+  if (activeId === 'payroll-2026') {
+    openPayroll2026PrintModal('monthly');
     return;
   }
 
@@ -3945,7 +5085,7 @@ function printCurrentPageReport() {
               <td style="padding:5px 4px;">${idx + 1}</td>
               <td style="padding:5px 4px; font-weight:bold;">${g.id || '-'}</td>
               <td style="padding:5px 4px;">${g.date || '-'}</td>
-              <td style="padding:5px 4px;">${g.isAnonymous ? '🔒 නිර්නාමික (Anonymous)' : (g.submittedBy || 'නාමික')}</td>
+              <td style="padding:5px 4px;">${g.isAnonymous ? 'නිර්නාමික (Anonymous)' : (g.submittedBy || 'නාමික')}</td>
               <td style="padding:5px 4px; font-weight:600;">${g.target || g.targetOfficial || 'ගරු සභාපතිතුමා'}</td>
               <td style="padding:5px 6px; text-align:left;"><strong>${g.subject || '-'}</strong><br><span style="font-size:9px; color:#444;">${g.description || ''}</span></td>
               <td style="padding:5px 4px;">${g.status || 'නව (New)'}</td>
@@ -3994,39 +5134,85 @@ function printCurrentPageReport() {
       </table>
     `;
   } else if (activeId === 'satisfaction') {
-    titleSinhala = 'සේවක තෘප්තිමත්භාවය හා සුවතා සමීක්ෂණ ලේඛනය';
-    titleEnglish = 'Employee Wellbeing & Satisfaction Survey Report';
-    const surveys = appData.surveys || [];
+    const selectedMonth = document.getElementById('filter-wellbeing-month')?.value || 'ALL';
+    const allSurveys = appData.surveys || [];
+    const surveys = (selectedMonth !== 'ALL')
+      ? allSurveys.filter(s => (s.timestamp || s.date || '').startsWith(selectedMonth))
+      : allSurveys;
+
+    const monthLabelSi = (selectedMonth !== 'ALL') ? ` - ${formatYearMonthSinhala(selectedMonth)}` : ' (සමස්ත වාර්තාව)';
+    const monthLabelEn = (selectedMonth !== 'ALL') ? ` - ${formatYearMonthEnglish(selectedMonth)}` : ' (Comprehensive Report)';
+
+    titleSinhala = `සේවක තෘප්තිමත්භාවය හා සුවතා සමීක්ෂණ ලේඛනය${monthLabelSi}`;
+    titleEnglish = `Employee Wellbeing & Satisfaction Survey Report${monthLabelEn}`;
+
+    // Unique months list for print modal selector
+    const monthsSet = new Set();
+    allSurveys.forEach(s => {
+      const ts = s.timestamp || s.date || '';
+      const m = ts.slice(0, 7);
+      if (/^\d{4}-\d{2}$/.test(m)) monthsSet.add(m);
+    });
+    const uniqueMonths = Array.from(monthsSet).sort().reverse();
+
+    const monthSelectBarHtml = `
+      <div class="no-print" style="margin-bottom:14px; padding:10px 14px; background:#f0fdf4; border:1.5px solid #86efac; border-radius:8px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-weight:700; font-size:12.5px; color:#065f46;"><i class="fa-solid fa-calendar-days" style="color:#059669;"></i> වාර්තා මාසය තෝරන්න (Select Month):</span>
+          <select id="print-wellbeing-month-select" onchange="onPrintSheetWellbeingMonthChange(this.value)" style="padding:5px 12px; font-size:12px; font-weight:700; border-radius:6px; border:1.5px solid #059669; color:#065f46; background:#fff; cursor:pointer;">
+            <option value="ALL" ${selectedMonth === 'ALL' ? 'selected' : ''}>සියලුම මාස (All Months - ${allSurveys.length})</option>
+            ${uniqueMonths.map(m => `<option value="${m}" ${selectedMonth === m ? 'selected' : ''}>${formatYearMonthSinhala(m)}</option>`).join('')}
+          </select>
+        </div>
+        <div style="font-size:11.5px; color:#475569; font-weight:600;">
+          <i class="fa-solid fa-check-circle" style="color:#059669;"></i> වාර්තා ගණන: <strong>${surveys.length}</strong>
+        </div>
+      </div>
+    `;
+
     tableHTML = `
+      ${monthSelectBarHtml}
       <table style="width:100%; border-collapse:collapse; font-size:10px; text-align:center;" border="1" bordercolor="#000">
         <thead>
           <tr style="background:#f2f2f2; font-weight:bold;">
             <th style="padding:6px 4px; width:35px;">අංකය</th>
             <th style="padding:6px 4px; width:80px;">දිනය</th>
-            <th style="padding:6px 4px;">සේවකයා</th>
-            <th style="padding:6px 4px;">වැඩ පරිසරය</th>
-            <th style="padding:6px 4px;">කළමනාකාරීත්වය</th>
-            <th style="padding:6px 4px;">වැටුප් සාධාරණත්වය</th>
-            <th style="padding:6px 4px;">දිශාව හා අභිප්‍රේරණය</th>
-            <th style="padding:6px 4px; font-weight:800;">සාමාන්‍යය</th>
+            <th style="padding:6px 6px; text-align:left;">සේවකයා</th>
+            <th style="padding:6px 4px; width:65px;">වැඩ පරිසරය</th>
+            <th style="padding:6px 4px; width:75px;">කළමනාකාරීත්වය</th>
+            <th style="padding:6px 4px; width:75px;">වැටුප් සාධාරණත්වය</th>
+            <th style="padding:6px 4px; width:75px;">දිශාව හා අභිප්‍රේරණය</th>
+            <th style="padding:6px 4px; width:60px; font-weight:800;">සාමාන්‍යය</th>
             <th style="padding:6px 6px; text-align:left;">සේවක අදහස්</th>
           </tr>
         </thead>
         <tbody>
-          ${surveys.map((s, idx) => `
-            <tr>
-              <td style="padding:5px 4px;">${idx + 1}</td>
-              <td style="padding:5px 4px;">${s.date || '-'}</td>
-              <td style="padding:5px 4px; font-weight:600;">${s.employeeName || (s.employeeId ? 'සේවක #' + s.employeeId : 'Anonymous')}</td>
-              <td style="padding:5px 4px;">${s.workEnvironment || '-'} / 5</td>
-              <td style="padding:5px 4px;">${s.managementSupport || '-'} / 5</td>
-              <td style="padding:5px 4px;">${s.salaryFairness || '-'} / 5</td>
-              <td style="padding:5px 4px;">${s.coopDirection || '-'} / 5</td>
-              <td style="padding:5px 4px; font-weight:bold;">${s.averageScore ? Number(s.averageScore).toFixed(1) + ' / 5' : '-'}</td>
-              <td style="padding:5px 6px; text-align:left;">${s.comments || '-'}</td>
-            </tr>
-          `).join('')}
-          ${surveys.length === 0 ? '<tr><td colspan="9" style="padding:16px; color:#888;">සුවතා සමීක්ෂණ දත්ත වාර්තා වී නොමැත.</td></tr>' : ''}
+          ${surveys.map((s, idx) => {
+            const rawTs = s.timestamp || s.date || '';
+            const dateStr = rawTs.includes(' ') ? rawTs.split(' ')[0] : (rawTs.includes('T') ? rawTs.split('T')[0] : (rawTs || '-'));
+            const w = s.ratings?.workEnvironment ?? s.workEnvironment ?? 4;
+            const m = s.ratings?.managementSupport ?? s.managementSupport ?? 4;
+            const sal = s.ratings?.salaryFairness ?? s.salaryFairness ?? 4;
+            const g = s.ratings?.careerGrowth ?? s.ratings?.coopDirection ?? s.careerGrowth ?? s.coopDirection ?? 4;
+            const avg = s.averageScore ? Number(s.averageScore).toFixed(1) : Number(((w + m + sal + g) / 4).toFixed(1));
+            const empName = s.employeeName || (s.employeeId ? 'සේවක #' + s.employeeId : (s.isAnonymous ? 'නිර්නාමික' : 'කාර්ය මණ්ඩලය'));
+            const dept = s.department ? `<br><span style="font-size:9px; color:#555; font-weight:normal;">${s.department}</span>` : '';
+
+            return `
+              <tr>
+                <td style="padding:5px 4px;">${idx + 1}</td>
+                <td style="padding:5px 4px; font-weight:600; white-space:nowrap;">${dateStr}</td>
+                <td style="padding:5px 6px; text-align:left; font-weight:600;">${empName}${dept}</td>
+                <td style="padding:5px 4px;">${w} / 5</td>
+                <td style="padding:5px 4px;">${m} / 5</td>
+                <td style="padding:5px 4px;">${sal} / 5</td>
+                <td style="padding:5px 4px;">${g} / 5</td>
+                <td style="padding:5px 4px; font-weight:bold; background:#f8fafc;">${avg} / 5</td>
+                <td style="padding:5px 6px; text-align:left; font-size:9.5px;">${s.comments || '-'}</td>
+              </tr>
+            `;
+          }).join('')}
+          ${surveys.length === 0 ? '<tr><td colspan="9" style="padding:16px; color:#888;">තෝරාගත් මාසය සඳහා සුවතා සමීක්ෂණ දත්ත වාර්තා වී නොමැත.</td></tr>' : ''}
         </tbody>
       </table>
     `;
@@ -4217,15 +5403,13 @@ function printCurrentPageReport() {
 
       <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:12px; font-weight:700;">
         <span>${titleSinhala} - ${titleEnglish}</span>
-        <span>මුද්‍රණ දිනය: ${dateNow}</span>
       </div>
 
       ${tableHTML}
 
-      <div style="display:flex; justify-content:space-between; margin-top:40px; font-size:11px; text-align:center;">
+      <div style="display:flex; justify-content:space-between; margin-top:40px; font-size:11px; text-align:center; padding:0 60px;">
         <div>...................................<br>සකස් කළේ (HR / Accounts)</div>
-        <div>...................................<br>පරීක්ෂා කළේ (Internal Audit)</div>
-        <div>...................................<br>අනුමත කළේ (General Manager / Chairman)</div>
+        <div>...................................<br>පරීක්ෂා කළේ (General Manager / Chairman)</div>
       </div>
 
       <div style="border-top:1.5px solid #000; margin-top:25px; padding-top:6px; display:flex; justify-content:space-between; font-size:9.5px; color:#333;">
@@ -4529,11 +5713,7 @@ function openAddProjectModal() {
   }
 
   const dueDateInput = document.getElementById('proj-due-date');
-  if (dueDateInput) {
-    const d = new Date();
-    d.setDate(d.getDate() + 30);
-    dueDateInput.value = d.toISOString().split('T')[0];
-  }
+  if (dueDateInput) dueDateInput.value = '';
 
   openSmartModal('modal-smart-project');
 }
@@ -4671,21 +5851,8 @@ function openAddMeetingModal() {
   const form = document.getElementById('form-smart-meeting');
   if (form) form.reset();
 
-  const dateInput = document.getElementById('meet-date');
-  if (dateInput) {
-    const d = new Date();
-    d.setDate(d.getDate() + 3);
-    dateInput.value = d.toISOString().split('T')[0];
-  }
-
-  const timeInput = document.getElementById('meet-time');
-  if (timeInput) timeInput.value = '10:00 AM - 11:30 AM';
-
-  const chairInput = document.getElementById('meet-chair');
-  if (chairInput) chairInput.value = appData?.organization?.chairman || 'ඒ. එම්. දයාරත්න බණ්ඩා මහතා (Hon. Chairman)';
-
-  const venueInput = document.getElementById('meet-venue');
-  if (venueInput) venueInput.value = 'ගලපිටියාගම සණස ප්‍රධාන රැස්වීම් ශාලාව';
+  const idInput = document.getElementById('meet-id');
+  if (idInput) idInput.value = '';
 
   openSmartModal('modal-smart-meeting');
 }
@@ -4920,6 +6087,7 @@ function setupEventListeners() {
   document.getElementById('form-smart-payroll-entry')?.addEventListener('submit', savePayrollEntry);
   document.getElementById('form-smart-incentive-entry')?.addEventListener('submit', saveIncentiveEntry);
   document.getElementById('pay-entry-emp')?.addEventListener('change', onPayrollEntryEmpChange);
+  document.getElementById('pay-entry-month')?.addEventListener('change', onPayrollEntryMonthChange);
   document.getElementById('inc-entry-emp')?.addEventListener('change', onIncentiveEmpChange);
 
   // EPF Payment form
@@ -4934,6 +6102,1783 @@ function setupEventListeners() {
       if (e.target === modal) modal.classList.remove('active');
     });
   });
+}
+
+// =========================================================================
+// 2026 ONWARD AUTOMATED PAYROLL MODULE
+// =========================================================================
+
+// ---- Config Helpers ----
+function getEmpSalaryConfig2026(empId, forMonth) {
+  if (/^Y14806\s*-\s*0?3$/i.test(String(empId || '').trim())) empId = 'Y14806 - 03';
+  if (!appData.payroll2026Configs) appData.payroll2026Configs = {};
+  if (!appData.payroll2026Configs[empId]) {
+    const emp = (appData.employees || []).find(e => e.id === empId);
+    const isContract = emp && (emp.employmentType || '').toLowerCase().includes('contract');
+    const baseBasic = parseFloat(emp?.basicSalary || emp?.basic || 0);
+    appData.payroll2026Configs[empId] = {
+      empType: isContract ? 'contract' : 'permanent',
+      basicSalary: baseBasic,
+      // Permanent criteria flags & amounts
+      perm_allowance1_enabled: true,  perm_allowance1: 0,
+      perm_allowance2_enabled: true,  perm_allowance2: 0,
+      perm_interim_enabled: true,     perm_interim: 0,
+      perm_secAllowance_enabled: true,perm_secAllowance: 0,
+      perm_increment_enabled: true,   perm_increment: 0,
+      perm_budget_enabled: true,      perm_budget: 0,
+      perm_ot_enabled: true,
+      // Contract criteria flags & amounts
+      con_allowance1_enabled: true,   con_allowance1: 0,
+      con_allowance2_enabled: true,   con_allowance2: 0,
+      con_ot_enabled: true,
+      con_dailyRate: 1000,
+      con_defaultDays: 25,
+      revisions: [
+        {
+          effectiveMonth: '2026-01',
+          empType: isContract ? 'contract' : 'permanent',
+          basicSalary: baseBasic,
+          perm_allowance1_enabled: true,  perm_allowance1: 0,
+          perm_allowance2_enabled: true,  perm_allowance2: 0,
+          perm_interim_enabled: true,     perm_interim: 0,
+          perm_secAllowance_enabled: true,perm_secAllowance: 0,
+          perm_increment_enabled: true,   perm_increment: 0,
+          perm_budget_enabled: true,      perm_budget: 0,
+          perm_ot_enabled: true,
+          con_allowance1_enabled: true,   con_allowance1: 0,
+          con_allowance2_enabled: true,   con_allowance2: 0,
+          con_ot_enabled: true,
+          con_dailyRate: 1000,
+          con_defaultDays: 25
+        }
+      ]
+    };
+  }
+  const rootCfg = appData.payroll2026Configs[empId];
+  if (!rootCfg.revisions || rootCfg.revisions.length === 0) {
+    const { revisions, ...baseProps } = rootCfg;
+    rootCfg.revisions = [{
+      effectiveMonth: '2026-01',
+      ...baseProps
+    }];
+  }
+
+  if (forMonth && rootCfg.revisions && rootCfg.revisions.length > 0) {
+    const sorted = [...rootCfg.revisions].sort((a,b) => (a.effectiveMonth||'').localeCompare(b.effectiveMonth||''));
+    let matched = null;
+    for (const rev of sorted) {
+      if (rev.effectiveMonth && rev.effectiveMonth <= forMonth) {
+        matched = rev;
+      }
+    }
+    if (matched) {
+      return { ...rootCfg, ...matched };
+    } else {
+      return { ...rootCfg, ...sorted[0] };
+    }
+  }
+
+  return rootCfg;
+}
+
+// ---- Core Calculation ----
+function calculatePayroll2026ForEmp(emp, cfg, overrides) {
+  overrides = overrides || {};
+  const isContract = cfg.empType === 'contract';
+
+  if (isContract) {
+    const basic = parseFloat(cfg.basicSalary) || 0;
+    const attendedDays = parseFloat(overrides.attendedDays || 0);
+    const dailyRate = parseFloat(cfg.con_dailyRate || 1000);
+    const attendanceAllo = attendedDays * dailyRate;
+    const allow1 = cfg.con_allowance1_enabled ? (parseFloat(cfg.con_allowance1) || 0) : 0;
+    const allow2 = cfg.con_allowance2_enabled ? (parseFloat(cfg.con_allowance2) || 0) : 0;
+    const ot    = cfg.con_ot_enabled ? (parseFloat(overrides.ot || 0)) : 0;
+
+    const gross = basic + attendanceAllo + allow1 + allow2 + ot;
+    const epfBase = basic + attendanceAllo;
+    const empEpf8 = Math.round(epfBase * 0.08 * 100) / 100;
+    const empEpf12 = Math.round(epfBase * 0.12 * 100) / 100;
+    const etf3 = Math.round(epfBase * 0.03 * 100) / 100;
+    const totalDeductions = empEpf8;
+    const netSalary = gross - totalDeductions;
+    const employerTotal = empEpf12 + etf3;
+    const totalCost = gross + employerTotal;
+
+    return {
+      isContract: true,
+      basic, attendanceAllo, attendedDays, dailyRate,
+      allow1, allow2, ot,
+      gross, epfBase,
+      empEpf8, empEpf12, etf3,
+      employerTotal, totalCost,
+      totalDeductions, netSalary,
+      empPension6: 0, empPension3: 0, pensionBase: 0, epfTotal20: empEpf8 + empEpf12,
+      payDate: 10
+    };
+  } else {
+    // Permanent
+    const basic = parseFloat(cfg.basicSalary) || 0;
+    const allow1  = cfg.perm_allowance1_enabled  ? (parseFloat(cfg.perm_allowance1)  || 0) : 0;
+    const allow2  = cfg.perm_allowance2_enabled  ? (parseFloat(cfg.perm_allowance2)  || 0) : 0;
+    const interim = cfg.perm_interim_enabled     ? (parseFloat(cfg.perm_interim)     || 0) : 0;
+    const sec     = cfg.perm_secAllowance_enabled? (parseFloat(cfg.perm_secAllowance)|| 0) : 0;
+    const incr    = cfg.perm_increment_enabled   ? (parseFloat(cfg.perm_increment)   || 0) : 0;
+    const budget  = cfg.perm_budget_enabled      ? (parseFloat(cfg.perm_budget)      || 0) : 0;
+    const ot      = cfg.perm_ot_enabled          ? (parseFloat(overrides.ot || 0))         : 0;
+
+    const gross = basic + allow1 + allow2 + interim + sec + incr + budget + ot;
+
+    // EPF base: basic + lekham(sec) + allow1 + allow2 + wetupwardhakaya(incr) + interim
+    // budget(ayaweya dimanawa) EPF/Pension base ගෙ ඇතුළත් නොවේ
+    const epfBase = basic + interim + allow1 + allow2 + sec + incr;
+    const epfTotal20 = Math.round(epfBase * 0.20 * 100) / 100;
+    const empEpf12   = Math.round(epfBase * 0.12 * 100) / 100;  // employer 12%
+    const empEpf8    = Math.round(epfBase * 0.08 * 100) / 100;  // employee 8%
+
+    // Pension base: same as EPF base (budget/ayaweya dimanawa නොමැත) — employee 6%, employer 3%
+    const pensionBase  = basic + interim + allow1 + allow2 + sec + incr;
+    const empPension3  = Math.round(pensionBase * 0.03 * 100) / 100;  // employer 3%
+    const empPension6  = Math.round(pensionBase * 0.06 * 100) / 100;  // employee 6%
+
+    const totalDeductions = empEpf8 + empPension6;
+    const netSalary = gross - totalDeductions;
+    const employerTotal = empEpf12 + empPension3;
+    const totalCost = gross + employerTotal;
+
+    return {
+      isContract: false,
+      basic, allow1, allow2, interim, sec, incr, budget, ot,
+      gross, epfBase, epfTotal20, empEpf12, empEpf8,
+      pensionBase, empPension3, empPension6,
+      employerTotal, totalCost,
+      attendanceAllo: 0, attendedDays: 0, etf3: 0,
+      totalDeductions, netSalary,
+      payDate: 25
+    };
+  }
+}
+
+// ---- Global handlers for 2026 Payroll controls ----
+function onPayroll2026MonthChange(val) {
+  window.currentPayroll2026Month = val;
+  renderPayroll2026Module();
+}
+
+function onPayroll2026TypeChange(val) {
+  window.currentPayroll2026Type = val;
+  renderPayroll2026Module();
+}
+
+function togglePayroll2026ViewMode(mode) {
+  window.payroll2026ViewMode = mode;
+  renderPayroll2026Module();
+}
+
+// ---- Main Render ----
+function renderPayroll2026Module() {
+  const container = document.getElementById('view-payroll-2026');
+  if (!container) return;
+
+  const emps = appData.employees || [];
+  if (!appData.payroll2026Configs) appData.payroll2026Configs = {};
+  if (!appData.payroll2026History) appData.payroll2026History = [];
+
+  // Determine current active month, employee type filter, and view mode
+  const now = new Date();
+  const currentYM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const selMonth = window.currentPayroll2026Month || 
+                   container.querySelector('#p26-month-select')?.value || 
+                   `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; // Default: current month
+  window.currentPayroll2026Month = selMonth;
+
+  const selType  = window.currentPayroll2026Type || 
+                  container.querySelector('#p26-type-filter')?.value || 
+                  'all';
+  window.currentPayroll2026Type = selType;
+
+  const viewMode = window.payroll2026ViewMode || 'compact'; // 'compact' (fits screen without scroll) or 'full' (all 22 columns)
+  window.payroll2026ViewMode = viewMode;
+
+  // Build month options dynamically from 2026 January onwards
+  const monthNames = ['ජනවාරි','පෙබරවාරි','මාර්තු','අප්‍රේල්','මැයි','ජූනි',
+                      'ජූලි','අගෝස්තු','සැප්තැම්බර්','ඔක්තෝබර්','නොවැම්බර්','දෙසැම්බර්'];
+
+  let monthOpts = '';
+  for (let y = 2026; y <= Math.max(2028, now.getFullYear() + 1); y++) {
+    for (let m = 1; m <= 12; m++) {
+      const ym = `${y}-${String(m).padStart(2,'0')}`;
+      const sel = ym === selMonth ? 'selected' : '';
+      monthOpts += `<option value="${ym}" ${sel}>${y} ${monthNames[m-1]}</option>`;
+    }
+  }
+
+  let displayEmps = emps;
+  if (selType === 'perm')     displayEmps = emps.filter(e => !isContractEmp2026(e));
+  if (selType === 'contract') displayEmps = emps.filter(e => isContractEmp2026(e));
+
+  // KPI computation
+  let totalBasic=0, totalGross=0, totalNet=0, totalEmpEpf8=0, totalEmpPension6=0, totalDeductions=0;
+  let totalEmployerEpf12=0, totalEmployerPension3=0, totalEmployerEtf3=0, totalEmployerStatutory=0, totalOverallCost=0;
+
+  let rowsHtml = '';
+  if (viewMode === 'compact') {
+    rowsHtml = displayEmps.map(emp => {
+      const cfg = getEmpSalaryConfig2026(emp.id, selMonth);
+      const saved = (appData.payroll2026History||[]).find(r => r.empId===emp.id && r.month===selMonth);
+      const overrides = saved ? { ot: saved.ot||0, attendedDays: saved.attendedDays||0 } : {};
+      const calculated = calculatePayroll2026ForEmp(emp, cfg, overrides);
+      const r = (saved && saved.basic !== undefined && saved.netSalary !== undefined)
+        ? { ...calculated, ...saved }
+        : calculated;
+
+      totalBasic              += r.basic;
+      totalGross              += r.gross;
+      totalNet                += r.netSalary;
+      totalEmpEpf8            += r.empEpf8;
+      totalEmpPension6        += (r.empPension6||0);
+      totalDeductions         += r.totalDeductions;
+      totalEmployerEpf12      += r.empEpf12;
+      totalEmployerPension3   += (r.empPension3||0);
+      totalEmployerEtf3       += (r.etf3||0);
+      const empStatutory       = r.empEpf12 + (r.empPension3||0) + (r.etf3||0);
+      totalEmployerStatutory  += empStatutory;
+      totalOverallCost        += (r.gross + empStatutory);
+
+      const typeBadge = cfg.empType==='contract'
+        ? `<span style="background:#fef9c3;color:#854d0e;border:1px solid #fde047;padding:2px 7px;border-radius:999px;font-size:10.5px;font-weight:700;">කොන්ත්‍රාත්</span>`
+        : `<span style="background:#dcfce7;color:#166534;border:1px solid #86efac;padding:2px 7px;border-radius:999px;font-size:10.5px;font-weight:700;">ස්ථිර</span>`;
+      const payDateBadge = `<span style="font-size:10.5px;font-weight:700;color:${r.payDate===25?'#15803d':'#b45309'};">ගෙවීම: ${r.payDate} වන දින</span>`;
+
+      const totalAllow = r.gross - r.basic;
+      let allowDetails = '';
+      if (r.isContract) {
+        allowDetails = `<div style="font-size:10px;color:#475569;margin-top:2px;line-height:1.4;">
+          <span style="color:#0f766e;font-weight:700;">පැමිණීම (${r.attendedDays}d): ${fmt(r.attendanceAllo)}</span>
+          ${r.allow1 ? ` | <span>දීම1: ${fmt(r.allow1)}</span>` : ''}
+          ${r.allow2 ? ` | <span>දීම2: ${fmt(r.allow2)}</span>` : ''}
+          ${r.ot ? ` | <span style="color:#b45309;font-weight:700;">අතිකාල: ${fmt(r.ot)}</span>` : ''}
+        </div>`;
+      } else {
+        const parts = [];
+        if (r.interim) parts.push(`<span style="color:#0f766e;font-weight:700;">අන්තර්: ${fmt(r.interim)}</span>`);
+        if (r.allow1)  parts.push(`<span>දීම1: ${fmt(r.allow1)}</span>`);
+        if (r.allow2)  parts.push(`<span>දීම2: ${fmt(r.allow2)}</span>`);
+        if (r.sec)     parts.push(`<span>ලේඛම්: ${fmt(r.sec)}</span>`);
+        if (r.incr)    parts.push(`<span>වර්ධක: ${fmt(r.incr)}</span>`);
+        if (r.budget)  parts.push(`<span>අයවැය: ${fmt(r.budget)}</span>`);
+        if (r.ot)      parts.push(`<span style="color:#b45309;font-weight:700;">අතිකාල: ${fmt(r.ot)}</span>`);
+        allowDetails = `<div style="font-size:10px;color:#475569;margin-top:2px;line-height:1.4;">${parts.length ? parts.join(' | ') : '<span style="color:#94a3b8;">දීමනා නැත</span>'}</div>`;
+      }
+
+      return `<tr style="border-bottom:1px solid #f1f5f9; transition:background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
+        <td style="padding:10px 8px;">
+          <div style="font-weight:800;color:#1e1b4b;font-size:11px;">${emp.id}</div>
+          <div style="font-weight:700;color:#0f172a;font-size:12.5px;margin:2px 0;">${emp.fullName||emp.callingName||''}</div>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:2px;">${typeBadge} <span style="font-size:10.5px;color:#cbd5e1;">•</span> ${payDateBadge}</div>
+        </td>
+        <td style="padding:10px 8px;text-align:right;font-size:12px;font-weight:800;color:#1e1b4b;vertical-align:middle;">
+          ${fmt(r.basic)}
+        </td>
+        <td style="padding:10px 8px;text-align:right;vertical-align:middle;">
+          <div style="font-size:12px;font-weight:800;color:#0f766e;">${fmt(totalAllow)}</div>
+          ${allowDetails}
+        </td>
+        <td style="padding:10px 8px;text-align:right;background:#f5f3ff;vertical-align:middle;">
+          <div style="font-size:13px;font-weight:900;color:#4338ca;">${fmt(r.gross)}</div>
+        </td>
+        <td style="padding:10px 8px;text-align:right;background:#fffcfc;vertical-align:middle;">
+          <div style="font-size:12px;font-weight:800;color:#dc2626;">(${fmt(r.totalDeductions)})</div>
+          <div style="font-size:10px;color:#64748b;margin-top:2px;">
+            <span>EPF 8%: <strong>${fmt(r.empEpf8)}</strong></span>
+            ${r.isContract ? '' : ` | <span>විශ්‍රාම 6%: <strong>${fmt(r.empPension6)}</strong></span>`}
+          </div>
+        </td>
+        <td style="padding:10px 8px;text-align:right;background:#ecfdf5;vertical-align:middle;">
+          <div style="font-size:13.5px;font-weight:900;color:#065f46;background:#d1fae5;padding:5px 8px;border-radius:8px;display:inline-block;border:1px solid #a7f3d0;white-space:nowrap;">
+            රු. ${fmt(r.netSalary)}
+          </div>
+        </td>
+        <td style="padding:10px 8px;text-align:right;background:#f0f9ff;vertical-align:middle;">
+          <div style="font-size:12px;font-weight:800;color:#0369a1;">රු. ${fmt(empStatutory)}</div>
+          <div style="font-size:10px;color:#475569;margin-top:2px;">
+            <span>EPF 12%: <strong>${fmt(r.empEpf12)}</strong></span> | 
+            ${r.isContract ? `<span>ETF 3%: <strong>${fmt(r.etf3)}</strong></span>` : `<span>විශ්‍රාම 3%: <strong>${fmt(r.empPension3)}</strong></span>`}
+          </div>
+        </td>
+        <td style="padding:10px 8px;text-align:center;white-space:nowrap;vertical-align:middle;">
+          <div style="display:flex;gap:3px;justify-content:center;align-items:center;">
+            <button onclick="openPayroll2026CriteriaModal('${emp.id}','${selMonth}')" style="border:none;background:#ede9fe;color:#6d28d9;padding:5px 8px;border-radius:6px;font-size:12px;cursor:pointer;" title="නිර්ණායක වෙනස් කරන්න"><i class="fa-solid fa-sliders"></i></button>
+            <button onclick="openAddPayroll2026EntryModal('${emp.id}','${selMonth}')" style="border:none;background:#dbeafe;color:#1d4ed8;padding:5px 8px;border-radius:6px;font-size:12px;cursor:pointer;" title="අතිකාල / දින ඇතුළත් කරන්න"><i class="fa-solid fa-pen-to-square"></i></button>
+            <button onclick="viewPayroll2026Payslip('${emp.id}','${selMonth}')" style="border:none;background:#10b981;color:#fff;padding:5px 9px;border-radius:6px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;" title="වැටුප් පත්‍රිකාව (Pay Sheet)"><i class="fa-solid fa-file-invoice"></i> Pay Sheet</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  } else {
+    // 22-column full view
+    rowsHtml = displayEmps.map(emp => {
+      const cfg = getEmpSalaryConfig2026(emp.id, selMonth);
+      const saved = (appData.payroll2026History||[]).find(r => r.empId===emp.id && r.month===selMonth);
+      const overrides = saved ? { ot: saved.ot||0, attendedDays: saved.attendedDays||0 } : {};
+      const calculated = calculatePayroll2026ForEmp(emp, cfg, overrides);
+      const r = (saved && saved.basic !== undefined && saved.netSalary !== undefined)
+        ? { ...calculated, ...saved }
+        : calculated;
+
+      totalBasic              += r.basic;
+      totalGross              += r.gross;
+      totalNet                += r.netSalary;
+      totalEmpEpf8            += r.empEpf8;
+      totalEmpPension6        += (r.empPension6||0);
+      totalDeductions         += r.totalDeductions;
+      totalEmployerEpf12      += r.empEpf12;
+      totalEmployerPension3   += (r.empPension3||0);
+      totalEmployerEtf3       += (r.etf3||0);
+      const empStatutory       = r.empEpf12 + (r.empPension3||0) + (r.etf3||0);
+      totalEmployerStatutory  += empStatutory;
+      totalOverallCost        += (r.gross + empStatutory);
+
+      const typeBadge = cfg.empType==='contract'
+        ? `<span style="background:#fef9c3;color:#854d0e;border:1px solid #fde047;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700;">කොන්ත්‍රාත්</span>`
+        : `<span style="background:#dcfce7;color:#166534;border:1px solid #86efac;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700;">ස්ථිර</span>`;
+      const payDateBadge = `<span style="font-size:11px;font-weight:700;color:${r.payDate===25?'#15803d':'#b45309'};">${r.payDate} වන</span>`;
+
+      return `<tr style="border-bottom:1px solid #f1f5f9; transition:background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
+        <td style="font-size:11.5px;font-weight:800;color:#1e1b4b;padding:8px 6px;">${emp.id}</td>
+        <td style="font-size:12px;font-weight:700;color:#0f172a;padding:8px 6px;">${emp.fullName||emp.callingName||''}</td>
+        <td style="text-align:center;padding:8px 6px;">${typeBadge}</td>
+        <td style="text-align:right;font-size:11.5px;padding:8px 6px;">${fmt(r.basic)}</td>
+        <td style="text-align:right;font-size:11.5px;color:#0f766e;font-weight:600;padding:8px 6px;">${fmt(r.isContract ? r.attendanceAllo : r.interim)}</td>
+        <td style="text-align:right;font-size:11.5px;padding:8px 6px;">${fmt(r.allow1)}</td>
+        <td style="text-align:right;font-size:11.5px;padding:8px 6px;">${fmt(r.allow2)}</td>
+        <td style="text-align:right;font-size:11.5px;padding:8px 6px;">${fmt(r.isContract ? 0 : r.sec)}</td>
+        <td style="text-align:right;font-size:11.5px;padding:8px 6px;">${fmt(r.isContract ? 0 : r.incr)}</td>
+        <td style="text-align:right;font-size:11.5px;padding:8px 6px;">${fmt(r.isContract ? 0 : r.budget)}</td>
+        <td style="text-align:right;font-size:11.5px;color:#b45309;font-weight:600;padding:8px 6px;">${fmt(r.ot)}</td>
+        <td style="text-align:right;font-size:12px;font-weight:800;color:#4338ca;background:#f5f3ff;padding:8px 6px;">${fmt(r.gross)}</td>
+        <td style="text-align:right;font-size:11.5px;color:#dc2626;padding:8px 6px;">(${fmt(r.empEpf8)})</td>
+        <td style="text-align:right;font-size:11.5px;color:#7c3aed;padding:8px 6px;">${r.isContract ? '-' : `(${fmt(r.empPension6)})`}</td>
+        <td style="text-align:right;font-size:11.5px;color:#b91c1c;font-weight:700;background:#fef2f2;padding:8px 6px;">(${fmt(r.totalDeductions)})</td>
+        <td style="text-align:right;font-size:12.5px;font-weight:800;color:#15803d;background:#ecfdf5;padding:8px 6px;">${fmt(r.netSalary)}</td>
+        <td style="text-align:right;font-size:11.5px;color:#16a34a;font-weight:700;padding:8px 6px;">${fmt(r.empEpf12)}</td>
+        <td style="text-align:right;font-size:11.5px;color:#d97706;font-weight:700;padding:8px 6px;">${r.isContract ? '-' : fmt(r.empPension3)}</td>
+        <td style="text-align:right;font-size:11.5px;color:#0284c7;font-weight:700;padding:8px 6px;">${r.isContract ? fmt(r.etf3) : '-'}</td>
+        <td style="text-align:right;font-size:12px;font-weight:800;color:#1e3a8a;background:#eff6ff;padding:8px 6px;">${fmt(empStatutory)}</td>
+        <td style="text-align:center;padding:8px 6px;">${payDateBadge}</td>
+        <td style="text-align:center;white-space:nowrap;padding:8px 6px;">
+          <button onclick="openPayroll2026CriteriaModal('${emp.id}','${selMonth}')" style="border:none;background:#ede9fe;color:#6d28d9;padding:4px 8px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;margin-right:3px;" title="නිර්ණායක වෙනස් කරන්න"><i class="fa-solid fa-sliders"></i></button>
+          <button onclick="openAddPayroll2026EntryModal('${emp.id}','${selMonth}')" style="border:none;background:#dbeafe;color:#1d4ed8;padding:4px 8px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;margin-right:3px;" title="අතිකාල / දින ඇතුළත් කරන්න"><i class="fa-solid fa-pen-to-square"></i></button>
+          <button onclick="viewPayroll2026Payslip('${emp.id}','${selMonth}')" style="border:none;background:#d1fae5;color:#065f46;padding:4px 9px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px;" title="වැටුප් පත්‍රිකාව (Pay Sheet)"><i class="fa-solid fa-file-invoice"></i> Pay Sheet</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Grand Total Row
+  const totalRow = viewMode === 'compact' ? `
+    <tr style="background:#1e1b4b;color:#fff;font-weight:800;border-top:2px solid #312e81;">
+      <td colspan="2" style="text-align:right;font-size:12px;padding:10px 8px;">මුළු එකතුව (Grand Total):</td>
+      <td style="text-align:right;font-size:12px;color:#99f6e4;padding:10px 8px;">${fmt(totalGross - totalBasic)}</td>
+      <td style="text-align:right;font-size:13px;color:#c7d2fe;background:#312e81;padding:10px 8px;">${fmt(totalGross)}</td>
+      <td style="text-align:right;font-size:12px;color:#fca5a5;padding:10px 8px;">(${fmt(totalDeductions)})</td>
+      <td style="text-align:right;font-size:14px;color:#a7f3d0;background:#064e3b;padding:10px 8px;">${fmt(totalNet)}</td>
+      <td style="text-align:right;font-size:13px;color:#bfdbfe;background:#1e3a8a;padding:10px 8px;">${fmt(totalEmployerStatutory)}</td>
+      <td></td>
+    </tr>` : `
+    <tr style="background:#1e1b4b;color:#fff;font-weight:800;border-top:2px solid #312e81;">
+      <td colspan="3" style="text-align:right;font-size:12.5px;padding:10px 8px;">මුළු එකතුව (Grand Total)</td>
+      <td style="text-align:right;font-size:11.5px;color:#e2e8f0;">${fmt(totalBasic)}</td>
+      <td colspan="7"></td>
+      <td style="text-align:right;font-size:12.5px;color:#c7d2fe;background:#312e81;">${fmt(totalGross)}</td>
+      <td style="text-align:right;color:#fca5a5;">(${fmt(totalEmpEpf8)})</td>
+      <td style="text-align:right;color:#ddd6fe;">(${fmt(totalEmpPension6)})</td>
+      <td style="text-align:right;color:#f87171;">(${fmt(totalDeductions)})</td>
+      <td style="text-align:right;font-size:13px;color:#a7f3d0;background:#064e3b;">${fmt(totalNet)}</td>
+      <td style="text-align:right;color:#86efac;">${fmt(totalEmployerEpf12)}</td>
+      <td style="text-align:right;color:#fde047;">${fmt(totalEmployerPension3)}</td>
+      <td style="text-align:right;color:#7dd3fc;">${fmt(totalEmployerEtf3)}</td>
+      <td style="text-align:right;font-size:12.5px;color:#bfdbfe;background:#1e3a8a;">${fmt(totalEmployerStatutory)}</td>
+      <td></td>
+      <td></td>
+    </tr>`;
+
+  // Table header according to view mode
+  const tableThead = viewMode === 'compact' ? `
+    <thead style="background:#1e1b4b;color:#fff;">
+      <tr>
+        <th style="padding:10px 8px;text-align:left;width:20%;">සේවකයා (Employee)</th>
+        <th style="padding:10px 8px;text-align:right;width:10%;">මූලික වැටුප</th>
+        <th style="padding:10px 8px;text-align:right;width:22%;">දීමනා හා අතිකාල විස්තර</th>
+        <th style="padding:10px 8px;text-align:right;width:10%;background:#312e81;color:#c7d2fe;">මුළු ඉපැයීම් (Gross)</th>
+        <th style="padding:10px 8px;text-align:right;width:12%;color:#fca5a5;">සේවක අඩු කිරීම්</th>
+        <th style="padding:10px 8px;text-align:right;width:11%;background:#064e3b;color:#a7f3d0;font-size:12px;">ශුද්ධ වැටුප (Net)</th>
+        <th style="padding:10px 8px;text-align:right;width:15%;background:#1e3a8a;color:#bfdbfe;">ආයතනික දායකත්ව</th>
+        <th style="padding:10px 8px;text-align:center;width:10%;">ක්‍රියා</th>
+      </tr>
+    </thead>` : `
+    <thead style="background:#1e1b4b;color:#fff;">
+      <tr>
+        <th style="padding:10px 8px;text-align:left;width:75px;">ID</th>
+        <th style="text-align:left;min-width:170px;">සේවක නම</th>
+        <th style="text-align:center;width:95px;">වර්ගය</th>
+        <th style="text-align:right;width:95px;">මූලික වැටුප</th>
+        <th style="text-align:right;width:105px;">අන්තර්/පැමිණීම</th>
+        <th style="text-align:right;width:80px;">දීම 01</th>
+        <th style="text-align:right;width:80px;">දීම 02</th>
+        <th style="text-align:right;width:85px;">ලේඛම්</th>
+        <th style="text-align:right;width:85px;">වර්ධකය</th>
+        <th style="text-align:right;width:85px;">අයවැය</th>
+        <th style="text-align:right;width:85px;">අතිකාල</th>
+        <th style="text-align:right;width:110px;background:#312e81;color:#c7d2fe;font-weight:800;">මුළු ඉපැයීම්</th>
+        <th style="text-align:right;width:95px;color:#fca5a5;">සේවක EPF 8%</th>
+        <th style="text-align:right;width:95px;color:#ddd6fe;">විශ්‍රාම 6%</th>
+        <th style="text-align:right;width:95px;color:#f87171;font-weight:700;">අඩුකිරීම්</th>
+        <th style="text-align:right;width:115px;background:#064e3b;color:#a7f3d0;font-weight:800;font-size:12px;">ශුද්ධ වැටුප</th>
+        <th style="text-align:right;width:95px;color:#86efac;font-weight:700;">ආ. EPF 12%</th>
+        <th style="text-align:right;width:95px;color:#fde047;font-weight:700;">ආ. විශ්‍රාම 3%</th>
+        <th style="text-align:right;width:95px;color:#7dd3fc;font-weight:700;">ආ. ETF 3%</th>
+        <th style="text-align:right;width:110px;background:#1e3a8a;color:#bfdbfe;font-weight:800;">ආයතනික එකතුව</th>
+        <th style="text-align:center;width:75px;">දිනය</th>
+        <th style="text-align:center;width:130px;">ක්‍රියා</th>
+      </tr>
+    </thead>`;
+
+  const tableColspan = viewMode === 'compact' ? 8 : 22;
+  const tableStyle = viewMode === 'compact' 
+    ? 'width:100%;border-collapse:collapse;font-size:11.5px;' 
+    : 'width:100%;border-collapse:collapse;font-size:11px;min-width:1850px;';
+  const tableWrapperStyle = viewMode === 'compact'
+    ? 'overflow-x:hidden;border-radius:12px;border:1.5px solid #cbd5e1;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.03);'
+    : 'overflow-x:auto;border-radius:12px;border:1.5px solid #cbd5e1;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.03);';
+
+  container.innerHTML = `
+  <div style="padding:16px;">
+    <!-- Header Banner -->
+    <div style="background:linear-gradient(135deg,#1e1b4b 0%,#312e81 50%,#4c1d95 100%);color:#fff;border-radius:16px;padding:20px 24px;margin-bottom:18px;box-shadow:0 8px 24px rgba(30,27,75,0.18);">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;">
+        <div>
+          <div style="font-size:20px;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:10px;">
+            <span><i class="fa-solid fa-money-check-dollar" style="color:#60a5fa;margin-right:8px;"></i>2026 වර්ෂයේ සිට මාසික වැටුප් හා EPF/ETF/විශ්‍රාම ක්‍රමවේදය</span>
+            <span style="font-size:11px;background:#10b981;color:#fff;padding:3px 10px;border-radius:999px;font-weight:700;">ස්වයංක්‍රීය පද්ධතිය</span>
+          </div>
+          <div style="font-size:12.5px;opacity:0.9;line-height:1.6;">
+            • <strong>ස්ථිර සේවකයින් (25 වන දින):</strong> මූලික + අන්තර් + දීමනා 1,2 + ලේඛම් + වර්ධක + අයවැය මත <strong>EPF 12%+8%</strong> සහ <strong>විශ්‍රාම 3%+6%</strong><br>
+            • <strong>කොන්ත්‍රාත් සේවකයින් (10 වන දින):</strong> මූලික + පැමිණීම (දින x 1000) මත <strong>EPF 12%+8%</strong> සහ <strong>ETF 3% (ආයතනයෙන්)</strong>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+          <button onclick="openPayroll2026CriteriaModal()" style="background:#ffffff20;border:1.5px solid #ffffff60;color:#fff;padding:8px 14px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;backdrop-filter:blur(4px);display:inline-flex;align-items:center;gap:6px;">
+            <i class="fa-solid fa-sliders"></i> සේවක නිර්ණායක පාලනය
+          </button>
+          <button onclick="openPayroll2026PrintModal('monthly')" style="background:#2563eb;border:none;color:#fff;padding:8px 16px;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;box-shadow:0 4px 12px rgba(37,99,235,0.3);display:inline-flex;align-items:center;gap:6px;">
+            <i class="fa-solid fa-print"></i> මාසික වාර්තාව මුද්‍රණය
+          </button>
+          <button onclick="openPayroll2026PrintModal('annual')" style="background:#7c3aed;border:none;color:#fff;padding:8px 16px;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;box-shadow:0 4px 12px rgba(124,58,237,0.3);display:inline-flex;align-items:center;gap:6px;">
+            <i class="fa-solid fa-chart-line"></i> වාර්ෂික වාර්තාව මුද්‍රණය
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Statistics (Employee Side & Employer Side) -->
+    <div style="display:grid;grid-template-columns:repeat(5, 1fr);gap:12px;margin-bottom:12px;">
+      <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;text-align:center;">
+        <div style="font-size:11px;color:#64748b;font-weight:700;margin-bottom:4px;">සේවකයින් ගණන</div>
+        <div style="font-size:17px;font-weight:800;color:#1e1b4b;">${displayEmps.length}</div>
+        <div style="font-size:10.5px;color:#94a3b8;">තෝරාගත් කාණ්ඩය</div>
+      </div>
+      <div style="background:#f5f3ff;border:1.5px solid #ddd6fe;border-radius:12px;padding:12px;text-align:center;">
+        <div style="font-size:11px;color:#6d28d9;font-weight:700;margin-bottom:4px;">මුළු ඉපැයීම් (Gross)</div>
+        <div style="font-size:17px;font-weight:800;color:#5b21b6;">Rs. ${fmt(totalGross)}</div>
+        <div style="font-size:10.5px;color:#7c3aed;">මූලික + සියලු දීමනා</div>
+      </div>
+      <div style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:12px;padding:12px;text-align:center;">
+        <div style="font-size:11px;color:#dc2626;font-weight:700;margin-bottom:4px;">සේවක අඩුකිරීම් (EPF 8% + විශ්‍රාම 6%)</div>
+        <div style="font-size:17px;font-weight:800;color:#b91c1c;">Rs. ${fmt(totalDeductions)}</div>
+        <div style="font-size:10.5px;color:#ef4444;">EPF: ${fmt(totalEmpEpf8)} | විශ්‍රාම: ${fmt(totalEmpPension6)}</div>
+      </div>
+      <div style="background:#ecfdf5;border:1.5px solid #a7f3d0;border-radius:12px;padding:12px;text-align:center;">
+        <div style="font-size:11px;color:#047857;font-weight:700;margin-bottom:4px;">මුළු ශුද්ධ වැටුප (Net Salary)</div>
+        <div style="font-size:18px;font-weight:900;color:#065f46;">Rs. ${fmt(totalNet)}</div>
+        <div style="font-size:10.5px;color:#059669;">සේවකයින්ට ගෙවිය යුතු මුදල</div>
+      </div>
+      <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:12px;text-align:center;">
+        <div style="font-size:11px;color:#1e40af;font-weight:700;margin-bottom:4px;">ආයතනික දායකත්ව එකතුව</div>
+        <div style="font-size:17px;font-weight:800;color:#1d4ed8;">Rs. ${fmt(totalEmployerStatutory)}</div>
+        <div style="font-size:10.5px;color:#2563eb;">ආයතනයෙන් දරන මුදල</div>
+      </div>
+    </div>
+
+    <!-- Employer Contribution Detail Bar -->
+    <div style="background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:12px;padding:10px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-size:12px;">
+      <div style="font-weight:800;color:#1e3a8a;display:flex;align-items:center;gap:6px;">
+        <i class="fa-solid fa-building-columns"></i> ආයතනයෙන් දරන ව්‍යවස්ථාපිත දායකත්ව (Employer Contributions):
+      </div>
+      <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;">
+        <div><span style="color:#64748b;">ආයතනික EPF 12%:</span> <strong style="color:#16a34a;font-size:13px;">Rs. ${fmt(totalEmployerEpf12)}</strong></div>
+        <div><span style="color:#64748b;">ආයතනික විශ්‍රාම 3% (ස්ථිර):</span> <strong style="color:#d97706;font-size:13px;">Rs. ${fmt(totalEmployerPension3)}</strong></div>
+        <div><span style="color:#64748b;">ආයතනික ETF 3% (කොන්ත්‍රාත්):</span> <strong style="color:#0284c7;font-size:13px;">Rs. ${fmt(totalEmployerEtf3)}</strong></div>
+        <div style="border-left:1px solid #cbd5e1;padding-left:14px;"><span style="color:#64748b;">ආයතනික මුළු පිරිවැය (Cost):</span> <strong style="color:#4338ca;font-size:13.5px;">Rs. ${fmt(totalOverallCost)}</strong></div>
+      </div>
+    </div>
+
+    <!-- Controls Row -->
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px;background:#fff;padding:12px 16px;border-radius:12px;border:1px solid #e2e8f0;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <label style="font-size:12px;font-weight:700;color:#475569;">අදාළ මාසය:</label>
+        <select id="p26-month-select" class="form-input-pill" style="width:190px;font-size:12.5px;" onchange="onPayroll2026MonthChange(this.value)">
+          ${monthOpts}
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <label style="font-size:12px;font-weight:700;color:#475569;">සේවක වර්ගය:</label>
+        <select id="p26-type-filter" class="form-input-pill" style="width:170px;font-size:12.5px;" onchange="onPayroll2026TypeChange(this.value)">
+          <option value="all" ${selType==='all'?'selected':''}>සියලු සේවකයින්</option>
+          <option value="perm" ${selType==='perm'?'selected':''}>ස්ථිර සේවකයින් (25)</option>
+          <option value="contract" ${selType==='contract'?'selected':''}>කොන්ත්‍රාත් සේවකයින් (10)</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;background:#f1f5f9;border-radius:8px;padding:3px;border:1px solid #cbd5e1;margin-left:auto;">
+        <button type="button" onclick="togglePayroll2026ViewMode('compact')" style="border:none;background:${viewMode==='compact'?'#1e1b4b':'transparent'};color:${viewMode==='compact'?'#fff':'#64748b'};padding:6px 12px;border-radius:6px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all 0.15s;" title="තිරයට ගැළපෙන සම්පිණ්ඩිත පෙනුම (Scroll නොමැත)">
+          <i class="fa-solid fa-table-columns"></i> සම්පිණ්ඩිත (Fit Screen)
+        </button>
+        <button type="button" onclick="togglePayroll2026ViewMode('full')" style="border:none;background:${viewMode==='full'?'#1e1b4b':'transparent'};color:${viewMode==='full'?'#fff':'#64748b'};padding:6px 12px;border-radius:6px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all 0.15s;" title="සියලු තීරු 22 සහිත විස්තීරණ ලේඛනය">
+          <i class="fa-solid fa-table"></i> විස්තීරණ (22 Cols)
+        </button>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="openAddPayroll2026EntryModal()" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
+          <i class="fa-solid fa-circle-plus"></i> අතිකාල / වෙනස්කම් ඇතුළත් කිරීම
+        </button>
+      </div>
+    </div>
+
+    <!-- Official Payroll Table -->
+    <div style="${tableWrapperStyle}">
+      <table style="${tableStyle}">
+        ${tableThead}
+        <tbody id="p26-tbody">
+          ${rowsHtml || `<tr><td colspan="${tableColspan}" style="text-align:center;padding:30px;color:#94a3b8;font-size:13px;">සේවකයින් කිසිවෙකු ලියාපදිංචි කර නොමැත.</td></tr>`}
+        </tbody>
+        <tfoot>${totalRow}</tfoot>
+      </table>
+    </div>
+  </div>`;
+}
+
+function isContractEmp2026(emp) {
+  const cfg = appData.payroll2026Configs?.[emp.id];
+  if (cfg) return cfg.empType === 'contract';
+  return (emp.employmentType||'').toLowerCase().includes('contract');
+}
+
+function fmt(v) {
+  if (isNaN(v) || v === null || v === undefined) return '0.00';
+  return parseFloat(v).toLocaleString('en-LK', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+// ---- Auto Generate ----
+function autoGeneratePayroll2026Month() {
+  const container = document.getElementById('view-payroll-2026');
+  const selMonth = window.currentPayroll2026Month || container?.querySelector('#p26-month-select')?.value;
+  if (!selMonth) { alert('කරුණාකර මාසය තෝරන්න.'); return; }
+  if (!confirm(`${selMonth} මාස සඳහා සියලු සේවකයින්ගේ වැටුප් ස්වයංක්‍රීයව ගණනය කරන්නද?`)) return;
+
+  const emps = appData.employees || [];
+  emps.forEach(emp => {
+    const cfg = getEmpSalaryConfig2026(emp.id, selMonth);
+    const existing = (appData.payroll2026History||[]).find(r => r.empId===emp.id && r.month===selMonth);
+    const overrides = existing ? {ot: existing.ot||0, attendedDays: existing.attendedDays||0} : {};
+    const r = calculatePayroll2026ForEmp(emp, cfg, overrides);
+    const rec = {
+      id: `P26-${emp.id}-${selMonth}`,
+      empId: emp.id,
+      empName: emp.fullName || emp.callingName,
+      month: selMonth,
+      empType: cfg.empType,
+      ot: overrides.ot||0,
+      attendedDays: overrides.attendedDays||0,
+      ...r,
+      createdAt: new Date().toISOString()
+    };
+    // Update or insert
+    const idx = (appData.payroll2026History||[]).findIndex(r => r.empId===emp.id && r.month===selMonth);
+    if (!appData.payroll2026History) appData.payroll2026History = [];
+    if (idx >= 0) appData.payroll2026History[idx] = rec;
+    else appData.payroll2026History.push(rec);
+
+    // Also push into legacy payrollHistory for EPF tracker compatibility
+    const legacyIdx = (appData.payrollHistory||[]).findIndex(x => x.empId===emp.id && x.month===selMonth);
+    const legacy = {
+      id: rec.id, empId: emp.id,
+      empName: rec.empName, month: selMonth,
+      gross: r.gross, net: r.netSalary,
+      epf20: r.epfTotal20||0, employer12: r.empEpf12, employee8: r.empEpf8,
+      pension3: r.empPension3||0, pension6: r.empPension6||0, etf3: r.etf3||0,
+      basic: r.basic, createdAt: rec.createdAt
+    };
+    if (!appData.payrollHistory) appData.payrollHistory = [];
+    if (legacyIdx >= 0) appData.payrollHistory[legacyIdx] = legacy;
+    else appData.payrollHistory.push(legacy);
+  });
+
+  persistData();
+  renderPayroll2026Module();
+  alert(`${selMonth} — සේවකයින් ${emps.length} දෙනාගේ වැටුප් සාර්ථකව ගණනය කෙරිණ!`);
+}
+
+// ---- Criteria Modal ----
+function openPayroll2026CriteriaModal(empId, month) {
+  if (!empId && appData.employees && appData.employees.length > 0) {
+    empId = appData.employees[0].id;
+  }
+  const emp = (appData.employees||[]).find(e => e.id===empId);
+  if (!emp) return;
+
+  const container = document.getElementById('view-payroll-2026');
+  if (!month) {
+    month = window.currentPayroll2026Month ||
+            container?.querySelector('#p26-month-select')?.value ||
+            '2026-01';
+  }
+
+  const modal = document.getElementById('modal-payroll2026-criteria');
+  if (!modal) { alert('Criteria modal not found in HTML.'); return; }
+
+  // Populate month options for effective month dropdown
+  const monthSel = document.getElementById('p2026-cfg-effective-month');
+  if (monthSel) {
+    const monthNames = ['ජනවාරි','පෙබරවාරි','මාර්තු','අප්‍රේල්','මැයි','ජූනි',
+                        'ජූලි','අගෝස්තු','සැප්තැම්බර්','ඔක්තෝබර්','නොවැම්බර්','දෙසැම්බර්'];
+    let mOpts = '';
+    const nowY = new Date().getFullYear();
+    for (let y = 2026; y <= Math.max(2028, nowY + 1); y++) {
+      for (let m = 1; m <= 12; m++) {
+        const ym = `${y}-${String(m).padStart(2,'0')}`;
+        const sel = ym === month ? 'selected' : '';
+        mOpts += `<option value="${ym}" ${sel}>${y} ${monthNames[m-1]} සිට</option>`;
+      }
+    }
+    monthSel.innerHTML = mOpts;
+    monthSel.value = month;
+  }
+
+  // Populate employee dropdown (actual HTML id: p2026-cfg-emp)
+  const empSel = document.getElementById('p2026-cfg-emp');
+  if (empSel) {
+    empSel.innerHTML = (appData.employees||[]).map(e =>
+      `<option value="${e.id}" ${e.id===empId?'selected':''}>${e.fullName||e.callingName} (${e.id})</option>`
+    ).join('');
+    empSel.value = empId;
+  }
+
+  loadPayroll2026CfgForm(empId, month);
+  modal.classList.add('active');
+}
+
+function loadPayroll2026CfgForm(empId, month) {
+  if (!empId) empId = document.getElementById('p2026-cfg-emp')?.value;
+  if (!month) month = document.getElementById('p2026-cfg-effective-month')?.value || window.currentPayroll2026Month || '2026-01';
+  if (!empId) return;
+
+  const cfg = getEmpSalaryConfig2026(empId, month);
+
+  // Set type select
+  const typeSel = document.getElementById('p2026-cfg-type');
+  if (typeSel) typeSel.value = cfg.empType === 'contract' ? 'CONTRACT' : 'PERMANENT';
+
+  // Set basic salary
+  const basicInp = document.getElementById('p2026-cfg-basic');
+  if (basicInp) basicInp.value = cfg.basicSalary || 0;
+
+  // Fill panel values and toggle panels
+  _p26FillPanelValues(cfg);
+  _p26TogglePanels(cfg.empType === 'contract');
+  updatePayroll2026LivePreview();
+}
+
+function onPayroll2026CfgMonthChange() {
+  const empId = document.getElementById('p2026-cfg-emp')?.value;
+  const month = document.getElementById('p2026-cfg-effective-month')?.value;
+  loadPayroll2026CfgForm(empId, month);
+}
+
+function onPayroll2026CfgEmpChange() {
+  const empId = document.getElementById('p2026-cfg-emp')?.value;
+  const month = document.getElementById('p2026-cfg-effective-month')?.value;
+  loadPayroll2026CfgForm(empId, month);
+}
+
+function _p26FillPanelValues(cfg) {
+  const isContract = cfg.empType === 'contract';
+  const sv = (id, v) => { const el=document.getElementById(id); if(el) el.value=v||0; };
+  const sc = (id, v) => { const el=document.getElementById(id); if(el) el.checked=!!v; };
+  if (!isContract) {
+    sc('p2026-cfg-chk-allowance1', cfg.perm_allowance1_enabled); sv('p2026-cfg-val-allowance1', cfg.perm_allowance1);
+    sc('p2026-cfg-chk-allowance2', cfg.perm_allowance2_enabled); sv('p2026-cfg-val-allowance2', cfg.perm_allowance2);
+    sc('p2026-cfg-chk-interim',    cfg.perm_interim_enabled);    sv('p2026-cfg-val-interim',    cfg.perm_interim);
+    sc('p2026-cfg-chk-sec',        cfg.perm_secAllowance_enabled);sv('p2026-cfg-val-sec',       cfg.perm_secAllowance);
+    sc('p2026-cfg-chk-inc',        cfg.perm_increment_enabled);  sv('p2026-cfg-val-inc',        cfg.perm_increment);
+    sc('p2026-cfg-chk-budget',     cfg.perm_budget_enabled);     sv('p2026-cfg-val-budget',     cfg.perm_budget);
+  } else {
+    sc('p2026-cfg-chk-att',   true);                               sv('p2026-cfg-val-attrate', cfg.con_dailyRate||1000);
+    sc('p2026-cfg-chk-callw1',cfg.con_allowance1_enabled);         sv('p2026-cfg-val-callw1',  cfg.con_allowance1);
+    sc('p2026-cfg-chk-callw2',cfg.con_allowance2_enabled);         sv('p2026-cfg-val-callw2',  cfg.con_allowance2);
+    sv('p2026-cfg-val-attdays', cfg.con_defaultDays||25);
+  }
+}
+
+function _p26TogglePanels(isContract) {
+  const permPanel = document.getElementById('p2026-cfg-perm-panel');
+  const conPanel  = document.getElementById('p2026-cfg-contract-panel');
+  if (permPanel) permPanel.style.display = isContract ? 'none' : 'block';
+  if (conPanel)  conPanel.style.display  = isContract ? 'block' : 'none';
+}
+
+function _renderP26CfgForm(modal, empId) {
+  // Legacy wrapper — now delegates to the proper HTML-aware functions
+  const cfg = getEmpSalaryConfig2026(empId);
+  const typeSel = document.getElementById('p2026-cfg-type');
+  if (typeSel) typeSel.value = cfg.empType === 'contract' ? 'CONTRACT' : 'PERMANENT';
+  const basicInp = document.getElementById('p2026-cfg-basic');
+  if (basicInp) basicInp.value = cfg.basicSalary || 0;
+  _p26FillPanelValues(cfg);
+  _p26TogglePanels(cfg.empType === 'contract');
+  updatePayroll2026LivePreview();
+}
+
+function _p26CfgRow(key, label, enabled, amount) {
+  return `<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+    <input type="checkbox" id="p26cfg-${key}-enabled" ${enabled?'checked':''} onchange="updatePayroll2026LivePreview()" style="accent-color:#6d28d9;width:16px;height:16px;">
+    <label for="p26cfg-${key}-enabled" style="font-size:12px;font-weight:600;min-width:200px;">${label}</label>
+    <input type="number" step="0.01" id="p26cfg-${key}" class="form-input-pill" value="${amount||0}" style="width:130px;" oninput="updatePayroll2026LivePreview()">
+  </div>`;
+}
+
+function _p26CfgRowNoAmt(key, label, enabled) {
+  return `<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+    <input type="checkbox" id="p26cfg-${key}-enabled" ${enabled?'checked':''} onchange="updatePayroll2026LivePreview()" style="accent-color:#6d28d9;width:16px;height:16px;">
+    <label for="p26cfg-${key}-enabled" style="font-size:12px;font-weight:600;">${label}</label>
+  </div>`;
+}
+
+function onPayroll2026CfgTypeChange() {
+  const typeSel = document.getElementById('p2026-cfg-type');
+  const isContract = typeSel?.value === 'CONTRACT';
+  _p26TogglePanels(isContract);
+  updatePayroll2026LivePreview();
+}
+
+function updatePayroll2026LivePreview() {
+  const empId = document.getElementById('p2026-cfg-emp')?.value;
+  const cfg = _readP26CfgFromForm();
+  if (!cfg) return;
+  const r = calculatePayroll2026ForEmp({id: empId||''}, cfg, {});
+  // Update live preview using existing HTML elements
+  const setEl = (id, val) => { const el=document.getElementById(id); if(el) el.textContent='රු. '+fmt(val); };
+  setEl('p2026-prev-gross', r.gross);
+  setEl('p2026-prev-epf8',  r.empEpf8);
+  setEl('p2026-prev-epf12', r.empEpf12);
+  setEl('p2026-prev-net',   r.netSalary);
+  const extraLbl = document.getElementById('p2026-prev-extra-lbl');
+  const extraVal = document.getElementById('p2026-prev-extra-val');
+  if (r.isContract) {
+    if (extraLbl) extraLbl.textContent = 'ETF 3% (ආ.):';
+    if (extraVal) extraVal.textContent = 'රු. '+fmt(r.etf3||0);
+  } else {
+    if (extraLbl) extraLbl.textContent = 'සේවක විශ්‍රාම 6%:';
+    if (extraVal) extraVal.textContent = 'රු. '+fmt(r.empPension6||0);
+  }
+}
+
+function _readP26CfgFromForm() {
+  const typeSel = document.getElementById('p2026-cfg-type');
+  const isContract = typeSel?.value === 'CONTRACT';
+  const basicSalary = parseFloat(document.getElementById('p2026-cfg-basic')?.value)||0;
+  const G = id => document.getElementById(id);
+  const cfg = { empType: isContract ? 'contract' : 'permanent', basicSalary };
+  if (!isContract) {
+    cfg.perm_allowance1_enabled = G('p2026-cfg-chk-allowance1')?.checked ?? false;
+    cfg.perm_allowance1 = parseFloat(G('p2026-cfg-val-allowance1')?.value)||0;
+    cfg.perm_allowance2_enabled = G('p2026-cfg-chk-allowance2')?.checked ?? false;
+    cfg.perm_allowance2 = parseFloat(G('p2026-cfg-val-allowance2')?.value)||0;
+    cfg.perm_interim_enabled = G('p2026-cfg-chk-interim')?.checked ?? false;
+    cfg.perm_interim = parseFloat(G('p2026-cfg-val-interim')?.value)||0;
+    cfg.perm_secAllowance_enabled = G('p2026-cfg-chk-sec')?.checked ?? false;
+    cfg.perm_secAllowance = parseFloat(G('p2026-cfg-val-sec')?.value)||0;
+    cfg.perm_increment_enabled = G('p2026-cfg-chk-inc')?.checked ?? false;
+    cfg.perm_increment = parseFloat(G('p2026-cfg-val-inc')?.value)||0;
+    cfg.perm_budget_enabled = G('p2026-cfg-chk-budget')?.checked ?? false;
+    cfg.perm_budget = parseFloat(G('p2026-cfg-val-budget')?.value)||0;
+    cfg.perm_ot_enabled = true;
+  } else {
+    cfg.con_allowance1_enabled = G('p2026-cfg-chk-callw1')?.checked ?? false;
+    cfg.con_allowance1 = parseFloat(G('p2026-cfg-val-callw1')?.value)||0;
+    cfg.con_allowance2_enabled = G('p2026-cfg-chk-callw2')?.checked ?? false;
+    cfg.con_allowance2 = parseFloat(G('p2026-cfg-val-callw2')?.value)||0;
+    cfg.con_dailyRate = parseFloat(G('p2026-cfg-val-attrate')?.value)||1000;
+    cfg.con_defaultDays = parseFloat(G('p2026-cfg-val-attdays')?.value)||25;
+    cfg.con_ot_enabled = true;
+  }
+  return cfg;
+}
+
+function savePayroll2026Criteria(e) {
+  e.preventDefault();
+  const empId = document.getElementById('p2026-cfg-emp')?.value;
+  if (!empId) { alert('සේවකයෙකු තෝරන්න!'); return; }
+  const effectiveMonth = document.getElementById('p2026-cfg-effective-month')?.value ||
+                         window.currentPayroll2026Month || '2026-01';
+  const cfg = _readP26CfgFromForm();
+  if (!appData.payroll2026Configs) appData.payroll2026Configs = {};
+  if (!appData.payroll2026Configs[empId]) getEmpSalaryConfig2026(empId);
+  
+  const root = appData.payroll2026Configs[empId];
+  if (!root.revisions) {
+    const { revisions, ...baseProps } = root;
+    root.revisions = [{
+      effectiveMonth: '2026-01',
+      ...baseProps
+    }];
+  }
+
+  const newRev = { ...cfg, effectiveMonth };
+  const revIndex = root.revisions.findIndex(r => r.effectiveMonth === effectiveMonth);
+  if (revIndex >= 0) {
+    root.revisions[revIndex] = { ...root.revisions[revIndex], ...newRev };
+  } else {
+    root.revisions.push(newRev);
+  }
+
+  root.revisions.sort((a,b) => (a.effectiveMonth||'').localeCompare(b.effectiveMonth||''));
+
+  // Update root with latest revision
+  const latestRev = root.revisions[root.revisions.length - 1];
+  Object.assign(root, latestRev);
+
+  persistData();
+  document.getElementById('modal-payroll2026-criteria')?.classList.remove('active');
+  renderPayroll2026Module();
+  alert(`සේවක වැටුප් නිර්ණායක (${effectiveMonth} සිට වලංගු වන පරිදි) සාර්ථකව සුරකින ලදී!`);
+}
+
+// ---- Monthly Entry Modal ----
+function openAddPayroll2026EntryModal(empId, month) {
+  const modal = document.getElementById('modal-payroll2026-entry');
+  if (!modal) { alert('Entry modal not found.'); return; }
+
+  const container = document.getElementById('view-payroll-2026');
+  if (!month) {
+    // Always use the globally tracked month (from main table dropdown)
+    month = window.currentPayroll2026Month ||
+            container?.querySelector('#p26-month-select')?.value ||
+            `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
+  }
+  if (!empId && appData.employees && appData.employees.length > 0) {
+    empId = appData.employees[0].id;
+  }
+
+  // Populate employee dropdown — actual HTML id: p2026-entry-emp
+  const empSel = document.getElementById('p2026-entry-emp');
+  if (empSel) {
+    empSel.innerHTML = (appData.employees||[]).map(e =>
+      `<option value="${e.id}" ${e.id===empId?'selected':''}>${e.fullName||e.callingName} (${e.id})</option>`
+    ).join('');
+    empSel.value = empId;
+  }
+
+  // Set month — actual HTML id: p2026-entry-month
+  const monthSel = document.getElementById('p2026-entry-month');
+  if (monthSel) monthSel.value = month;
+
+  // Auto-set date — smart pay date with weekend skip
+  const cfg = getEmpSalaryConfig2026(empId, month);
+  const isContract = cfg.empType === 'contract';
+  const [yr, mo] = (month||'2026-01').split('-');
+  const payDay = isContract ? 10 : 25;
+  // If pay day falls on Saturday(6) → Monday(+2), Sunday(0) → Monday(+1)
+  let payDate = new Date(parseInt(yr), parseInt(mo)-1, payDay);
+  const dow = payDate.getDay();
+  if (dow === 6) payDate.setDate(payDay + 2); // Saturday → Monday
+  else if (dow === 0) payDate.setDate(payDay + 1); // Sunday → Monday
+  const payDateStr = payDate.toISOString().slice(0,10);
+  const dateEl = document.getElementById('p2026-entry-date');
+  if (dateEl) dateEl.value = payDateStr;
+
+  // Show/hide attended-days field
+  const attBox = document.getElementById('p2026-entry-attdays-container');
+  if (attBox) attBox.style.display = isContract ? 'block' : 'none';
+
+  // Update type badge
+  const badge = document.getElementById('p2026-entry-type-badge');
+  if (badge) {
+    badge.textContent = isContract ? 'කොන්ත්‍රාත්' : 'ස්ථිර';
+    badge.style.background = isContract ? '#d97706' : '#7c3aed';
+  }
+
+  // Load saved values
+  const saved = (appData.payroll2026History||[]).find(r => r.empId===empId && r.month===month);
+  const otInp   = document.getElementById('p2026-entry-ot');
+  const daysInp = document.getElementById('p2026-entry-attdays');
+  if (otInp)   otInp.value   = saved?.ot || 0;
+  if (daysInp) daysInp.value = saved?.attendedDays || cfg.con_defaultDays || 25;
+  if (saved?.date && dateEl) dateEl.value = saved.date;
+
+  recalcPayroll2026EntryModal();
+  modal.classList.add('active');
+}
+
+function onPayroll2026EntryEmpChange() {
+  const empId = document.getElementById('p2026-entry-emp')?.value;
+  const month = document.getElementById('p2026-entry-month')?.value;
+  if (!empId) return;
+
+  const cfg = getEmpSalaryConfig2026(empId, month);
+  const isContract = cfg.empType === 'contract';
+
+  // Load saved values if exists
+  const saved = (appData.payroll2026History || []).find(r => r.empId === empId && r.month === month);
+  const otInp   = document.getElementById('p2026-entry-ot');
+  const daysInp = document.getElementById('p2026-entry-attdays');
+  const dateEl  = document.getElementById('p2026-entry-date');
+
+  if (otInp)   otInp.value   = saved?.ot || 0;
+  if (daysInp) daysInp.value = saved?.attendedDays || cfg.con_defaultDays || 25;
+
+  if (saved?.date && dateEl) {
+    dateEl.value = saved.date;
+  } else if (dateEl && month) {
+    const [yr, mo] = month.split('-');
+    const payDay = isContract ? 10 : 25;
+    let payDate = new Date(parseInt(yr), parseInt(mo) - 1, payDay);
+    const dow = payDate.getDay();
+    if (dow === 6) payDate.setDate(payDay + 2); // Saturday -> Monday
+    else if (dow === 0) payDate.setDate(payDay + 1); // Sunday -> Monday
+    dateEl.value = payDate.toISOString().slice(0, 10);
+  }
+
+  // Show/hide attended-days field
+  const attBox = document.getElementById('p2026-entry-attdays-container');
+  if (attBox) attBox.style.display = isContract ? 'block' : 'none';
+
+  // Update type badge
+  const badge = document.getElementById('p2026-entry-type-badge');
+  if (badge) {
+    badge.textContent = isContract ? 'කොන්ත්‍රාත්' : 'ස්ථිර';
+    badge.style.background = isContract ? '#d97706' : '#7c3aed';
+  }
+
+  recalcPayroll2026EntryModal();
+}
+
+function recalcPayroll2026EntryModal() {
+  const empId = document.getElementById('p2026-entry-emp')?.value;
+  const month = document.getElementById('p2026-entry-month')?.value;
+  if (!empId) return;
+  const cfg = getEmpSalaryConfig2026(empId, month);
+  const ot   = parseFloat(document.getElementById('p2026-entry-ot')?.value)||0;
+  const days = parseFloat(document.getElementById('p2026-entry-attdays')?.value)||0;
+  const r = calculatePayroll2026ForEmp({id:empId}, cfg, {ot, attendedDays: days});
+
+  // Show/hide attended-days field based on type
+  const attBoxR = document.getElementById('p2026-entry-attdays-container');
+  if (attBoxR) attBoxR.style.display = cfg.empType === 'contract' ? 'block' : 'none';
+
+  // Update attendance label
+  const attLbl = document.getElementById('p2026-entry-attamount-lbl');
+  if (attLbl) attLbl.textContent = `= රු. ${fmt(r.attendanceAllo)}`;
+
+  const setEl = (id, val) => { const el=document.getElementById(id); if(el) el.textContent='රු. '+fmt(val); };
+  setEl('p2026-modal-basic',     r.basic);
+  setEl('p2026-modal-allowances', r.isContract ? r.attendanceAllo : (r.allow1+r.allow2+(r.interim||0)+(r.sec||0)+(r.incr||0)+(r.budget||0)));
+  setEl('p2026-modal-ot',        r.ot);
+  setEl('p2026-modal-gross',     r.gross);
+  setEl('p2026-modal-epfbase',   r.epfBase);
+  setEl('p2026-modal-epf12',     r.empEpf12);
+  setEl('p2026-modal-epf8',      r.empEpf8);
+
+  const extraLbl = document.getElementById('p2026-modal-extra-lbl');
+  const extraEl  = document.getElementById('p2026-modal-extra');
+  if (r.isContract) {
+    if (extraLbl) extraLbl.textContent = 'ETF 3% (ආ.):';
+    if (extraEl)  extraEl.textContent  = 'රු. '+fmt(r.etf3||0);
+  } else {
+    if (extraLbl) extraLbl.textContent = 'විශ්‍රාම 6% (සේවක):';
+    if (extraEl)  extraEl.textContent  = 'රු. '+fmt(r.empPension6||0);
+  }
+
+  const netEl = document.getElementById('p2026-modal-net');
+  if (netEl) netEl.textContent = 'රු. '+fmt(r.netSalary);
+}
+
+function savePayroll2026MonthlyEntry(e) {
+  e.preventDefault();
+  const empId = document.getElementById('p2026-entry-emp')?.value;
+  const month = document.getElementById('p2026-entry-month')?.value;
+  const payDateVal = document.getElementById('p2026-entry-date')?.value || '';
+  if (!empId || !month) return;
+  const cfg = getEmpSalaryConfig2026(empId, month);
+  const ot   = parseFloat(document.getElementById('p2026-entry-ot')?.value)||0;
+  const days = parseFloat(document.getElementById('p2026-entry-attdays')?.value)||0;
+  const r = calculatePayroll2026ForEmp({id:empId}, cfg, {ot, attendedDays: days});
+  const emp = (appData.employees||[]).find(e=>e.id===empId);
+  const rec = {
+    id: `P26-${empId}-${month}`, empId, month,
+    date: payDateVal,
+    empName: emp?.fullName||emp?.callingName||empId,
+    empType: cfg.empType, ot, attendedDays: days, ...r,
+    createdAt: new Date().toISOString()
+  };
+  if (!appData.payroll2026History) appData.payroll2026History = [];
+  const idx = appData.payroll2026History.findIndex(x => x.empId===empId && x.month===month);
+  if (idx>=0) appData.payroll2026History[idx] = rec;
+  else appData.payroll2026History.push(rec);
+
+  // Legacy sync for EPF tracker
+  if (!appData.payrollHistory) appData.payrollHistory = [];
+  const li = appData.payrollHistory.findIndex(x => x.empId===empId && x.month===month);
+  const legacy = { id: rec.id, empId, empName: rec.empName, month,
+    gross: r.gross, net: r.netSalary, epf20: r.epfTotal20||0,
+    employer12: r.empEpf12, employee8: r.empEpf8,
+    pension3: r.empPension3||0, pension6: r.empPension6||0, etf3: r.etf3||0,
+    basic: r.basic, createdAt: rec.createdAt };
+  if (li>=0) appData.payrollHistory[li] = legacy;
+  else appData.payrollHistory.push(legacy);
+
+  persistData();
+  document.getElementById('modal-payroll2026-entry')?.classList.remove('active');
+  renderPayroll2026Module();
+  alert(`${emp?.callingName||empId} — ${month} දැනුම්පත් දත්ත සාර්ථකව සුරකින ලදී!`);
+}
+
+// ---- Official 2026 Pay Sheet (Payslip) View ----
+function viewPayroll2026Payslip(empId, month) {
+  const container = document.getElementById('view-payroll-2026');
+  const selMonth = month || window.currentPayroll2026Month || container?.querySelector('#p26-month-select')?.value;
+  const emp = (appData.employees||[]).find(e=>e.id===empId);
+  if (!emp) return;
+  const cfg = getEmpSalaryConfig2026(empId, selMonth);
+  const saved = (appData.payroll2026History||[]).find(r=>r.empId===empId && r.month===selMonth);
+  const overrides = saved ? {ot:saved.ot||0, attendedDays:saved.attendedDays||0} : {};
+  const calculated = calculatePayroll2026ForEmp(emp, cfg, overrides);
+  const r = (saved && saved.basic !== undefined && saved.netSalary !== undefined)
+    ? { ...calculated, ...saved }
+    : calculated;
+  const mn = ['','ජනවාරි','පෙබරවාරි','මාර්තු','අප්‍රේල්','මැයි','ජූනි','ජූලි','අගෝස්තු','සැප්තැම්බර්','ඔක්තෝබර්','නොවැම්බර්','දෙසැම්බර්'];
+  const [yr,mo] = selMonth.split('-');
+  const monthLabel = `${yr} ${mn[parseInt(mo)]}`;
+
+  const modal = document.getElementById('modal-payroll2026-payslip');
+  const body  = modal?.querySelector('#payroll2026-payslip-content');
+  if (!modal||!body) { alert('Payslip modal not found.'); return; }
+
+  // Earnings Rows
+  const earningsRows = r.isContract ? `
+    <tr><td style="padding:6px 0;border-bottom:1px solid #f1f5f9;">මූලික වැටුප (Basic Salary)</td><td style="padding:6px 0;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:700;">${fmt(r.basic)}</td></tr>
+    <tr><td style="padding:6px 0;border-bottom:1px solid #f1f5f9;">පැමිණීමේ දීමනාව (${r.attendedDays} x රු. ${fmt(r.dailyRate)})</td><td style="padding:6px 0;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:700;color:#0f766e;">${fmt(r.attendanceAllo)}</td></tr>
+    ${r.allow1 ? `<tr><td style="padding:6px 0;border-bottom:1px solid #f1f5f9;">දීමනාව 01</td><td style="padding:6px 0;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:700;">${fmt(r.allow1)}</td></tr>` : ''}
+    ${r.allow2 ? `<tr><td style="padding:6px 0;border-bottom:1px solid #f1f5f9;">දීමනාව 02</td><td style="padding:6px 0;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:700;">${fmt(r.allow2)}</td></tr>` : ''}
+    ${r.ot ? `<tr><td style="padding:6px 0;border-bottom:1px solid #f1f5f9;">අතිකාල දීමනාව (Overtime)</td><td style="padding:6px 0;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:700;color:#b45309;">${fmt(r.ot)}</td></tr>` : ''}
+  ` : `
+    <tr><td style="padding:5px 0;border-bottom:1px solid #f1f5f9;">මූලික වැටුප (Basic Salary)</td><td style="padding:5px 0;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:700;">${fmt(r.basic)}</td></tr>
+    ${r.interim  ? `<tr><td style="padding:5px 0;border-bottom:1px solid #f1f5f9;">අන්තර් දීමනාව</td><td style="padding:5px 0;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:700;color:#0f766e;">${fmt(r.interim)}</td></tr>` : ''}
+    ${r.allow1   ? `<tr><td style="padding:5px 0;border-bottom:1px solid #f1f5f9;">දීමනාව 01</td><td style="padding:5px 0;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:700;">${fmt(r.allow1)}</td></tr>` : ''}
+    ${r.allow2   ? `<tr><td style="padding:5px 0;border-bottom:1px solid #f1f5f9;">දීමනාව 02</td><td style="padding:5px 0;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:700;">${fmt(r.allow2)}</td></tr>` : ''}
+    ${r.sec      ? `<tr><td style="padding:5px 0;border-bottom:1px solid #f1f5f9;">ලේඛම් දීමනාව</td><td style="padding:5px 0;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:700;">${fmt(r.sec)}</td></tr>` : ''}
+    ${r.incr     ? `<tr><td style="padding:5px 0;border-bottom:1px solid #f1f5f9;">වැටුප් වර්ධකය</td><td style="padding:5px 0;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:700;">${fmt(r.incr)}</td></tr>` : ''}
+    ${r.budget   ? `<tr><td style="padding:5px 0;border-bottom:1px solid #f1f5f9;">අයවැය දීමනාව</td><td style="padding:5px 0;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:700;">${fmt(r.budget)}</td></tr>` : ''}
+    ${r.ot       ? `<tr><td style="padding:5px 0;border-bottom:1px solid #f1f5f9;">අතිකාල දීමනාව (Overtime)</td><td style="padding:5px 0;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:700;color:#b45309;">${fmt(r.ot)}</td></tr>` : ''}
+  `;
+
+  // Deductions Rows
+  const deductRows = r.isContract ? `
+    <tr><td style="padding:6px 0;border-bottom:1px solid #fef2f2;color:#dc2626;">සේවක අර්ථසාධක (EPF 8%)</td><td style="padding:6px 0;border-bottom:1px solid #fef2f2;text-align:right;color:#dc2626;font-weight:700;">(${fmt(r.empEpf8)})</td></tr>
+  ` : `
+    <tr><td style="padding:6px 0;border-bottom:1px solid #fef2f2;color:#dc2626;">සේවක අර්ථසාධක (EPF 8%)</td><td style="padding:6px 0;border-bottom:1px solid #fef2f2;text-align:right;color:#dc2626;font-weight:700;">(${fmt(r.empEpf8)})</td></tr>
+    <tr><td style="padding:6px 0;border-bottom:1px solid #fef2f2;color:#7c3aed;">සේවක විශ්‍රාම වැටුප් (Pension 6%)</td><td style="padding:6px 0;border-bottom:1px solid #fef2f2;text-align:right;color:#7c3aed;font-weight:700;">(${fmt(r.empPension6)})</td></tr>
+  `;
+
+  // Employer Contributions Section (As requested by user: "ayathanen etf epf wishrama wetup wage ayathen dana ewath penwanna ona")
+  const employerStatutoryTotal = r.empEpf12 + (r.empPension3 || 0) + (r.etf3 || 0);
+  const totalCostToSociety = r.gross + employerStatutoryTotal;
+
+  const employerRows = r.isContract ? `
+    <tr><td style="padding:5px 0;border-bottom:1px solid #eff6ff;color:#166534;"><i class="fa-solid fa-check" style="font-size:10px;margin-right:4px;"></i> ආයතනික අර්ථසාධක (EPF 12%)</td><td style="padding:5px 0;border-bottom:1px solid #eff6ff;text-align:right;font-weight:800;color:#166534;">රු. ${fmt(r.empEpf12)}</td></tr>
+    <tr><td style="padding:5px 0;border-bottom:1px solid #eff6ff;color:#0284c7;"><i class="fa-solid fa-check" style="font-size:10px;margin-right:4px;"></i> ආයතනික සේවක භාරකාර (ETF 3%)</td><td style="padding:5px 0;border-bottom:1px solid #eff6ff;text-align:right;font-weight:800;color:#0284c7;">රු. ${fmt(r.etf3)}</td></tr>
+    <tr><td style="padding:5px 0;color:#64748b;">විශ්‍රාම වැටුප් (Pension)</td><td style="padding:5px 0;text-align:right;color:#94a3b8;">අදාළ නොවේ</td></tr>
+  ` : `
+    <tr><td style="padding:5px 0;border-bottom:1px solid #eff6ff;color:#166534;"><i class="fa-solid fa-check" style="font-size:10px;margin-right:4px;"></i> ආයතනික අර්ථසාධක (EPF 12%)</td><td style="padding:5px 0;border-bottom:1px solid #eff6ff;text-align:right;font-weight:800;color:#166534;">රු. ${fmt(r.empEpf12)}</td></tr>
+    <tr><td style="padding:5px 0;border-bottom:1px solid #eff6ff;color:#d97706;"><i class="fa-solid fa-check" style="font-size:10px;margin-right:4px;"></i> ආයතනික විශ්‍රාම වැටුප් (Pension 3%)</td><td style="padding:5px 0;border-bottom:1px solid #eff6ff;text-align:right;font-weight:800;color:#d97706;">රු. ${fmt(r.empPension3)}</td></tr>
+    <tr><td style="padding:5px 0;color:#64748b;">සේවක භාරකාර (ETF)</td><td style="padding:5px 0;text-align:right;color:#94a3b8;">අදාළ නොවේ (විශ්‍රාම සහිතයි)</td></tr>
+  `;
+
+  body.innerHTML = `
+  <div style="text-align:right;margin-bottom:10px;">
+    <button onclick="printPayroll2026SinglePayslip()" style="background:#2563eb;color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 2px 8px rgba(37,99,235,0.25);">
+      <i class="fa-solid fa-print"></i> මෙම Pay Sheet එක Print කරන්න
+    </button>
+  </div>
+
+  <div id="p26payslip-printable" style="font-family:'Noto Sans Sinhala',sans-serif;max-width:700px;margin:0 auto;border:2px solid #1e1b4b;border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 4px 16px rgba(0,0,0,0.06);">
+    <!-- Society Official Header -->
+    <div style="background:linear-gradient(135deg,#1e1b4b,#312e81);color:#fff;padding:18px 24px;text-align:center;">
+      <div style="font-size:18px;font-weight:800;letter-spacing:0.3px;margin-bottom:3px;">සීමා රහිත ගලපිටියාගම සකසුරුවම් හා ණය ගනුදෙනු පිළිබඳ සමුපකාර සමිතිය</div>
+      <div style="font-size:12px;opacity:0.9;">ලියාපදිංචි අංකය: කුලි/395 | ගලපිටියාගම, කුරුණෑගල</div>
+      <div style="display:inline-block;background:#ffffff20;padding:4px 16px;border-radius:20px;font-size:12.5px;font-weight:700;margin-top:8px;border:1px solid #ffffff40;">
+        2026 මාසික වැටුප් පත්‍රිකාව (Official Pay Sheet) — ${monthLabel}
+      </div>
+    </div>
+
+    <!-- Employee Information Bar -->
+    <div style="padding:14px 20px;background:#f8fafc;display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid #e2e8f0;flex-wrap:wrap;gap:10px;">
+      <div>
+        <div style="font-size:15px;font-weight:800;color:#0f172a;">${emp.fullName||emp.callingName}</div>
+        <div style="font-size:12px;color:#64748b;margin-top:2px;">
+          තනතුර: <strong style="color:#1e1b4b;">${emp.designation||'නිලධාරී'}</strong> &nbsp;|&nbsp; සේවා අංකය: <strong style="color:#2563eb;">${emp.id}</strong>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <span style="display:inline-block;font-size:11.5px;font-weight:800;color:${r.isContract?'#92400e':'#166534'};background:${r.isContract?'#fef3c7':'#dcfce7'};padding:3px 12px;border-radius:999px;border:1px solid ${r.isContract?'#fde68a':'#86efac'};">
+          ${r.isContract?'කොන්ත්‍රාත් සේවක (Contract)':'ස්ථිර සේවක (Permanent)'}
+        </span>
+        <div style="font-size:11px;color:#64748b;margin-top:4px;">ගෙවීම් දිනය: <strong>${saved?.date || `සෑම මසකම ${r.payDate} වන දින`}</strong></div>
+      </div>
+    </div>
+
+    <!-- Earnings & Deductions 2-Column Grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+      <!-- Left: Earnings -->
+      <div style="padding:16px 20px;border-right:1px solid #e2e8f0;">
+        <div style="font-size:12.5px;font-weight:800;color:#15803d;margin-bottom:10px;padding-bottom:4px;border-bottom:2px solid #86efac;display:flex;justify-content:space-between;">
+          <span><i class="fa-solid fa-money-bill-wave"></i> වැටුප් හා දීමනා (Earnings):</span>
+          <span>රු.</span>
+        </div>
+        <table style="width:100%;font-size:12px;border-collapse:collapse;">
+          ${earningsRows}
+        </table>
+        <div style="border-top:2px solid #1e1b4b;margin-top:12px;padding-top:8px;display:flex;justify-content:space-between;font-weight:800;font-size:13px;color:#1e1b4b;">
+          <span>මුළු ඉපැයීම් එකතුව (Gross):</span>
+          <span style="color:#4338ca;">රු. ${fmt(r.gross)}</span>
+        </div>
+      </div>
+
+      <!-- Right: Deductions -->
+      <div style="padding:16px 20px;background:#fffcfc;">
+        <div style="font-size:12.5px;font-weight:800;color:#dc2626;margin-bottom:10px;padding-bottom:4px;border-bottom:2px solid #fecaca;display:flex;justify-content:space-between;">
+          <span><i class="fa-solid fa-circle-minus"></i> සේවක අඩු කිරීම් (Deductions):</span>
+          <span>රු.</span>
+        </div>
+        <table style="width:100%;font-size:12px;border-collapse:collapse;">
+          ${deductRows}
+        </table>
+        <div style="border-top:2px solid #dc2626;margin-top:12px;padding-top:8px;display:flex;justify-content:space-between;font-weight:800;font-size:13px;color:#dc2626;">
+          <span>මුළු අඩු කිරීම් එකතුව:</span>
+          <span>(රු. ${fmt(r.totalDeductions)})</span>
+        </div>
+
+        <!-- Net Salary Display -->
+        <div style="background:#ecfdf5;border:1.5px solid #a7f3d0;border-radius:10px;padding:10px 14px;margin-top:14px;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:11px;font-weight:700;color:#047857;">සේවකයා වෙත ගෙවන ශුද්ධ මුදල:</div>
+            <div style="font-size:13px;font-weight:800;color:#065f46;">ශුද්ධ වැටුප (Net Pay)</div>
+          </div>
+          <div style="font-size:19px;font-weight:900;color:#065f46;">
+            රු. ${fmt(r.netSalary)}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Employer Statutory Contributions Section (Highlighted) -->
+    <div style="background:#f0f9ff;border-top:2px solid #bae6fd;padding:14px 20px;">
+      <div style="font-size:12.5px;font-weight:800;color:#0369a1;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+        <span><i class="fa-solid fa-building-columns"></i> ආයතනයෙන් දරන ව්‍යවස්ථාපිත දායකත්ව (Employer Contributions):</span>
+        <span style="font-size:11px;font-weight:600;color:#64748b;">(සේවක වැටුපෙන් අඩු නොවේ)</span>
+      </div>
+      <table style="width:100%;font-size:12px;border-collapse:collapse;">
+        ${employerRows}
+      </table>
+      <div style="display:flex;justify-content:space-between;align-items:center;border-top:1.5px solid #7dd3fc;margin-top:8px;padding-top:6px;font-weight:800;font-size:12.5px;">
+        <span style="color:#0369a1;">ආයතනික දායකත්ව එකතුව:</span>
+        <span style="color:#0369a1;">රු. ${fmt(employerStatutoryTotal)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;font-size:11.5px;color:#475569;">
+        <span>සේවකයා වෙනුවෙන් ආයතනයේ මුළු පිරිවැය (Total Employer Cost = Gross + Contributions):</span>
+        <strong style="color:#1e3a8a;font-size:12.5px;">රු. ${fmt(totalCostToSociety)}</strong>
+      </div>
+    </div>
+
+    <!-- Official Signatures Footer -->
+    <div style="padding:22px 24px 16px;background:#f8fafc;border-top:1px solid #e2e8f0;display:grid;grid-template-columns:repeat(3, 1fr);gap:16px;text-align:center;font-size:11px;color:#64748b;">
+      <div>
+        <div style="border-bottom:1px dashed #94a3b8;height:26px;margin-bottom:6px;"></div>
+        <strong>සේවක අත්සන</strong><br>(Employee Signature)
+      </div>
+      <div>
+        <div style="border-bottom:1px dashed #94a3b8;height:26px;margin-bottom:6px;"></div>
+        <strong>සකස් කළේ</strong><br>(Prepared By)
+      </div>
+      <div>
+        <div style="border-bottom:1px dashed #94a3b8;height:26px;margin-bottom:6px;"></div>
+        <strong>කළමනාකරු</strong><br>(Manager)
+      </div>
+    </div>
+  </div>`;
+
+  modal.classList.add('active');
+}
+
+function printPayroll2026SinglePayslip() {
+  const content = document.getElementById('p26payslip-printable')?.outerHTML;
+  if (!content) { alert('Pay sheet content not found.'); return; }
+  const w = window.open('','_blank','width=850,height=900');
+  w.document.write(`<!DOCTYPE html><html><head><title>GSCS Pay Sheet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      /* ===== SCREEN VIEW ===== */
+      body { font-family:'Noto Sans Sinhala',sans-serif; margin:0; padding:20px; background:#fff; color:#000; }
+
+      /* ===== PRINT: B&W A4 ===== */
+      @media print {
+        @page { size: A4 portrait; margin: 12mm 14mm; }
+        body { padding:0; margin:0; color:#000 !important; background:#fff !important; font-size:11px; }
+
+        /* Remove all colors — force black on white */
+        * {
+          color:#000 !important;
+          background:#fff !important;
+          background-color:#fff !important;
+          background-image:none !important;
+          border-color:#000 !important;
+          box-shadow:none !important;
+          -webkit-print-color-adjust:exact;
+          print-color-adjust:exact;
+        }
+
+        /* Header: keep border, make bg white with black text */
+        [style*="linear-gradient"] {
+          background:#fff !important;
+          border:2px solid #000 !important;
+          color:#000 !important;
+        }
+
+        /* Dashed sign lines keep visible */
+        [style*="dashed"] {
+          border-bottom:1px dashed #000 !important;
+        }
+
+        /* Table borders */
+        table { border-collapse:collapse !important; }
+        td, th { border:1px solid #000 !important; }
+
+        /* Net pay box — bordered instead of colored */
+        [style*="ecfdf5"], [style*="f0f9ff"], [style*="f8fafc"] {
+          background:#fff !important;
+          border:1px solid #000 !important;
+        }
+
+        button, .no-print { display:none !important; }
+      }
+    </style>
+  </head><body>
+    ${content}
+  </body></html>`);
+  w.document.close();
+  setTimeout(() => { w.focus(); w.print(); }, 400);
+}
+
+// =========================================================================
+// 2026 PAYROLL REPORTING SYSTEM (MONTHLY & ANNUAL)
+// =========================================================================
+
+function getPayroll2026MonthData(selMonth) {
+  const emps = appData.employees || [];
+  let totalBasic = 0, totalInterimOrAtt = 0, totalOtherAllow = 0, totalOt = 0, totalGross = 0;
+  let totalEmpEpf8 = 0, totalEmpPension6 = 0, totalDeductions = 0, totalNet = 0;
+  let totalEmployerEpf12 = 0, totalEmployerPension3 = 0, totalEmployerEtf3 = 0, totalEmployerStatutory = 0, totalCost = 0;
+
+  const normEmpId = (id) => /^Y14806\s*-\s*0?3$/i.test(String(id || '').trim()) ? 'Y14806 - 03' : String(id || '').trim();
+  const records = emps.map(emp => {
+    const cfg = getEmpSalaryConfig2026(emp.id, selMonth);
+    const saved = (appData.payroll2026History || []).find(r => normEmpId(r.empId) === normEmpId(emp.id) && r.month === selMonth);
+    const overrides = saved ? { ot: saved.ot || 0, attendedDays: saved.attendedDays || 0 } : {};
+    const calculated = calculatePayroll2026ForEmp(emp, cfg, overrides);
+    const r = (saved && saved.basic !== undefined && saved.netSalary !== undefined)
+      ? { ...calculated, ...saved }
+      : calculated;
+
+    const interimOrAtt = r.isContract ? (r.attendanceAllo || 0) : (r.interim || 0);
+    const otherAllow = Math.max(0, (r.gross || 0) - (r.basic || 0) - interimOrAtt - (r.ot || 0));
+    const empStatutory = (r.empEpf12 || 0) + (r.empPension3 || 0) + (r.etf3 || 0);
+    const empTotalCost = (r.gross || 0) + empStatutory;
+
+    totalBasic += (r.basic || 0);
+    totalInterimOrAtt += interimOrAtt;
+    totalOtherAllow += otherAllow;
+    totalOt += (r.ot || 0);
+    totalGross += (r.gross || 0);
+    totalEmpEpf8 += (r.empEpf8 || 0);
+    totalEmpPension6 += (r.empPension6 || 0);
+    totalDeductions += (r.totalDeductions || 0);
+    totalNet += (r.netSalary || 0);
+    totalEmployerEpf12 += (r.empEpf12 || 0);
+    totalEmployerPension3 += (r.empPension3 || 0);
+    totalEmployerEtf3 += (r.etf3 || 0);
+    totalEmployerStatutory += empStatutory;
+    totalCost += empTotalCost;
+
+    return {
+      emp,
+      cfg,
+      r,
+      interimOrAtt,
+      otherAllow,
+      empStatutory,
+      empTotalCost
+    };
+  });
+
+  return {
+    month: selMonth,
+    records,
+    totals: {
+      basic: totalBasic,
+      interimOrAtt: totalInterimOrAtt,
+      otherAllow: totalOtherAllow,
+      ot: totalOt,
+      gross: totalGross,
+      empEpf8: totalEmpEpf8,
+      empPension6: totalEmpPension6,
+      deductions: totalDeductions,
+      net: totalNet,
+      employerEpf12: totalEmployerEpf12,
+      employerPension3: totalEmployerPension3,
+      employerEtf3: totalEmployerEtf3,
+      employerStatutory: totalEmployerStatutory,
+      totalCost: totalCost
+    }
+  };
+}
+
+function openPayroll2026PrintModal(mode = 'monthly') {
+  const container = document.getElementById('view-payroll-2026');
+  const selMonth = window.currentPayroll2026Month || container?.querySelector('#p26-month-select')?.value || '2026-01';
+
+  let selectedValue = mode;
+  if (mode === 'monthly') selectedValue = selMonth;
+  if (mode === 'annual') selectedValue = 'annual-both';
+
+  renderPayroll2026PrintContent(selectedValue);
+  openSmartModal('modal-smart-sheet-print');
+}
+
+function onPayroll2026PrintSelectChange(val) {
+  renderPayroll2026PrintContent(val);
+}
+
+function renderPayroll2026PrintContent(selectedVal) {
+  const titleEl = document.getElementById('sheet-print-title');
+  const content = document.getElementById('sheet-print-content');
+  if (!content) return;
+
+  const monthNamesSi = ['', 'ජනවාරි', 'පෙබරවාරි', 'මාර්තු', 'අප්‍රේල්', 'මැයි', 'ජූනි', 'ජූලි', 'අගෝස්තු', 'සැප්තැම්බර්', 'ඔක්තෝබර්', 'නොවැම්බර්', 'දෙසැම්බර්'];
+  const monthNamesEn = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+  const monthCodes = [];
+  for (let m = 1; m <= 12; m++) {
+    monthCodes.push(`2026-${String(m).padStart(2, '0')}`);
+  }
+
+  const isAnnual = String(selectedVal || '').startsWith('annual');
+  let currentMonthCode = isAnnual ? (window.currentPayroll2026Month || '2026-01') : selectedVal;
+  if (!monthCodes.includes(currentMonthCode)) currentMonthCode = '2026-01';
+
+  const selectorHtml = `
+    <div class="no-print" style="margin-bottom:16px; padding:12px 16px; background:#eff6ff; border:1.5px solid #93c5fd; border-radius:10px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-weight:700; font-size:12.5px; color:#1e40af;">
+          <i class="fa-solid fa-file-invoice-dollar" style="color:#2563eb;"></i> වාර්තාව තෝරන්න (Select Report / Month):
+        </span>
+        <select id="p26-print-report-select" onchange="onPayroll2026PrintSelectChange(this.value)" style="padding:6px 14px; font-size:12.5px; font-weight:700; border-radius:8px; border:1.5px solid #2563eb; color:#1e3a8a; background:#fff; cursor:pointer;">
+          <optgroup label="-- 2026 මාසික වැටුප් වාර්තා (Monthly Registers) --">
+            ${monthCodes.map(code => {
+              const mNum = parseInt(code.split('-')[1], 10);
+              const label = `2026 ${monthNamesSi[mNum]} (${code})`;
+              return `<option value="${code}" ${selectedVal === code ? 'selected' : ''}>${label}</option>`;
+            }).join('')}
+          </optgroup>
+          <optgroup label="-- 2026 වාර්ෂික වැටුප් වාර්තා (Annual Registers) --">
+            <option value="annual-both" ${selectedVal === 'annual-both' ? 'selected' : ''}>2026 සම්පූර්ණ වාර්ෂික වාර්තාව (Annual Comprehensive Report)</option>
+            <option value="annual-monthly" ${selectedVal === 'annual-monthly' ? 'selected' : ''}>2026 මාසික සාරාංශ වාර්තාව (12-Month Summary Table)</option>
+            <option value="annual-employee" ${selectedVal === 'annual-employee' ? 'selected' : ''}>2026 සේවක අනුව වාර්ෂික වාර්තාව (Employee Annual Breakdown)</option>
+          </optgroup>
+        </select>
+      </div>
+      <div style="font-size:12px; color:#475569; font-weight:700;">
+        <span style="background:#dbeafe; color:#1e40af; padding:4px 10px; border-radius:6px;">
+          <i class="fa-solid fa-building-columns"></i> 2026 ස්වයංක්‍රීය වැටුප් පද්ධතිය
+        </span>
+      </div>
+    </div>
+  `;
+
+  const gscsHeader = `
+    <div style="border:2px solid #000; padding:10px 14px; margin-bottom:14px; text-align:center;">
+      <div style="display:flex; align-items:center; justify-content:center; gap:20px;">
+        <img src="images/gscs_logo.png" alt="GSCS Logo" style="height:50px;">
+        <div>
+          <h3 style="font-size:15px; font-weight:800; margin:0 0 2px;">සීමා රහිත ගලපිටියාගම සකසුරුවම් හා ණය ගනුදෙනු පිළිබඳ සමුපකාර සමිතිය</h3>
+          <div style="font-size:12px; font-weight:700; letter-spacing:0.5px;">GALAPITIYAGAMA THRIFT & CREDIT CO-OPERATIVE SOCIETY</div>
+          <div style="font-size:11px; margin-top:3px;">
+            <strong>Reg No: කුලි/395</strong> &nbsp;&nbsp;|&nbsp;&nbsp; <strong>Reg Date: 1987/03/24</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const signaturesFooter = `
+    <div style="margin-top:36px; display:flex; justify-content:space-around; font-size:11px; text-align:center; padding-top:10px;">
+      <div>
+        <div style="border-bottom:1px dotted #000; width:220px; height:28px; margin:0 auto 6px;"></div>
+        <strong>සකස් කළේ (HR / Accounts)</strong>
+      </div>
+      <div>
+        <div style="border-bottom:1px dotted #000; width:220px; height:28px; margin:0 auto 6px;"></div>
+        <strong>පරීක්ෂා කළේ (General Manager / Chairman)</strong>
+      </div>
+    </div>
+  `;
+
+  if (!isAnnual) {
+    const mNum = parseInt(selectedVal.split('-')[1], 10);
+    const monthLabelSi = `${selectedVal.split('-')[0]} ${monthNamesSi[mNum]}`;
+    const monthLabelEn = `${monthNamesEn[mNum]} ${selectedVal.split('-')[0]}`;
+
+    if (titleEl) {
+      titleEl.innerHTML = `<i class="fa-solid fa-print" style="color:#2563eb;"></i> 2026 වර්ෂය – ${monthLabelSi} මාසික නිල වැටුප් හා EPF/ETF ලේඛනය`;
+    }
+
+    const monthData = getPayroll2026MonthData(selectedVal);
+    const t = monthData.totals;
+
+    const rowsHtml = monthData.records.map((rec, idx) => {
+      const e = rec.emp;
+      const r = rec.r;
+      const typeLabel = r.isContract ? 'කොන්ත්‍රාත් (10)' : 'ස්ථිර (25)';
+      const allowBreakdown = [];
+      if (r.isContract) {
+        if (r.attendanceAllo) allowBreakdown.push(`පැමිණීම: ${fmt(r.attendanceAllo)}`);
+        if (r.allow1) allowBreakdown.push(`දීම1: ${fmt(r.allow1)}`);
+        if (r.allow2) allowBreakdown.push(`දීම2: ${fmt(r.allow2)}`);
+      } else {
+        if (r.interim) allowBreakdown.push(`අන්තර්: ${fmt(r.interim)}`);
+        if (r.sec) allowBreakdown.push(`ලේඛම්: ${fmt(r.sec)}`);
+        if (r.incr) allowBreakdown.push(`වර්ධක: ${fmt(r.incr)}`);
+        if (r.budget) allowBreakdown.push(`අයවැය: ${fmt(r.budget)}`);
+        if (r.allow1) allowBreakdown.push(`දීම1: ${fmt(r.allow1)}`);
+        if (r.allow2) allowBreakdown.push(`දීම2: ${fmt(r.allow2)}`);
+      }
+      const allowStr = allowBreakdown.length ? allowBreakdown.join(' | ') : '-';
+      const employerContribStr = r.isContract
+        ? `EPF: ${fmt(r.empEpf12)} | ETF: ${fmt(r.etf3)}`
+        : `EPF: ${fmt(r.empEpf12)} | විශ්‍රාම: ${fmt(r.empPension3)}`;
+
+      return `
+        <tr>
+          <td style="padding:6px 3px;">${idx + 1}</td>
+          <td style="padding:6px 5px; text-align:left;">
+            <strong>${e.id}</strong><br>
+            <span style="font-size:10.5px; font-weight:600;">${e.fullName || e.callingName}</span>
+          </td>
+          <td style="padding:6px 4px; text-align:left;">
+            ${e.designation || '-'}<br>
+            <span style="font-size:9px; color:#555;">${typeLabel}</span>
+          </td>
+          <td style="padding:6px 4px; text-align:right; font-weight:600;">${fmt(r.basic)}</td>
+          <td style="padding:6px 4px; text-align:right;">
+            <div style="font-weight:700; color:#0f766e;">${fmt(rec.interimOrAtt + rec.otherAllow)}</div>
+            <div style="font-size:8.5px; color:#64748b;">${allowStr}</div>
+          </td>
+          <td style="padding:6px 4px; text-align:right;">${r.ot > 0 ? fmt(r.ot) : '-'}</td>
+          <td style="padding:6px 4px; text-align:right; font-weight:800; background:#f8fafc;">${fmt(r.gross)}</td>
+          <td style="padding:6px 4px; text-align:right; color:#dc2626;">
+            <div>(${fmt(r.totalDeductions)})</div>
+            <div style="font-size:8.5px; color:#64748b;">EPF 8%: ${fmt(r.empEpf8)}${r.empPension6 ? ' | විශ්‍රාම: ' + fmt(r.empPension6) : ''}</div>
+          </td>
+          <td style="padding:6px 4px; text-align:right; font-weight:900; background:#f0fdf4; color:#166534; font-size:11px;">${fmt(r.netSalary)}</td>
+          <td style="padding:6px 4px; text-align:right; color:#1e40af;">
+            <div style="font-weight:700;">${fmt(rec.empStatutory)}</div>
+            <div style="font-size:8.5px; color:#64748b;">${employerContribStr}</div>
+          </td>
+          <td style="padding:6px 4px; text-align:right; font-weight:800; background:#faf5ff; color:#6b21a8;">${fmt(rec.empTotalCost)}</td>
+          <td style="padding:6px 4px; width:65px;"></td>
+        </tr>
+      `;
+    }).join('');
+
+    content.innerHTML = `
+      <div style="background:#fff; font-family:'Segoe UI',Arial,sans-serif; color:#000; min-width:1100px;">
+        ${selectorHtml}
+        ${gscsHeader}
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:12px; font-weight:700;">
+          <span>2026 වර්ෂය – ${monthLabelSi} මාසික නිල වැටුප්, EPF/ETF හා ව්‍යවස්ථාපිත දායකත්ව ලේඛනය</span>
+          <span style="font-size:11px; color:#475569;">Monthly Payroll & Statutory Register (${monthLabelEn})</span>
+        </div>
+
+        <table style="width:100%; border-collapse:collapse; font-size:9.5px; text-align:center;" border="1" bordercolor="#000">
+          <thead>
+            <tr style="background:#f2f2f2; font-weight:bold;">
+              <th style="padding:6px 3px; width:30px;">#</th>
+              <th style="padding:6px 5px; text-align:left; width:170px;">සේවා අංකය සහ නම</th>
+              <th style="padding:6px 4px; text-align:left; width:120px;">තනතුර / වර්ගය</th>
+              <th style="padding:6px 4px;">මූලික වැටුප</th>
+              <th style="padding:6px 4px;">දීමනා එකතුව</th>
+              <th style="padding:6px 4px;">අතිකාල</th>
+              <th style="padding:6px 4px; background:#e2e8f0;">දළ වැටුප (Gross)</th>
+              <th style="padding:6px 4px;">සේවක අඩු කිරීම් (EPF/විශ්‍රාම)</th>
+              <th style="padding:6px 4px; background:#dcfce7; color:#14532d; font-size:10.5px;">ශුද්ධ වැටුප (Net Pay)</th>
+              <th style="padding:6px 4px;">ආයතනික දායකත්ව (EPF/විශ්‍රාම/ETF)</th>
+              <th style="padding:6px 4px; background:#f3e8ff; color:#581c87;">ආයතනික මුළු පිරිවැය</th>
+              <th style="padding:6px 4px; width:65px;">අත්සන</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+          <tfoot>
+            <tr style="background:#f1f5f9; font-weight:bold; font-size:10px; border-top:2px solid #000;">
+              <td colspan="3" style="padding:8px 6px; text-align:right;">මුළු එකතුව (Grand Total):</td>
+              <td style="padding:8px 4px; text-align:right;">${fmt(t.basic)}</td>
+              <td style="padding:8px 4px; text-align:right;">${fmt(t.interimOrAtt + t.otherAllow)}</td>
+              <td style="padding:8px 4px; text-align:right;">${fmt(t.ot)}</td>
+              <td style="padding:8px 4px; text-align:right; font-size:11px; font-weight:900; background:#e2e8f0;">${fmt(t.gross)}</td>
+              <td style="padding:8px 4px; text-align:right; color:#dc2626;">(${fmt(t.deductions)})</td>
+              <td style="padding:8px 4px; text-align:right; font-size:11.5px; font-weight:900; background:#dcfce7; color:#14532d;">${fmt(t.net)}</td>
+              <td style="padding:8px 4px; text-align:right; color:#1e40af;">${fmt(t.employerStatutory)}</td>
+              <td style="padding:8px 4px; text-align:right; font-size:11px; font-weight:900; background:#f3e8ff; color:#581c87;">${fmt(t.totalCost)}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+
+        ${signaturesFooter}
+      </div>
+    `;
+  } else {
+    // ---- ANNUAL REPORT ----
+    if (titleEl) {
+      titleEl.innerHTML = `<i class="fa-solid fa-chart-line" style="color:#7c3aed;"></i> 2026 වර්ෂයේ වාර්ෂික වැටුප් හා EPF/ETF නිල වාර්තාව (Annual Payroll Report - 2026)`;
+    }
+
+    const allMonthsData = monthCodes.map(code => getPayroll2026MonthData(code));
+
+    let aBasic = 0, aAllow = 0, aOt = 0, aGross = 0, aEmpEpf8 = 0, aEmpPension6 = 0, aDeductions = 0, aNet = 0;
+    let aEmployerEpf12 = 0, aEmployerPension3 = 0, aEmployerEtf3 = 0, aEmployerStatutory = 0, aTotalCost = 0;
+
+    allMonthsData.forEach(md => {
+      const t = md.totals;
+      aBasic += t.basic;
+      aAllow += (t.interimOrAtt + t.otherAllow);
+      aOt += t.ot;
+      aGross += t.gross;
+      aEmpEpf8 += t.empEpf8;
+      aEmpPension6 += t.empPension6;
+      aDeductions += t.deductions;
+      aNet += t.net;
+      aEmployerEpf12 += t.employerEpf12;
+      aEmployerPension3 += t.employerPension3;
+      aEmployerEtf3 += t.employerEtf3;
+      aEmployerStatutory += t.employerStatutory;
+      aTotalCost += t.totalCost;
+    });
+
+    const monthlySummaryRowsHtml = allMonthsData.map((md, idx) => {
+      const mNum = idx + 1;
+      const mLabel = `2026 ${monthNamesSi[mNum]}`;
+      const t = md.totals;
+      return `
+        <tr>
+          <td style="padding:5px 3px;">${mNum}</td>
+          <td style="padding:5px 6px; text-align:left; font-weight:700;">${mLabel}</td>
+          <td style="padding:5px 4px;">${md.records.length}</td>
+          <td style="padding:5px 4px; text-align:right;">${fmt(t.basic)}</td>
+          <td style="padding:5px 4px; text-align:right;">${fmt(t.interimOrAtt + t.otherAllow + t.ot)}</td>
+          <td style="padding:5px 4px; text-align:right; font-weight:800; background:#f8fafc;">${fmt(t.gross)}</td>
+          <td style="padding:5px 4px; text-align:right; color:#dc2626;">(${fmt(t.deductions)})</td>
+          <td style="padding:5px 4px; text-align:right; font-weight:900; background:#f0fdf4; color:#166534;">${fmt(t.net)}</td>
+          <td style="padding:5px 4px; text-align:right; color:#1e40af;">${fmt(t.employerEpf12)}</td>
+          <td style="padding:5px 4px; text-align:right; color:#d97706;">${fmt(t.employerPension3 + t.employerEtf3)}</td>
+          <td style="padding:5px 4px; text-align:right; font-weight:800; background:#faf5ff; color:#6b21a8;">${fmt(t.totalCost)}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const emps = appData.employees || [];
+    const empAnnualMap = {};
+    emps.forEach(e => {
+      empAnnualMap[e.id] = {
+        emp: e,
+        basic: 0,
+        allow: 0,
+        gross: 0,
+        deductions: 0,
+        empEpf8: 0,
+        empPension6: 0,
+        net: 0,
+        employerEpf12: 0,
+        employerPension3: 0,
+        employerEtf3: 0,
+        statutory: 0,
+        totalCost: 0
+      };
+    });
+
+    allMonthsData.forEach(md => {
+      md.records.forEach(rec => {
+        const item = empAnnualMap[rec.emp.id];
+        if (item) {
+          const r = rec.r;
+          item.basic += (r.basic || 0);
+          item.allow += ((r.gross || 0) - (r.basic || 0));
+          item.gross += (r.gross || 0);
+          item.deductions += (r.totalDeductions || 0);
+          item.empEpf8 += (r.empEpf8 || 0);
+          item.empPension6 += (r.empPension6 || 0);
+          item.net += (r.netSalary || 0);
+          item.employerEpf12 += (r.empEpf12 || 0);
+          item.employerPension3 += (r.empPension3 || 0);
+          item.employerEtf3 += (r.etf3 || 0);
+          item.statutory += rec.empStatutory;
+          item.totalCost += rec.empTotalCost;
+        }
+      });
+    });
+
+    const empAnnualRowsHtml = emps.map((e, idx) => {
+      const item = empAnnualMap[e.id] || {};
+      const typeLabel = isContractEmp2026(e) ? 'කොන්ත්‍රාත්' : 'ස්ථිර';
+      return `
+        <tr>
+          <td style="padding:5px 3px;">${idx + 1}</td>
+          <td style="padding:5px 6px; text-align:left;">
+            <strong>${e.id}</strong> - ${e.fullName || e.callingName}
+          </td>
+          <td style="padding:5px 4px; text-align:left;">
+            ${e.designation || '-'}<br>
+            <span style="font-size:9px; color:#64748b;">${typeLabel}</span>
+          </td>
+          <td style="padding:5px 4px; text-align:right;">${fmt(item.basic)}</td>
+          <td style="padding:5px 4px; text-align:right;">${fmt(item.allow)}</td>
+          <td style="padding:5px 4px; text-align:right; font-weight:800; background:#f8fafc;">${fmt(item.gross)}</td>
+          <td style="padding:5px 4px; text-align:right; color:#dc2626;">(${fmt(item.deductions)})</td>
+          <td style="padding:5px 4px; text-align:right; font-weight:900; background:#f0fdf4; color:#166534;">${fmt(item.net)}</td>
+          <td style="padding:5px 4px; text-align:right; color:#1e40af;">${fmt(item.statutory)}</td>
+          <td style="padding:5px 4px; text-align:right; font-weight:800; background:#faf5ff; color:#6b21a8;">${fmt(item.totalCost)}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const showMonthlyTable = (selectedVal === 'annual-both' || selectedVal === 'annual-monthly');
+    const showEmployeeTable = (selectedVal === 'annual-both' || selectedVal === 'annual-employee');
+
+    content.innerHTML = `
+      <div style="background:#fff; font-family:'Segoe UI',Arial,sans-serif; color:#000; min-width:1100px;">
+        ${selectorHtml}
+        ${gscsHeader}
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; font-size:12px; font-weight:700;">
+          <span>2026 වර්ෂයේ පූර්ණ වාර්ෂික වැටුප්, EPF/ETF හා ව්‍යවස්ථාපිත දායකත්ව වාර්තාව</span>
+          <span style="font-size:11px; color:#475569;">Annual Payroll & Statutory Contribution Report (2026 Full Year)</span>
+        </div>
+
+        ${showMonthlyTable ? `
+          <div style="margin-bottom:8px; font-weight:800; font-size:12px; color:#1e1b4b; display:flex; align-items:center; gap:6px;">
+            <span><i class="fa-solid fa-calendar-days" style="color:#2563eb; margin-right:6px;"></i>1. 2026 මාසික වැටුප් හා දායකත්ව ප්‍රගති සාරාංශය (Monthly Progression Summary)</span>
+          </div>
+          <table style="width:100%; border-collapse:collapse; font-size:9.5px; text-align:center; margin-bottom:20px;" border="1" bordercolor="#000">
+            <thead>
+              <tr style="background:#f2f2f2; font-weight:bold;">
+                <th style="padding:5px 3px; width:30px;">#</th>
+                <th style="padding:5px 6px; text-align:left;">මාසය (Month)</th>
+                <th style="padding:5px 4px; width:50px;">කාර්ය මණ්ඩලය</th>
+                <th style="padding:5px 4px;">මූලික වැටුප</th>
+                <th style="padding:5px 4px;">දීමනා හා අතිකාල</th>
+                <th style="padding:5px 4px; background:#e2e8f0;">දළ වැටුප (Gross)</th>
+                <th style="padding:5px 4px;">සේවක අඩු කිරීම්</th>
+                <th style="padding:5px 4px; background:#dcfce7; color:#14532d;">ශුද්ධ වැටුප (Net Pay)</th>
+                <th style="padding:5px 4px;">ආයතනික EPF 12%</th>
+                <th style="padding:5px 4px;">විශ්‍රාම 3% / ETF 3%</th>
+                <th style="padding:5px 4px; background:#f3e8ff; color:#581c87;">ආයතනික මුළු පිරිවැය</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${monthlySummaryRowsHtml}
+            </tbody>
+            <tfoot>
+              <tr style="background:#f1f5f9; font-weight:bold; font-size:10px; border-top:2px solid #000;">
+                <td colspan="3" style="padding:7px 6px; text-align:right;">වාර්ෂික මුළු එකතුව (Annual Total):</td>
+                <td style="padding:7px 4px; text-align:right;">${fmt(aBasic)}</td>
+                <td style="padding:7px 4px; text-align:right;">${fmt(aAllow + aOt)}</td>
+                <td style="padding:7px 4px; text-align:right; font-weight:900; background:#e2e8f0;">${fmt(aGross)}</td>
+                <td style="padding:7px 4px; text-align:right; color:#dc2626;">(${fmt(aDeductions)})</td>
+                <td style="padding:7px 4px; text-align:right; font-weight:900; background:#dcfce7; color:#14532d;">${fmt(aNet)}</td>
+                <td style="padding:7px 4px; text-align:right; color:#1e40af;">${fmt(aEmployerEpf12)}</td>
+                <td style="padding:7px 4px; text-align:right; color:#d97706;">${fmt(aEmployerPension3 + aEmployerEtf3)}</td>
+                <td style="padding:7px 4px; text-align:right; font-weight:900; background:#f3e8ff; color:#581c87;">${fmt(aTotalCost)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        ` : ''}
+
+        ${showEmployeeTable ? `
+          <div style="margin-bottom:8px; font-weight:800; font-size:12px; color:#1e1b4b; display:flex; align-items:center; gap:6px;">
+            <span><i class="fa-solid fa-users" style="color:#7c3aed; margin-right:6px;"></i>2. 2026 සේවක අනුව වාර්ෂික වැටුප් හා දායකත්ව එකතුව (Employee-wise Annual Breakdown)</span>
+          </div>
+          <table style="width:100%; border-collapse:collapse; font-size:9.5px; text-align:center;" border="1" bordercolor="#000">
+            <thead>
+              <tr style="background:#f2f2f2; font-weight:bold;">
+                <th style="padding:5px 3px; width:30px;">#</th>
+                <th style="padding:5px 6px; text-align:left; width:220px;">සේවා අංකය සහ නම</th>
+                <th style="padding:5px 4px; text-align:left;">තනතුර / වර්ගය</th>
+                <th style="padding:5px 4px;">වාර්ෂික මූලික වැටුප</th>
+                <th style="padding:5px 4px;">වාර්ෂික දීමනා</th>
+                <th style="padding:5px 4px; background:#e2e8f0;">වාර්ෂික දළ වැටුප</th>
+                <th style="padding:5px 4px;">වාර්ෂික අඩුකිරීම්</th>
+                <th style="padding:5px 4px; background:#dcfce7; color:#14532d;">වාර්ෂික ශුද්ධ වැටුප</th>
+                <th style="padding:5px 4px;">ආයතනික දායකත්ව</th>
+                <th style="padding:5px 4px; background:#f3e8ff; color:#581c87;">ආයතනික මුළු පිරිවැය</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${empAnnualRowsHtml}
+            </tbody>
+            <tfoot>
+              <tr style="background:#f1f5f9; font-weight:bold; font-size:10px; border-top:2px solid #000;">
+                <td colspan="3" style="padding:7px 6px; text-align:right;">වාර්ෂික මුළු එකතුව (Grand Total):</td>
+                <td style="padding:7px 4px; text-align:right;">${fmt(aBasic)}</td>
+                <td style="padding:7px 4px; text-align:right;">${fmt(aAllow + aOt)}</td>
+                <td style="padding:7px 4px; text-align:right; font-weight:900; background:#e2e8f0;">${fmt(aGross)}</td>
+                <td style="padding:7px 4px; text-align:right; color:#dc2626;">(${fmt(aDeductions)})</td>
+                <td style="padding:7px 4px; text-align:right; font-weight:900; background:#dcfce7; color:#14532d;">${fmt(aNet)}</td>
+                <td style="padding:7px 4px; text-align:right; color:#1e40af;">${fmt(aEmployerStatutory)}</td>
+                <td style="padding:7px 4px; text-align:right; font-weight:900; background:#f3e8ff; color:#581c87;">${fmt(aTotalCost)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        ` : ''}
+
+        ${signaturesFooter}
+      </div>
+    `;
+  }
+}
+
+// ---- Print Register (Full Monthly Pay Sheet) ----
+function printPayroll2026Register() {
+  openPayroll2026PrintModal('monthly');
 }
 
 // =========================================================================
@@ -5131,7 +8076,7 @@ function openEpfPaymentModal(empId, month) {
 
   const history = appData.payrollHistory || [];
   const payRec = history.find(r => r.empId === empId && r.month === month);
-  const basic = payRec ? payRec.basic : (emp.basicSalary || 0);
+  const basic = payRec ? payRec.basic : (getEmpSalaryConfig2026(empId, month).basicSalary || emp.basicSalary || 0);
   const epf8 = Math.round(basic * 0.08);
   const epf12 = Math.round(basic * 0.12);
   const epf20 = Math.round(basic * 0.20);
@@ -5229,7 +8174,7 @@ function openEpfPassbookModal(empId) {
   const rows = months.map((month, idx) => {
     const history = appData.payrollHistory || [];
     const payRec = history.find(r => r.empId === empId && r.month === month);
-    const basic = payRec ? payRec.basic : (emp.basicSalary || 0);
+    const basic = payRec ? payRec.basic : (getEmpSalaryConfig2026(empId, month).basicSalary || emp.basicSalary || 0);
     const epf8 = Math.round(basic * 0.08);
     const epf12 = Math.round(basic * 0.12);
     const epf20 = Math.round(basic * 0.20);
@@ -5246,8 +8191,8 @@ function openEpfPassbookModal(empId) {
     const status = rec?.status || 'pending';
     const isPaid = status === 'paid';
     const statusCell = isPaid
-      ? `<span style="color:#15803d; font-weight:700;">✅ ගෙවා ඇත</span>`
-      : `<span style="color:#dc2626; font-weight:700;">🔴 Pending</span>`;
+      ? `<span style="color:#15803d; font-weight:700;"><i class="fa-solid fa-circle-check"></i> ගෙවා ඇත</span>`
+      : `<span style="color:#dc2626; font-weight:700;"><i class="fa-solid fa-circle-xmark"></i> හිඟ (Pending)</span>`;
 
     return `
       <tr style="${idx % 2 === 0 ? 'background:#fafafa;' : ''}">
@@ -5359,7 +8304,7 @@ function printEpfMonthlySummary() {
     totEpf20 += epf20; totEtf3 += etf3; totTotal23 += total23;
 
     const rec = remittances.find(r => r.empId === emp.id && r.month === selectedMonth);
-    const statusText = rec?.status === 'paid' ? '✅ ගෙවා ඇත' : '🔴 Pending';
+    const statusText = rec?.status === 'paid' ? '<i class="fa-solid fa-circle-check"></i> ගෙවා ඇත' : '<i class="fa-solid fa-circle-xmark"></i> හිඟ (Pending)';
 
     rows += `
       <tr>
@@ -5393,7 +8338,6 @@ function printEpfMonthlySummary() {
 
       <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; margin-bottom:10px;">
         <span>මාසය: ${monthLabel}</span>
-        <span>මුද්‍රණ දිනය: ${new Date().toLocaleDateString('en-GB')}</span>
       </div>
 
       <table style="width:100%; border-collapse:collapse; font-size:11px;" border="1" bordercolor="#000">
@@ -5901,6 +8845,7 @@ async function clearAllGrievances() {
   const prev = JSON.parse(localStorage.getItem('sanasa_deleted_grv_ids') || '[]');
   localStorage.setItem('sanasa_deleted_grv_ids', JSON.stringify([...new Set([...prev, ...allIds])]));
   localStorage.setItem('sanasa_qr_cleared_time', String(Date.now()));
+  localStorage.setItem('sanasa_grv_all_cleared', 'true');
 
   appData.grievances = [];
   await persistData();
@@ -6387,5 +9332,12 @@ window.showNotification = showSmartNotification;
 window.showToast = showSmartNotification;
 window.escapeHtml = escapeHtml;
 window.renderDashboardBirthdays = renderDashboardBirthdays;
+window.printAnnual2025Report = printAnnual2025Report;
+window.switchAnnualReportTab = switchAnnualReportTab;
+window.viewEmployeeAnnualStatement = viewEmployeeAnnualStatement;
+window.openPayroll2026PrintModal = openPayroll2026PrintModal;
+window.onPayroll2026PrintSelectChange = onPayroll2026PrintSelectChange;
+window.renderPayroll2026PrintContent = renderPayroll2026PrintContent;
+window.getPayroll2026MonthData = getPayroll2026MonthData;
 
 

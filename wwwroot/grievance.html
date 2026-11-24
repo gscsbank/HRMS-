@@ -2,7 +2,7 @@
 <html lang="si">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>ගරු සභාපති හා අධ්‍යක්ෂ මණ්ඩල සෘජු සේවක ද්වාරය - ගලපිටියාගම සණස</title>
   <link rel="stylesheet" href="css/fontawesome.min.css">
   <style>
@@ -12,23 +12,37 @@
       --bg: radial-gradient(circle at 10% 20%, #f3e8ff 0%, #fae8ff 40%, #f8fafc 100%);
       --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font);
+      touch-action: manipulation;
+    }
+    html, body {
+      width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
     body {
       background: var(--bg);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 16px;
+      padding: 12px 10px;
     }
     .mobile-card {
       background: #ffffff;
       width: 100%;
-      max-width: 520px;
-      border-radius: 28px;
-      box-shadow: 0 20px 50px rgba(124, 58, 237, 0.12);
+      max-width: 500px;
+      border-radius: 24px;
+      box-shadow: 0 10px 40px rgba(124, 58, 237, 0.12);
       overflow: hidden;
       border: 1px solid rgba(255, 255, 255, 0.8);
+      box-sizing: border-box;
     }
     .mobile-header {
       background: var(--primary-gradient);
@@ -89,17 +103,24 @@
       color: #7c3aed;
     }
     .form-group { margin-bottom: 14px; }
-    .form-label { display: block; font-size: 12px; font-weight: 700; color: #1e1b4b; margin-bottom: 6px; }
-    .form-control {
+    .form-label { display: block; font-size: 13px; font-weight: 700; color: #1e1b4b; margin-bottom: 6px; }
+    .form-control, input, select, textarea {
       width: 100%;
-      padding: 11px 14px;
+      padding: 12px 14px;
       border-radius: 12px;
       border: 1.5px solid #e2e8f0;
-      font-size: 13px;
+      font-size: 16px !important; /* Prevents auto-zoom on iOS/Android */
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      box-sizing: border-box;
+      touch-action: manipulation;
+      background-color: #ffffff;
+      color: #1e1b4b;
     }
-    .form-control:focus { border-color: #8b5cf6; }
+    .form-control:focus {
+      border-color: #8b5cf6;
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+    }
     .submit-btn {
       width: 100%;
       padding: 14px;
@@ -133,7 +154,7 @@
         <i class="fa-solid fa-lock" style="font-size:16px;"></i>
         <div>
           <strong>100% රහස්‍යභාවය සහතික කෙරේ</strong><br>
-          මෙම පෝරමය මගින් ඔබ යොමු කරන අදහස් සභාපතිතුමාගේ සෘජු අවධානයට පමණක් යොමු වේ.
+          <span id="confidential-text">මෙම පෝරමය මගින් ඔබ යොමු කරන අදහස් සභාපතිතුමාගේ සෘජු අවධානයට පමණක් යොමු වේ.</span>
         </div>
       </div>
 
@@ -156,8 +177,15 @@
             <input type="text" id="inp-name" class="form-control" placeholder="උදා: එස්. එම්. සුනිල් ශාන්ත">
           </div>
           <div class="form-group" style="margin-bottom:0;">
-            <label class="form-label">අංශය / ශාඛාව</label>
-            <input type="text" id="inp-dept" class="form-control" placeholder="උදා: ණය අංශය">
+            <label class="form-label">අංශය / දෙපාර්තමේන්තුව (Department)</label>
+            <select id="inp-dept" class="form-control">
+              <option value="OAD — මෙහෙයුම් හා පරිපාලන අංශය (Operations and Administration Division)">OAD — මෙහෙයුම් හා පරිපාලන අංශය (Operations and Administration Division)</option>
+              <option value="FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)">FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)</option>
+              <option value="CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)">CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)</option>
+              <option value="LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)">LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)</option>
+              <option value="LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)">LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය</option>
+              <option value="FLD — ක්ෂේත්‍ර අංශය (Field Division)">FLD — ක්ෂේත්‍ර අංශය (Field Division)</option>
+            </select>
           </div>
         </div>
 
@@ -165,8 +193,7 @@
           <label class="form-label">යොමු කළ යුතු පාර්ශවය</label>
           <select id="inp-target" class="form-control">
             <option value="ගරු සභාපතිතුමා (Hon. Chairman)">ගරු සභාපතිතුමා (Hon. Chairman)</option>
-            <option value="අධ්‍යක්ෂ මණ්ඩලය (Board of Directors)">අධ්‍යක්ෂ මණ්ඩලය (Board of Directors)</option>
-            <option value="මානව සම්පත් කමිටුව (HR Committee)">මානව සම්පත් කමිටුව (HR Committee)</option>
+            <option value="කළමනාකාරතුමා (Manager)">කළමනාකාරතුමා (Manager)</option>
           </select>
         </div>
 
@@ -190,8 +217,8 @@
           <textarea id="inp-desc" class="form-control" rows="5" required placeholder="ඔබගේ ගැටලුව හෝ සංවර්ධන යෝජනාව මෙහි සටහන් කරන්න..."></textarea>
         </div>
 
-        <button type="submit" class="submit-btn">
-          <i class="fa-solid fa-paper-plane"></i> සභාපතිතුමා වෙත යොමු කරන්න
+        <button type="submit" class="submit-btn" id="btn-submit">
+          <i class="fa-solid fa-paper-plane"></i> <span id="submit-btn-text">සභාපතිතුමා වෙත යොමු කරන්න</span>
         </button>
       </form>
     </div>
@@ -202,8 +229,8 @@
         <i class="fa-solid fa-check"></i>
       </div>
       <h3 style="font-size:20px; font-weight:800; color:#1e1b4b;">යොමු කිරීම සාර්ථකයි!</h3>
-      <p style="font-size:13px; color:#64748b; margin:8px 0 20px;">
-        ඔබගේ පණිවිඩය ආරක්ෂිතව ගලපිටියාගම සණස සමුපකාර සමිතියේ ගරු සභාපතිතුමා හා අධ්‍යක්ෂ මණ්ඩලයේ සෘජු අවධානයට යොමු විය.
+      <p style="font-size:13px; color:#64748b; margin:8px 0 20px;" id="success-target-msg">
+        ඔබගේ පණිවිඩය ආරක්ෂිතව ගලපිටියාගම සණස සමුපකාර සමිතියේ ගරු සභාපතිතුමාගේ සෘජු අවධානයට යොමු විය.
       </p>
       <div style="background:#f8fafc; padding:12px; border-radius:12px; font-weight:700; color:#7c3aed; margin-bottom:20px; font-size:14px;">
         යොමු අංකය: <span id="ref-display">GRV-2026-000</span>
@@ -212,6 +239,7 @@
     </div>
   </div>
 
+  <script src="js/config.js"></script>
   <script>
     let isAnonymous = true;
 
@@ -224,6 +252,12 @@
 
     document.getElementById('mobile-grv-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> යොමු කරමින් පවතී...';
+      }
+
       const refNo = `GRV-2026-${Math.floor(100 + Math.random() * 900)}`;
       const now = new Date();
       const dateStr = now.toISOString().split('T')[0] + ' ' + now.toTimeString().substring(0, 5);
@@ -245,7 +279,22 @@
         actionTaken: ''
       };
 
-      // 1. Try Backend API if available
+      // 1. Send to Google Sheets / Cloud Sync if configured
+      const cloudUrl = typeof getCloudSyncUrl === 'function' ? getCloudSyncUrl() : '';
+      if (cloudUrl) {
+        try {
+          await fetch(cloudUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ type: 'grievance', data: payload })
+          });
+        } catch (err) {
+          console.warn('Cloud sync error:', err);
+        }
+      }
+
+      // 2. Try Localhost / LAN Backend API if reachable
       try {
         await fetch('/api/quick-submit', {
           method: 'POST',
@@ -254,7 +303,7 @@
         });
       } catch (err) {}
 
-      // 2. Persist to LocalStorage
+      // 3. Persist to LocalStorage
       try {
         const stored = localStorage.getItem('galapitiyagama_sanasa_hrms');
         if (stored) {
@@ -266,13 +315,42 @@
       } catch (e) {}
 
       document.getElementById('ref-display').textContent = refNo;
+      const targetLabel = payload.targetRecipient.includes('Manager') ? 'කළමනාකාරතුමාගේ' : 'ගරු සභාපතිතුමාගේ';
+      const successTargetMsg = document.getElementById('success-target-msg');
+      if (successTargetMsg) {
+        successTargetMsg.textContent = `ඔබගේ පණිවිඩය ආරක්ෂිතව ගලපිටියාගම සණස සමුපකාර සමිතියේ ${targetLabel} සෘජු අවධානයට යොමු විය.`;
+      }
       document.getElementById('form-container').style.display = 'none';
       document.getElementById('success-screen').style.display = 'block';
     });
 
+    const targetSelect = document.getElementById('inp-target');
+    if (targetSelect) {
+      targetSelect.addEventListener('change', function() {
+        const isManager = this.value.includes('Manager');
+        const submitBtnText = document.getElementById('submit-btn-text');
+        const confText = document.getElementById('confidential-text');
+        if (isManager) {
+          if (submitBtnText) submitBtnText.textContent = 'කළමනාකාරතුමා වෙත යොමු කරන්න';
+          if (confText) confText.textContent = 'මෙම පෝරමය මගින් ඔබ යොමු කරන අදහස් කළමනාකාරතුමාගේ සෘජු අවධානයට පමණක් යොමු වේ.';
+        } else {
+          if (submitBtnText) submitBtnText.textContent = 'සභාපතිතුමා වෙත යොමු කරන්න';
+          if (confText) confText.textContent = 'මෙම පෝරමය මගින් ඔබ යොමු කරන අදහස් සභාපතිතුමාගේ සෘජු අවධානයට පමණක් යොමු වේ.';
+        }
+      });
+    }
+
     function resetForm() {
       document.getElementById('mobile-grv-form').reset();
       setAnon(true);
+      const submitBtn = document.getElementById('btn-submit');
+      const submitBtnText = document.getElementById('submit-btn-text');
+      const confText = document.getElementById('confidential-text');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        if (submitBtnText) submitBtnText.textContent = 'සභාපතිතුමා වෙත යොමු කරන්න';
+      }
+      if (confText) confText.textContent = 'මෙම පෝරමය මගින් ඔබ යොමු කරන අදහස් සභාපතිතුමාගේ සෘජු අවධානයට පමණක් යොමු වේ.';
       document.getElementById('form-container').style.display = 'block';
       document.getElementById('success-screen').style.display = 'none';
     }

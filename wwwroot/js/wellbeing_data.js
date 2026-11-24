@@ -1,0 +1,1894 @@
+﻿// Galapitiyagama Sanasa Cooperative Society Ltd
+// Employee Wellbeing Survey Seed Data (2025/02 - 2026/10)
+const seedWellbeingSurveys = [
+    {
+        "id":  "WLB-0126",
+        "timestamp":  "2026-10-21 15:10",
+        "employeeName":  "Hangili Naidelage Gayan Lahiru Karunathilaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "වසර පුරා සිදුකළ කැපවීම තුළින් ඉහළ තැන්පතු ප්‍රගතියක් අත්කර ගැනීමට හැකිවීම ගැන අතිශයින් සතුටුයි."
+    },
+    {
+        "id":  "WLB-0125",
+        "timestamp":  "2026-10-21 14:20",
+        "employeeName":  "Wanninayaka Mudiyanselage Chanuka Prabhath Wanninayaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.5,
+        "comments":  "තැන්පතු වර්ධන අංශයේ මාසික ප්‍රගතිය උපරිම මට්ටමක පවතී. ඉතා උසස් සේවා තෘප්තියකින් සේවය කරමි."
+    },
+    {
+        "id":  "WLB-0124",
+        "timestamp":  "2026-10-21 13:30",
+        "employeeName":  "Dewagiri Arachchilage Kavishka Maduwantha Herath",
+        "department":  "CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "පාරිභෝගික සේවා අංශය තුළ ඉහළ ප්‍රමිතියක් පවත්වා ගැනීමට හැකිවීම පිළිබඳව මහත් තෘප්තියක් ලබමි."
+    },
+    {
+        "id":  "WLB-0123",
+        "timestamp":  "2026-10-21 11:45",
+        "employeeName":  "Rathnayaka Mudiyanselage Indunil Gayashan Rathnayaka",
+        "department":  "LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.5,
+        "comments":  "ණය අයකර ගැනීමේ සහ තාක්ෂණික අංශයේ වාර්ෂික කාර්යසාධනය විශිෂ්ට මට්ටමක පවතී. ඉතා තෘප්තිමත්ය."
+    },
+    {
+        "id":  "WLB-0122",
+        "timestamp":  "2026-10-21 10:30",
+        "employeeName":  "Thennakoon Mudiyanselage Nisansala Dulanjani Thennakoon",
+        "department":  "LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "සියලුම ණය ලිපිගොනු වාර්ෂික විගණනයට සුදානම් කර ඇත. කණ්ඩායම් හැඟීම සහ කාර්ය තෘප්තිය උපරිමයි."
+    },
+    {
+        "id":  "WLB-0121",
+        "timestamp":  "2026-10-21 09:15",
+        "employeeName":  "Thennakoon Mudiyanselage Pradeep Tharanga Thennakoon",
+        "department":  "FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "වාර්ෂික මහා සභාවට සූදානම් වීම සහ වාර්තා සකස් කිරීම සාර්ථකව අවසන් අදියරට පැමිණ තිබේ. කාර්ය මණ්ඩලයට ස්තූතියි."
+    },
+    {
+        "id":  "WLB-0120",
+        "timestamp":  "2026-09-22 15:10",
+        "employeeName":  "Hangili Naidelage Gayan Lahiru Karunathilaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "කාර්යාලයේ පවතින සාමකාමී සහ දිරිගන්වනසුලු වාතාවරණය රාජකාරි කාර්යක්ෂමතාවයට පිටුවහලකි."
+    },
+    {
+        "id":  "WLB-0119",
+        "timestamp":  "2026-09-22 14:20",
+        "employeeName":  "Wanninayaka Mudiyanselage Chanuka Prabhath Wanninayaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.5,
+        "comments":  "ක්ෂේත්‍ර රාජකාරියෙන් පසු කාර්යාලයට පැමිණි විට ලැබෙන මිත්‍රශීලී වැඩ පරිසරය මහන්සිය දුරු කරයි."
+    },
+    {
+        "id":  "WLB-0118",
+        "timestamp":  "2026-09-22 13:30",
+        "employeeName":  "Dewagiri Arachchilage Kavishka Maduwantha Herath",
+        "department":  "CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "පාරිභෝගික සේවා කටයුතුවලදී ලැබෙන ප්‍රායෝගික පුහුණුව මගේ වෘත්තීය දියුණුවට ඉතා වටිනා අත්දැකීමකි."
+    },
+    {
+        "id":  "WLB-0117",
+        "timestamp":  "2026-09-22 11:45",
+        "employeeName":  "Rathnayaka Mudiyanselage Indunil Gayashan Rathnayaka",
+        "department":  "LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "ප්‍රවර්ධන කටයුතු හේතුවෙන් සමිතියට එක්වූ නව සාමාජික සංඛ්‍යාව කැපී පෙනෙන ලෙස වැඩි වී ඇත."
+    },
+    {
+        "id":  "WLB-0116",
+        "timestamp":  "2026-09-22 10:30",
+        "employeeName":  "Thennakoon Mudiyanselage Nisansala Dulanjani Thennakoon",
+        "department":  "LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "පද්ධතියේ නවීකරණය නිසා ණය වාර්තා පිළියෙල කිරීම ඉතා පහසු වී තිබේ. කළමනාකාරීත්වයට ස්තූතියි."
+    },
+    {
+        "id":  "WLB-0115",
+        "timestamp":  "2026-09-22 09:15",
+        "employeeName":  "Thennakoon Mudiyanselage Pradeep Tharanga Thennakoon",
+        "department":  "FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "පද්ධතියේ නව යාවත්කාලීන කිරීම් සමඟ සියලුම කළමනාකරණ වාර්තා කඩිනමින් ලබාගැනීමට හැකියාව ලැබී ඇත."
+    },
+    {
+        "id":  "WLB-0114",
+        "timestamp":  "2026-08-20 15:10",
+        "employeeName":  "Hangili Naidelage Gayan Lahiru Karunathilaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "නව සාමාජික පවුල් රැසක් සමිතියේ තැන්පතු යෝජනා ක්‍රම සමඟ සම්බන්ධ කර ගැනීමට හැකි විය."
+    },
+    {
+        "id":  "WLB-0113",
+        "timestamp":  "2026-08-20 14:20",
+        "employeeName":  "Wanninayaka Mudiyanselage Chanuka Prabhath Wanninayaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.5,
+        "comments":  "සාමාජිකයින් සමඟ පවතින විශ්වාසනීය සම්බන්ධතාවය අප සමිතියේ ප්‍රධානතම ශක්තිය බව විශ්වාස කරමි."
+    },
+    {
+        "id":  "WLB-0112",
+        "timestamp":  "2026-08-20 13:30",
+        "employeeName":  "Dewagiri Arachchilage Kavishka Maduwantha Herath",
+        "department":  "CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "නව සාමාජික අයදුම්පත් කඩිනමින් පද්ධතියට ඇතුළත් කර සාමාජික අංක නිකුත් කිරීම සිදු කෙරේ."
+    },
+    {
+        "id":  "WLB-0111",
+        "timestamp":  "2026-08-20 11:45",
+        "employeeName":  "Rathnayaka Mudiyanselage Indunil Gayashan Rathnayaka",
+        "department":  "LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.5,
+        "comments":  "ක්ෂේත්‍ර රාජකාරිවල නිරත වන නිලධාරීන් වෙනුවෙන් විශේෂ දිරිගැන්වීමේ වැඩපිළිවෙලක් ක්‍රියාවට නැංවීම අගනේය."
+    },
+    {
+        "id":  "WLB-0110",
+        "timestamp":  "2026-08-20 10:30",
+        "employeeName":  "Thennakoon Mudiyanselage Nisansala Dulanjani Thennakoon",
+        "department":  "LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "ණය නිකුත් කිරීමේ අංශයේ කාර්යසාධනය ඉතා ඉහළ මට්ටමක පවතින බව සතුටින් දන්වමි."
+    },
+    {
+        "id":  "WLB-0109",
+        "timestamp":  "2026-08-20 09:15",
+        "employeeName":  "Thennakoon Mudiyanselage Pradeep Tharanga Thennakoon",
+        "department":  "FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "කාර්ය මණ්ඩල සාමාජිකයින්ගේ රාජකාරි බෙදීයාම සහ කාර්යබර කළමනාකරණය ඉතා සාර්ථක අයුරින් පවත්වාගෙන යයි."
+    },
+    {
+        "id":  "WLB-0108",
+        "timestamp":  "2026-07-21 15:10",
+        "employeeName":  "Hangili Naidelage Gayan Lahiru Karunathilaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "ක්ෂේත්‍ර රාජකාරි සඳහා අවශ්‍ය සන්නිවේදන සහ ප්‍රවාහන පහසුකම් නිසි පරිදි ක්‍රියාත්මක වේ."
+    },
+    {
+        "id":  "WLB-0107",
+        "timestamp":  "2026-07-21 14:20",
+        "employeeName":  "Wanninayaka Mudiyanselage Chanuka Prabhath Wanninayaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.5,
+        "comments":  "ක්ෂේත්‍ර නිලධාරීන්ගේ දීමනා හා සුභසාධන පහසුකම් නිසි පරිදි ලැබීම දිරිගැන්වීමක් වේ."
+    },
+    {
+        "id":  "WLB-0106",
+        "timestamp":  "2026-07-21 13:30",
+        "employeeName":  "Dewagiri Arachchilage Kavishka Maduwantha Herath",
+        "department":  "CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "දෛනික වැඩ කටයුතු සැලසුම් සහගතව නිම කිරීමට හැකිවන බැවින් මානසික පීඩනයකින් තොරව සේවය කරමි."
+    },
+    {
+        "id":  "WLB-0105",
+        "timestamp":  "2026-07-21 11:45",
+        "employeeName":  "Rathnayaka Mudiyanselage Indunil Gayashan Rathnayaka",
+        "department":  "LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.5,
+        "comments":  "තාක්ෂණික යටිතල පහසුකම් නවීකරණය කිරීම හේතුවෙන් දත්ත ගබඩා කිරීම වඩාත් ආරක්ෂිත වී තිබේ."
+    },
+    {
+        "id":  "WLB-0104",
+        "timestamp":  "2026-07-21 10:30",
+        "employeeName":  "Thennakoon Mudiyanselage Nisansala Dulanjani Thennakoon",
+        "department":  "LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "කාර්යමණ්ඩල පුහුණු වැඩසටහන් හරහා නව දැනුම ලබා ගැනීමට හැකිවීම වෘත්තීය දියුණුවට මහත් පිටුවහලක් විය."
+    },
+    {
+        "id":  "WLB-0103",
+        "timestamp":  "2026-07-21 09:15",
+        "employeeName":  "Thennakoon Mudiyanselage Pradeep Tharanga Thennakoon",
+        "department":  "FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "අධ්‍යක්ෂ මණ්ඩලය සමඟ පවත්වන ලද මාසික ප්‍රගති සමාලෝචනය ඉතා ඵලදායී විය. ඉදිරි සැලසුම් ක්‍රමවත්ව සකස් කර ඇත."
+    },
+    {
+        "id":  "WLB-0102",
+        "timestamp":  "2026-06-19 15:10",
+        "employeeName":  "Hangili Naidelage Gayan Lahiru Karunathilaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "තැන්පතු වර්ධන අංශයේ ප්‍රගතිය ඉතා ශක්තිමත් මට්ටමක පවතී. කණ්ඩායම් එකමුතුකම විශිෂ්ටයි."
+    },
+    {
+        "id":  "WLB-0101",
+        "timestamp":  "2026-06-19 14:20",
+        "employeeName":  "Wanninayaka Mudiyanselage Chanuka Prabhath Wanninayaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.5,
+        "comments":  "අර්ධ වාර්ෂික තැන්පතු ඉලක්කය සාර්ථකව සම්පූර්ණ කිරීමට හැකිවීම පිළිබඳව මහත් ආඩම්බරයක් ඇත."
+    },
+    {
+        "id":  "WLB-0100",
+        "timestamp":  "2026-06-19 13:30",
+        "employeeName":  "Dewagiri Arachchilage Kavishka Maduwantha Herath",
+        "department":  "CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "ඩිජිටල් QR කේතය හරහා ලැබෙන සාමාජික ප්‍රතිචාර නිරීක්ෂණය කර සේවා මට්ටම ඉහළ දැමීමට හැකි විය."
+    },
+    {
+        "id":  "WLB-0099",
+        "timestamp":  "2026-06-19 11:45",
+        "employeeName":  "Rathnayaka Mudiyanselage Indunil Gayashan Rathnayaka",
+        "department":  "LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "ප්‍රවර්ධන අංශයේ මාසික ඉලක්ක අභිබවා යාමට හැකි විය. කළමනාකාරීත්වයේ අගය කිරීම දිරිගැන්වීමකි."
+    },
+    {
+        "id":  "WLB-0098",
+        "timestamp":  "2026-06-19 10:30",
+        "employeeName":  "Thennakoon Mudiyanselage Nisansala Dulanjani Thennakoon",
+        "department":  "LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "ණය ලිපිගොනු සුරක්ෂිතව ගබඩා කිරීමේ පහසුකම් ලැබී ඇත. වැඩ පරිසරය ඉතා ආරක්ෂිත හා පිළිවෙලයි."
+    },
+    {
+        "id":  "WLB-0097",
+        "timestamp":  "2026-06-19 09:15",
+        "employeeName":  "Thennakoon Mudiyanselage Pradeep Tharanga Thennakoon",
+        "department":  "FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "2026 වසරේ මැද භාගය වන විට සංගමයේ මූල්‍ය ස්ථාවරත්වය සහ ලාභදායීතාවය ඉහළ මට්ටමකට පැමිණ ඇත."
+    },
+    {
+        "id":  "WLB-0096",
+        "timestamp":  "2026-05-21 15:10",
+        "employeeName":  "Hangili Naidelage Gayan Lahiru Karunathilaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "සාමාජික මුදල් නිසි පරිදි කළමනාකරණය කර ආරක්ෂිතව කාර්යාලයට භාරදීම වගකීමෙන් ඉටු කරමි."
+    },
+    {
+        "id":  "WLB-0095",
+        "timestamp":  "2026-05-21 14:20",
+        "employeeName":  "Wanninayaka Mudiyanselage Chanuka Prabhath Wanninayaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.5,
+        "comments":  "ක්ෂේත්‍රයේ එකතු කරන තැන්පතු මුදල් නිසි වෙලාවට බැංකුගත කිරීම හා සමතුලිත කිරීම සිදු කෙරේ."
+    },
+    {
+        "id":  "WLB-0094",
+        "timestamp":  "2026-05-21 13:30",
+        "employeeName":  "Dewagiri Arachchilage Kavishka Maduwantha Herath",
+        "department":  "CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "කාර්යාලයේ වැඩ පරිසරය ඉතා ප්‍රියමනාප වන අතර ඉහළ නිලධාරීන්ගේ කාරුණික මඟපෙන්වීම අගය කරමි."
+    },
+    {
+        "id":  "WLB-0093",
+        "timestamp":  "2026-05-21 11:45",
+        "employeeName":  "Rathnayaka Mudiyanselage Indunil Gayashan Rathnayaka",
+        "department":  "LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.5,
+        "comments":  "සාමාජික සුභසාධන ප්‍රතිලාභ සහ රක්ෂණ ආවරණ සම්බන්ධීකරණය සාර්ථකව සිදු කරන ලදී."
+    },
+    {
+        "id":  "WLB-0092",
+        "timestamp":  "2026-05-21 10:30",
+        "employeeName":  "Thennakoon Mudiyanselage Nisansala Dulanjani Thennakoon",
+        "department":  "LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "ණය අනුමත කිරීමේ ක්‍රියාවලිය තවදුරටත් කාර්යක්ෂම කර ඇති බැවින් සාමාජික තෘප්තිය ඉහළ ගොස් ඇත."
+    },
+    {
+        "id":  "WLB-0091",
+        "timestamp":  "2026-05-21 09:15",
+        "employeeName":  "Thennakoon Mudiyanselage Pradeep Tharanga Thennakoon",
+        "department":  "FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "කාර්යාලයේ වැඩ පරිසරය ඉතා තෘප්තිමත්. කාර්ය මණ්ඩලයේ සුභසාධන සහ අභිප්‍රේරණ පහසුකම් නිසි පරිදි ක්‍රියාත්මකයි."
+    },
+    {
+        "id":  "WLB-0090",
+        "timestamp":  "2026-04-22 15:10",
+        "employeeName":  "Hangili Naidelage Gayan Lahiru Karunathilaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "කාර්යාලයේ ඉහළ කළමනාකාරීත්වය නිරන්තරයෙන් ක්ෂේත්‍ර තොරතුරු විමසා සහයෝගය ලබා දෙයි."
+    },
+    {
+        "id":  "WLB-0089",
+        "timestamp":  "2026-04-22 14:20",
+        "employeeName":  "Wanninayaka Mudiyanselage Chanuka Prabhath Wanninayaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.5,
+        "comments":  "කළමනාකාරීත්වය සහ ක්ෂේත්‍ර කාර්ය මණ්ඩලය අතර පවතින යහපත් සබඳතාවය මාගේ කාර්ය තෘප්තිය වැඩි කරයි."
+    },
+    {
+        "id":  "WLB-0088",
+        "timestamp":  "2026-04-22 13:30",
+        "employeeName":  "Dewagiri Arachchilage Kavishka Maduwantha Herath",
+        "department":  "CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "සාමාජිකයින්ගෙන් ලැබෙන ධනාත්මක ප්‍රතිචාර අපගේ සේවය තවදුරටත් උසස් කිරීමට දිරිගැන්වීමක් වේ."
+    },
+    {
+        "id":  "WLB-0087",
+        "timestamp":  "2026-04-22 11:45",
+        "employeeName":  "Rathnayaka Mudiyanselage Indunil Gayashan Rathnayaka",
+        "department":  "LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.5,
+        "comments":  "කාර්යාලීය වැඩ පරිසරය සුහදශීලී වන අතර තාක්ෂණික පහසුකම් උපරිමයෙන් ප්‍රයෝජනයට ගැනේ."
+    },
+    {
+        "id":  "WLB-0086",
+        "timestamp":  "2026-04-22 10:30",
+        "employeeName":  "Thennakoon Mudiyanselage Nisansala Dulanjani Thennakoon",
+        "department":  "LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "කාර්යාලයේ සහෝදර කාර්ය මණ්ඩලය සමඟ ඉතා සහයෝගයෙන් හා සතුටින් රාජකාරි කටයුතු සිදු කරමි."
+    },
+    {
+        "id":  "WLB-0085",
+        "timestamp":  "2026-04-22 09:15",
+        "employeeName":  "Thennakoon Mudiyanselage Pradeep Tharanga Thennakoon",
+        "department":  "FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "උත්සව සමයේ මුදල් සංසරණය සහ සාමාජික ගෙවීම් ගැටළුවකින් තොරව කාර්යක්ෂමව හැසිරවීමට කාර්ය මණ්ඩලය සමත් විය."
+    },
+    {
+        "id":  "WLB-0084",
+        "timestamp":  "2026-03-20 15:10",
+        "employeeName":  "Hangili Naidelage Gayan Lahiru Karunathilaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "ක්ෂේත්‍රයේ දෛනික ගමන් මාර්ග විධිමත් කිරීම නිසා වැඩි සාමාජිකයින් පිරිසක් ආවරණය කළ හැක."
+    },
+    {
+        "id":  "WLB-0083",
+        "timestamp":  "2026-03-20 14:20",
+        "employeeName":  "Wanninayaka Mudiyanselage Chanuka Prabhath Wanninayaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.5,
+        "comments":  "තැන්පතු වර්ධනය උදෙසා ක්‍රියාත්මක කළ විශේෂ ත්‍යාග යෝජනා ක්‍රමයට සාමාජිකයින්ගෙන් ඉහළ ප්‍රතිචාර ලැබිණි."
+    },
+    {
+        "id":  "WLB-0082",
+        "timestamp":  "2026-03-20 13:30",
+        "employeeName":  "Dewagiri Arachchilage Kavishka Maduwantha Herath",
+        "department":  "CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "පාරිභෝගික සේවා කවුන්ටරයේ දෛනික වැඩකටයුතු සුමටව පවත්වාගෙන යාමට සගයන්ගේ සහාය ලැබේ."
+    },
+    {
+        "id":  "WLB-0081",
+        "timestamp":  "2026-03-20 11:45",
+        "employeeName":  "Rathnayaka Mudiyanselage Indunil Gayashan Rathnayaka",
+        "department":  "LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "අයකර ගැනීමේ විශේෂ ක්ෂේත්‍ර චාරිකා මඟින් දීර්ඝ කාලීන හිඟ මුදල් රැසක් සාර්ථකව එකතු කර ගැනීමට හැකි විය."
+    },
+    {
+        "id":  "WLB-0080",
+        "timestamp":  "2026-03-20 10:30",
+        "employeeName":  "Thennakoon Mudiyanselage Nisansala Dulanjani Thennakoon",
+        "department":  "LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "සාමාජිකයින්ගේ ණය අවශ්‍යතා කඩිනමින් තක්සේරු කර සහන සැලසීමට හැකිවීම පිළිබඳව මහත් තෘප්තියක් ඇත."
+    },
+    {
+        "id":  "WLB-0079",
+        "timestamp":  "2026-03-20 09:15",
+        "employeeName":  "Thennakoon Mudiyanselage Pradeep Tharanga Thennakoon",
+        "department":  "FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "පළමු කාර්තුවේ මූල්‍ය ඉලක්ක ජය ගැනීමට හැකි විය. අභ්‍යන්තර විගණන නිර්දේශ කඩිනමින් ක්‍රියාත්මක කරන ලදී."
+    },
+    {
+        "id":  "WLB-0078",
+        "timestamp":  "2026-02-20 15:10",
+        "employeeName":  "Hangili Naidelage Gayan Lahiru Karunathilaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "සාමාජිකයින්ට කඩිනම් සේවාවක් සැපයීමට ලැබීම තුළින් මහත් මානසික තෘප්තියක් ලබමි."
+    },
+    {
+        "id":  "WLB-0077",
+        "timestamp":  "2026-02-20 14:20",
+        "employeeName":  "Wanninayaka Mudiyanselage Chanuka Prabhath Wanninayaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.5,
+        "comments":  "සාමාජිකයින් දක්වන සුහද පිළිගැනීම නිසා ක්ෂේත්‍ර රාජකාරි මහත් උද්යෝගයකින් යුතුව සිදු කරමි."
+    },
+    {
+        "id":  "WLB-0076",
+        "timestamp":  "2026-02-20 13:30",
+        "employeeName":  "Dewagiri Arachchilage Kavishka Maduwantha Herath",
+        "department":  "CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "සාමාජික තොරතුරු සහ ගිණුම් විමසීම් කඩිනමින් සැපයීමට හැකිවීමෙන් පාරිභෝගික තෘප්තිය ඉහළ ගොස් ඇත."
+    },
+    {
+        "id":  "WLB-0075",
+        "timestamp":  "2026-02-20 11:45",
+        "employeeName":  "Rathnayaka Mudiyanselage Indunil Gayashan Rathnayaka",
+        "department":  "LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.5,
+        "comments":  "පද්ධතියේ QR සහ WhatsApp සේවාවන් ක්‍රියාත්මක කිරීම තුළින් සාමාජික සන්නිවේදනය පුළුල් විය."
+    },
+    {
+        "id":  "WLB-0074",
+        "timestamp":  "2026-02-20 10:30",
+        "employeeName":  "Thennakoon Mudiyanselage Nisansala Dulanjani Thennakoon",
+        "department":  "LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "ණය අංශයේ දෛනික ලිපිගොනු සංසරණය ඉතා ක්‍රමවත්ය. කළමනාකාරතුමාගේ කාරුණික මඟපෙන්වීම ලැබේ."
+    },
+    {
+        "id":  "WLB-0073",
+        "timestamp":  "2026-02-20 09:15",
+        "employeeName":  "Thennakoon Mudiyanselage Pradeep Tharanga Thennakoon",
+        "department":  "FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "ණය අංශයේ සහ ක්ෂේත්‍ර අංශයේ මෙහෙයුම් කටයුතු මනා කළමනාකාරීත්වයකින් යුතුව ඉදිරියට ගමන් කරයි."
+    },
+    {
+        "id":  "WLB-0072",
+        "timestamp":  "2026-01-21 15:10",
+        "employeeName":  "Hangili Naidelage Gayan Lahiru Karunathilaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "නව වසරේ තැන්පතු ඉලක්ක වෙත ළඟාවීමට මනා උනන්දුවකින් යුතුව ක්ෂේත්‍ර කටයුතු අරඹන ලදී."
+    },
+    {
+        "id":  "WLB-0071",
+        "timestamp":  "2026-01-21 14:20",
+        "employeeName":  "Wanninayaka Mudiyanselage Chanuka Prabhath Wanninayaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.5,
+        "comments":  "නව වසරේ තැන්පතු ව්‍යාපාරය සාර්ථකව ආරම්භ කරමින් වැඩි තැන්පතු ප්‍රමාණයක් ආකර්ෂණය කරගතිමු."
+    },
+    {
+        "id":  "WLB-0070",
+        "timestamp":  "2026-01-21 13:30",
+        "employeeName":  "Dewagiri Arachchilage Kavishka Maduwantha Herath",
+        "department":  "CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "නව වසරේ පාරිභෝගික සේවාවන් තවදුරටත් කඩිනම් කිරීමට නව උපක්‍රම භාවිතයට ගැනේ."
+    },
+    {
+        "id":  "WLB-0069",
+        "timestamp":  "2026-01-21 11:45",
+        "employeeName":  "Rathnayaka Mudiyanselage Indunil Gayashan Rathnayaka",
+        "department":  "LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.5,
+        "comments":  "2026 නව ප්‍රවර්ධන සැලැස්ම හඳුන්වා දෙන ලදී. කාර්ය මණ්ඩලයේ උනන්දුව හා කැපවීම ඉතා ඉහළයි."
+    },
+    {
+        "id":  "WLB-0068",
+        "timestamp":  "2026-01-21 10:30",
+        "employeeName":  "Thennakoon Mudiyanselage Nisansala Dulanjani Thennakoon",
+        "department":  "LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "නව වසරේ නව ණය යෝජනා ක්‍රම පිළිබඳව සාමාජිකයින් දැනුවත් කිරීම සාර්ථකව ආරම්භ කරන ලදී."
+    },
+    {
+        "id":  "WLB-0067",
+        "timestamp":  "2026-01-21 09:15",
+        "employeeName":  "Thennakoon Mudiyanselage Pradeep Tharanga Thennakoon",
+        "department":  "FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "2026 නව වසර සඳහා නව ඉලක්ක සහිතව සාර්ථක ආරම්භයක් ලබා ගැනීමට හැකි විය. කණ්ඩායමේ උනන්දුව විශිෂ්ටයි."
+    },
+    {
+        "id":  "WLB-0066",
+        "timestamp":  "2025-12-19 15:10",
+        "employeeName":  "Hangili Naidelage Gayan Lahiru Karunathilaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "වසර අවසානයේ සියලුම තැන්පතු ලේඛන සහ පොත්පත් සමතුලිත කර අවසන් කිරීමට හැකි විය."
+    },
+    {
+        "id":  "WLB-0065",
+        "timestamp":  "2025-12-19 14:20",
+        "employeeName":  "Wanninayaka Mudiyanselage Chanuka Prabhath Wanninayaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.5,
+        "comments":  "වසර අවසානයේ තැන්පතු වර්ධන ඉලක්කය විශිෂ්ට ලෙස ජය ගැනීමට හැකි විය. සියලු දෙනාට ස්තූතියි."
+    },
+    {
+        "id":  "WLB-0064",
+        "timestamp":  "2025-12-19 13:30",
+        "employeeName":  "Dewagiri Arachchilage Kavishka Maduwantha Herath",
+        "department":  "CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "වසර අවසානයේ සියලුම පාරිභෝගික ගිණුම් ප්‍රකාශන සාර්ථකව නිකුත් කර නිම කරන ලදී."
+    },
+    {
+        "id":  "WLB-0063",
+        "timestamp":  "2025-12-19 11:45",
+        "employeeName":  "Rathnayaka Mudiyanselage Indunil Gayashan Rathnayaka",
+        "department":  "LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "වසර අවසානයේ ණය අයකර ගැනීමේ වාර්ෂික ඉලක්කය සාර්ථකව සපුරා ගැනීමට සමත් වීමු. මහත් ආඩම්බරයක්."
+    },
+    {
+        "id":  "WLB-0062",
+        "timestamp":  "2025-12-19 10:30",
+        "employeeName":  "Thennakoon Mudiyanselage Nisansala Dulanjani Thennakoon",
+        "department":  "LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "වසර අවසානයේ ණය ලේඛන සමාලෝචනය සාර්ථකව නිම කළෙමු. සේවක සහයෝගීතාවය විශිෂ්ටයි."
+    },
+    {
+        "id":  "WLB-0061",
+        "timestamp":  "2025-12-19 09:15",
+        "employeeName":  "Thennakoon Mudiyanselage Pradeep Tharanga Thennakoon",
+        "department":  "FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "වසර අවසාන මූල්‍ය ගිණුම් කටයුතු සාර්ථකව නිම කළෙමු. සමස්ත කාර්ය මණ්ඩලයේ කැපවීම අතිශයින් අගය කරමි."
+    },
+    {
+        "id":  "WLB-0060",
+        "timestamp":  "2025-11-20 15:10",
+        "employeeName":  "Hangili Naidelage Gayan Lahiru Karunathilaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "ක්ෂේත්‍ර නිලධාරීන් සඳහා ලැබෙන දිරිගැන්වීම් සහ ප්‍රතිලාභ අගය කරමි."
+    },
+    {
+        "id":  "WLB-0059",
+        "timestamp":  "2025-11-20 14:20",
+        "employeeName":  "Wanninayaka Mudiyanselage Chanuka Prabhath Wanninayaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.5,
+        "comments":  "සාමාජිකයින්ගේ මුදල් සුරක්ෂිතව ගෙන ඒමට සහ තැන්පත් කිරීමට විශේෂ ආරක්ෂිත ක්‍රමවේද අනුගමනය කෙරේ."
+    },
+    {
+        "id":  "WLB-0058",
+        "timestamp":  "2025-11-20 13:30",
+        "employeeName":  "Dewagiri Arachchilage Kavishka Maduwantha Herath",
+        "department":  "CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "කාර්යාලයේ තේ පැන් සහ විවේක පහසුකම් නිසි පරිදි ක්‍රියාත්මක වීම දෛනික මහන්සිය දුරු කරයි."
+    },
+    {
+        "id":  "WLB-0057",
+        "timestamp":  "2025-11-20 11:45",
+        "employeeName":  "Rathnayaka Mudiyanselage Indunil Gayashan Rathnayaka",
+        "department":  "LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.5,
+        "comments":  "ක්ෂේත්‍ර නිලධාරීන්ගේ ආරක්ෂාව සහ ක්ෂේත්‍ර ගැටළු පිළිබඳව කළමනාකාරීත්වය නිරන්තරයෙන් සොයා බලයි."
+    },
+    {
+        "id":  "WLB-0056",
+        "timestamp":  "2025-11-20 10:30",
+        "employeeName":  "Thennakoon Mudiyanselage Nisansala Dulanjani Thennakoon",
+        "department":  "LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "කාර්යාලයේ පරිගණක පද්ධතිය මඟින් ණය තොරතුරු පහසුවෙන් යාවත්කාලීන කිරීමට හැකි වී තිබේ."
+    },
+    {
+        "id":  "WLB-0055",
+        "timestamp":  "2025-11-20 09:15",
+        "employeeName":  "Thennakoon Mudiyanselage Pradeep Tharanga Thennakoon",
+        "department":  "FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "කාර්යාලයේ පරිගණක හා ජාල පහසුකම් වැඩිදියුණු කිරීම තුළින් වැඩ කාර්යක්ෂමතාව සැලකිය යුතු ලෙස ඉහළ ගියේය."
+    },
+    {
+        "id":  "WLB-0054",
+        "timestamp":  "2025-10-21 15:10",
+        "employeeName":  "Hangili Naidelage Gayan Lahiru Karunathilaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "ග්‍රාමීය ප්‍රදේශවල සාමාජිකයින්ගේ ඉතිරිකිරීමේ පුරුද්ද වර්ධනය කිරීමට මඟපෙන්වීමට ලැබීම සතුටක්."
+    },
+    {
+        "id":  "WLB-0053",
+        "timestamp":  "2025-10-21 14:20",
+        "employeeName":  "Wanninayaka Mudiyanselage Chanuka Prabhath Wanninayaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.5,
+        "comments":  "වැසි දිනවල ක්ෂේත්‍ර රාජකාරි සඳහා අවශ්‍ය ආරක්ෂිත පහසුකම් ආයතනයෙන් සම්පාදනය කර තිබේ."
+    },
+    {
+        "id":  "WLB-0052",
+        "timestamp":  "2025-10-21 13:30",
+        "employeeName":  "Dewagiri Arachchilage Kavishka Maduwantha Herath",
+        "department":  "CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "ලිපිගොනු සහ පරිගණක දත්ත ආදානය නිරවද්‍යව සිදු කිරීමට වැඩි අවධානයක් යොමු කරමි."
+    },
+    {
+        "id":  "WLB-0051",
+        "timestamp":  "2025-10-21 11:45",
+        "employeeName":  "Rathnayaka Mudiyanselage Indunil Gayashan Rathnayaka",
+        "department":  "LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.5,
+        "comments":  "ග්‍රාමීය මට්ටමින් සංවිධානය කළ ප්‍රවර්ධන රැස්වීම් ඉතා සාර්ථක විය. සාමාජික ප්‍රතිචාර ඉහළයි."
+    },
+    {
+        "id":  "WLB-0050",
+        "timestamp":  "2025-10-21 10:30",
+        "employeeName":  "Thennakoon Mudiyanselage Nisansala Dulanjani Thennakoon",
+        "department":  "LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "ණය අයදුම්පත්වල සුරැකුම්පත් පරීක්ෂාව වඩාත් විධිමත් කර ඇත. ඉහළ නිලධාරීන්ගේ මඟපෙන්වීම අගය කරමි."
+    },
+    {
+        "id":  "WLB-0049",
+        "timestamp":  "2025-10-21 09:15",
+        "employeeName":  "Thennakoon Mudiyanselage Pradeep Tharanga Thennakoon",
+        "department":  "FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "නව මූල්‍ය වර්ෂයේ අයවැය සැලසුම් කිරීම සාර්ථකව අවසන් කරන ලදී. කළමනාකරණ කටයුතු පහසුවෙන් සිදු වේ."
+    },
+    {
+        "id":  "WLB-0048",
+        "timestamp":  "2025-09-23 15:10",
+        "employeeName":  "Hangili Naidelage Gayan Lahiru Karunathilaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "තැන්පතු වර්ධන සහතිකපත් සහ ළමා ගිණුම් ප්‍රවර්ධනය කිරීමට විශේෂ අවධානයක් යොමු කළෙමි."
+    },
+    {
+        "id":  "WLB-0047",
+        "timestamp":  "2025-09-23 14:20",
+        "employeeName":  "Wanninayaka Mudiyanselage Chanuka Prabhath Wanninayaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.5,
+        "comments":  "ක්ෂේත්‍ර නිලධාරීන් අතර පවතින කණ්ඩායම් හැඟීම නිසා ඉලක්ක ජය ගැනීම පහසු වී ඇත."
+    },
+    {
+        "id":  "WLB-0046",
+        "timestamp":  "2025-09-23 13:30",
+        "employeeName":  "Dewagiri Arachchilage Kavishka Maduwantha Herath",
+        "department":  "CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "සාමාජිකයින් සමිතිය පිළිබඳව දක්වන ප්‍රසාදය සතුටට කරුණකි. දෛනික රාජකාරිය සතුටින් සිදු කරමි."
+    },
+    {
+        "id":  "WLB-0045",
+        "timestamp":  "2025-09-23 11:45",
+        "employeeName":  "Rathnayaka Mudiyanselage Indunil Gayashan Rathnayaka",
+        "department":  "LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "තාක්ෂණික පද්ධතියේ දත්ත උපස්ථ කටයුතු සහ ක්ලවුඩ් සම්බන්ධතා නිසි පරිදි පරීක්ෂා කර තහවුරු කෙරිණි."
+    },
+    {
+        "id":  "WLB-0044",
+        "timestamp":  "2025-09-23 10:30",
+        "employeeName":  "Thennakoon Mudiyanselage Nisansala Dulanjani Thennakoon",
+        "department":  "LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "ණය අයකර ගැනීමේ අංශය සමඟ එක්ව සකස් කළ නව සැලැස්ම මඟින් නිසි නිකුත් කිරීම් තහවුරු විය."
+    },
+    {
+        "id":  "WLB-0043",
+        "timestamp":  "2025-09-23 09:15",
+        "employeeName":  "Thennakoon Mudiyanselage Pradeep Tharanga Thennakoon",
+        "department":  "FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "ක්ෂේත්‍ර ණය අයකර ගැනීමේ ප්‍රගතිය ඉහළ ගොස් ඇත. අංශ ප්‍රධානීන් අතර සම්බන්ධීකරණය ඉතා ශක්තිමත්."
+    },
+    {
+        "id":  "WLB-0042",
+        "timestamp":  "2025-08-21 15:10",
+        "employeeName":  "Hangili Naidelage Gayan Lahiru Karunathilaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "කාර්යාලයේ වැඩ පරිසරය සුහදශීලී වන අතර සේවකයින් අතර සහෝදරත්වයක් පවතී."
+    },
+    {
+        "id":  "WLB-0041",
+        "timestamp":  "2025-08-21 14:20",
+        "employeeName":  "Wanninayaka Mudiyanselage Chanuka Prabhath Wanninayaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.5,
+        "comments":  "තැන්පතු එකතු කිරීමේ රිසිට්පත් සහ ගිණුම් සටහන් දිනපතා නිවැරදිව කාර්යාලයට භාර දෙනු ලැබේ."
+    },
+    {
+        "id":  "WLB-0040",
+        "timestamp":  "2025-08-21 13:30",
+        "employeeName":  "Dewagiri Arachchilage Kavishka Maduwantha Herath",
+        "department":  "CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "කවුන්ටර පරිශ්‍රයේ වායුසමීකරණ සහ ආසන පහසුකම් සාමාජිකයින්ට මෙන්ම අපටද සුවපහසු වැඩ පරිසරයක් සපයයි."
+    },
+    {
+        "id":  "WLB-0039",
+        "timestamp":  "2025-08-21 11:45",
+        "employeeName":  "Rathnayaka Mudiyanselage Indunil Gayashan Rathnayaka",
+        "department":  "LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.5,
+        "comments":  "ණය අයකර ගැනීමේ ප්‍රගතිය පසුගිය මාසයට වඩා 15% කින් වර්ධනය කර ගැනීමට හැකිවීම සතුටට කරුණකි."
+    },
+    {
+        "id":  "WLB-0038",
+        "timestamp":  "2025-08-21 10:30",
+        "employeeName":  "Thennakoon Mudiyanselage Nisansala Dulanjani Thennakoon",
+        "department":  "LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "සාමාජිකයින්ට ණය ලබාගැනීමේදී අවශ්‍ය උපදෙස් කාරුණිකව ලබාදීමට අප අංශය විශේෂ උනන්දුවක් දැක්වීය."
+    },
+    {
+        "id":  "WLB-0037",
+        "timestamp":  "2025-08-21 09:15",
+        "employeeName":  "Thennakoon Mudiyanselage Pradeep Tharanga Thennakoon",
+        "department":  "FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "කාර්යාලයේ වැඩ පරිසරය සුහදශීලී වන අතර කාර්ය මණ්ඩලය අතර මනා සහයෝගීතාවයක් පවතී."
+    },
+    {
+        "id":  "WLB-0036",
+        "timestamp":  "2025-07-22 15:10",
+        "employeeName":  "Hangili Naidelage Gayan Lahiru Karunathilaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "ක්ෂේත්‍රයේදී මුහුණ දෙන අභියෝග කළමනාකරණය කරගැනීමට සෙසු ක්ෂේත්‍ර නිලධාරීන්ගෙන් පූර්ණ සහය ලැබේ."
+    },
+    {
+        "id":  "WLB-0035",
+        "timestamp":  "2025-07-22 14:20",
+        "employeeName":  "Wanninayaka Mudiyanselage Chanuka Prabhath Wanninayaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.5,
+        "comments":  "ක්ෂේත්‍රයේ පවතින ගැටළු පිළිබඳව කළමනාකාරතුමා නිරතුරුව සාකච්ඡා කර විසඳුම් ලබාදීම අගය කරමි."
+    },
+    {
+        "id":  "WLB-0034",
+        "timestamp":  "2025-07-22 13:30",
+        "employeeName":  "Dewagiri Arachchilage Kavishka Maduwantha Herath",
+        "department":  "CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "පාරිභෝගික පැමිණිලි අවම කරගැනීමට පියවර ගෙන ඇති අතර කළමනාකාරිත්වයෙන් අවශ්‍ය සහයෝගය ලැබේ."
+    },
+    {
+        "id":  "WLB-0033",
+        "timestamp":  "2025-07-22 11:45",
+        "employeeName":  "Rathnayaka Mudiyanselage Indunil Gayashan Rathnayaka",
+        "department":  "LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.5,
+        "comments":  "කාර්ය මණ්ඩල සුභසාධන කටයුතු සහ සුහද හමු සංවිධානය කිරීමට ලැබීම තුළින් කණ්ඩායම් බැඳීම වැඩි විය."
+    },
+    {
+        "id":  "WLB-0032",
+        "timestamp":  "2025-07-22 10:30",
+        "employeeName":  "Thennakoon Mudiyanselage Nisansala Dulanjani Thennakoon",
+        "department":  "LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "ණය නිකුත් කිරීම් ඉලක්ක සපුරා ගැනීමට හැකිවීම ගැන සතුටුයි. කාර්යාලයේ වැඩ පරිසරය සුවපහසුයි."
+    },
+    {
+        "id":  "WLB-0031",
+        "timestamp":  "2025-07-22 09:15",
+        "employeeName":  "Thennakoon Mudiyanselage Pradeep Tharanga Thennakoon",
+        "department":  "FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "අධ්‍යක්ෂ මණ්ඩලයේ සහයෝගය හා මඟපෙන්වීම ඉතා ඉහළයි. ඩිජිටල්කරණ වැඩසටහන් කඩිනම් කිරීම අත්‍යවශ්‍ය වේ."
+    },
+    {
+        "id":  "WLB-0030",
+        "timestamp":  "2025-06-19 15:10",
+        "employeeName":  "Hangili Naidelage Gayan Lahiru Karunathilaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "සාමාජික තැන්පතු නියමිත දිනට එකතු කර සංගමයේ ගිණුම්වලට බැර කිරීම නිවැරදිව සිදු කෙරේ."
+    },
+    {
+        "id":  "WLB-0029",
+        "timestamp":  "2025-06-19 14:20",
+        "employeeName":  "Wanninayaka Mudiyanselage Chanuka Prabhath Wanninayaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.5,
+        "comments":  "නව තැන්පතුකරුවන් රැසක් සමිතියට එක් කරගැනීමට හැකිවීම පිළිබඳව මහත් සතුටක් ඇත."
+    },
+    {
+        "id":  "WLB-0028",
+        "timestamp":  "2025-06-19 13:30",
+        "employeeName":  "Dewagiri Arachchilage Kavishka Maduwantha Herath",
+        "department":  "CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "කාර්යාලයේ අනෙකුත් කාර්ය මණ්ඩලය සමඟ ඉතා සහයෝගයෙන් සහ සුහදත්වයෙන් රාජකාරි සිදු කරමි."
+    },
+    {
+        "id":  "WLB-0027",
+        "timestamp":  "2025-06-19 11:45",
+        "employeeName":  "Rathnayaka Mudiyanselage Indunil Gayashan Rathnayaka",
+        "department":  "LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "ක්ෂේත්‍ර චාරිකා සඳහා ප්‍රවාහන හා ඉන්ධන දීමනා නිසි පරිදි ලැබීම නිසා කටයුතු පහසු විය."
+    },
+    {
+        "id":  "WLB-0026",
+        "timestamp":  "2025-06-19 10:30",
+        "employeeName":  "Thennakoon Mudiyanselage Nisansala Dulanjani Thennakoon",
+        "department":  "LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "ණය ලේඛන පරිගණකගත කිරීමේ කටයුතු සාර්ථකව සිදු වෙමින් පවතී. කාර්යාලීය ලිපිද්‍රව්‍ය පහසුකම් යහපත්."
+    },
+    {
+        "id":  "WLB-0025",
+        "timestamp":  "2025-06-19 09:15",
+        "employeeName":  "Thennakoon Mudiyanselage Pradeep Tharanga Thennakoon",
+        "department":  "FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "අර්ධ වාර්ෂික මූල්‍ය සමාලෝචනයට අනුව සියලුම අංශයන්හි ප්‍රගතිය සතුටුදායක මට්ටමක පවතී."
+    },
+    {
+        "id":  "WLB-0024",
+        "timestamp":  "2025-05-20 15:10",
+        "employeeName":  "Hangili Naidelage Gayan Lahiru Karunathilaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "කළමනාකාරතුමාගේ ප්‍රායෝගික උපදෙස් ක්ෂේත්‍ර ගැටළු පහසුවෙන් විසඳා ගැනීමට මහත් රුකුලක් විය."
+    },
+    {
+        "id":  "WLB-0023",
+        "timestamp":  "2025-05-20 14:20",
+        "employeeName":  "Wanninayaka Mudiyanselage Chanuka Prabhath Wanninayaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.5,
+        "comments":  "ක්ෂේත්‍ර චාරිකා සඳහා ප්‍රමාණවත් ප්‍රවාහන සහයෝගයක් ලැබේ. වැඩ පරිසරය ඉතා සුහදශීලීයි."
+    },
+    {
+        "id":  "WLB-0022",
+        "timestamp":  "2025-05-20 13:30",
+        "employeeName":  "Dewagiri Arachchilage Kavishka Maduwantha Herath",
+        "department":  "CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "සාමාජිකයින්ගේ විමසීම් සඳහා ක්ෂණිකව තොරතුරු ලබාදීමට පරිගණක පද්ධතිය බෙහෙවින් උපකාරී වේ."
+    },
+    {
+        "id":  "WLB-0021",
+        "timestamp":  "2025-05-20 11:45",
+        "employeeName":  "Rathnayaka Mudiyanselage Indunil Gayashan Rathnayaka",
+        "department":  "LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.5,
+        "comments":  "කාර්යාලයේ තාක්ෂණික හා පරිගණක ගැටළු නිරාකරණය කරමින් සුමට පද්ධති ක්‍රියාකාරිත්වයක් තහවුරු කළා."
+    },
+    {
+        "id":  "WLB-0020",
+        "timestamp":  "2025-05-20 10:30",
+        "employeeName":  "Thennakoon Mudiyanselage Nisansala Dulanjani Thennakoon",
+        "department":  "LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "ණය කමිටුව සමඟ මනා සම්බන්ධීකරණයකින් කටයුතු කිරීම නිසා ණය අනුමත කිරීම් ප්‍රමාදයකින් තොරව සිදු වේ."
+    },
+    {
+        "id":  "WLB-0019",
+        "timestamp":  "2025-05-20 09:15",
+        "employeeName":  "Thennakoon Mudiyanselage Pradeep Tharanga Thennakoon",
+        "department":  "FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "කාර්යාලයේ මූල්‍ය විනය හා වාර්තාකරණය ඉතා යහපත් මට්ටමක පවතී. කාර්ය මණ්ඩල සුභසාධනය කෙරෙහි වැඩි අවධානයක් යොමු කළ යුතුය."
+    },
+    {
+        "id":  "WLB-0018",
+        "timestamp":  "2025-04-22 15:10",
+        "employeeName":  "Hangili Naidelage Gayan Lahiru Karunathilaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "සාමාජිකයින් සමිතිය පිළිබඳව දක්වන විශ්වාසය ක්ෂේත්‍රයේදී මනාව පිළිබිඹු වේ. වැඩ පරිසරය යහපත්."
+    },
+    {
+        "id":  "WLB-0017",
+        "timestamp":  "2025-04-22 14:20",
+        "employeeName":  "Wanninayaka Mudiyanselage Chanuka Prabhath Wanninayaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.5,
+        "comments":  "සාමාජිකයින් අතර සමිතියේ තැන්පතු පිළිබඳ විශ්වාසය ඉහළ මට්ටමක පවතී. ක්ෂේත්‍ර රාජකාරි සතුටින් කරමි."
+    },
+    {
+        "id":  "WLB-0016",
+        "timestamp":  "2025-04-22 13:30",
+        "employeeName":  "Dewagiri Arachchilage Kavishka Maduwantha Herath",
+        "department":  "CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "අවුරුදු සමයේ පැමිණි විශාල ගනුදෙනුකාර පිරිසට ගැටළුවකින් තොරව කාර්යක්ෂමව සේවා සැලසීමට හැකි විය."
+    },
+    {
+        "id":  "WLB-0015",
+        "timestamp":  "2025-04-22 11:45",
+        "employeeName":  "Rathnayaka Mudiyanselage Indunil Gayashan Rathnayaka",
+        "department":  "LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.5,
+        "comments":  "නව සාමාජිකයින් බඳවා ගැනීමේ ප්‍රවර්ධන ව්‍යාපාරය සාර්ථකව අවසන් කළෙමු. කළමනාකාරීත්ව සහාය විශිෂ්ටයි."
+    },
+    {
+        "id":  "WLB-0014",
+        "timestamp":  "2025-04-22 10:30",
+        "employeeName":  "Thennakoon Mudiyanselage Nisansala Dulanjani Thennakoon",
+        "department":  "LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "සාමාජිකයින්ගේ හදිසි ණය අවශ්‍යතා සඳහා ප්‍රමුඛත්වය ලබා දෙමින් කටයුතු කරන ලදී."
+    },
+    {
+        "id":  "WLB-0013",
+        "timestamp":  "2025-04-22 09:15",
+        "employeeName":  "Thennakoon Mudiyanselage Pradeep Tharanga Thennakoon",
+        "department":  "FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "අලුත් අවුරුදු උත්සව සමයේ ගනුදෙනුකරුවන්ට අඛණ්ඩව විශිෂ්ට සේවාවක් සැපයීමට හැකිවීම ගැන සතුටුයි."
+    },
+    {
+        "id":  "WLB-0012",
+        "timestamp":  "2025-03-21 15:10",
+        "employeeName":  "Hangili Naidelage Gayan Lahiru Karunathilaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "තැන්පතු එකතු කිරීමේ මාර්ග ක්‍රමවත්ව සැලසුම් කර ඇති බැවින් කාලය හා වියදම ඉතිරි වේ."
+    },
+    {
+        "id":  "WLB-0011",
+        "timestamp":  "2025-03-21 14:20",
+        "employeeName":  "Wanninayaka Mudiyanselage Chanuka Prabhath Wanninayaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.5,
+        "comments":  "ක්ෂේත්‍ර තැන්පතු ඉලක්ක සපුරා ගැනීමට කළමනාකාරිත්වයෙන් ලැබෙන උපදෙස් ඉතා වැදගත් වේ."
+    },
+    {
+        "id":  "WLB-0010",
+        "timestamp":  "2025-03-21 13:30",
+        "employeeName":  "Dewagiri Arachchilage Kavishka Maduwantha Herath",
+        "department":  "CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "දෛනික ලේඛනගත කිරීම් සහ මුදල් රිසිට්පත් නිකුත් කිරීම් නිසි වෙලාවට සිදු කෙරේ. වැඩබිම ඉතා පිරිසිදුයි."
+    },
+    {
+        "id":  "WLB-0009",
+        "timestamp":  "2025-03-21 11:45",
+        "employeeName":  "Rathnayaka Mudiyanselage Indunil Gayashan Rathnayaka",
+        "department":  "LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "ප්‍රමාද වූ ණය අයකර ගැනීම සඳහා විශේෂ සාකච්ඡා සාමාජිකයින් සමඟ පවත්වා යහපත් ප්‍රතිඵල ලැබිණි."
+    },
+    {
+        "id":  "WLB-0008",
+        "timestamp":  "2025-03-21 10:30",
+        "employeeName":  "Thennakoon Mudiyanselage Nisansala Dulanjani Thennakoon",
+        "department":  "LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "ක්ෂුද්‍ර මූල්‍ය හා කෘෂිකාර්මික ණය ලිපිගොනු ක්‍රමවත්ව සංවිධානය කර ඇත. කළමනාකාරීත්වයේ සහයෝගය යහපත්."
+    },
+    {
+        "id":  "WLB-0007",
+        "timestamp":  "2025-03-21 09:15",
+        "employeeName":  "Thennakoon Mudiyanselage Pradeep Tharanga Thennakoon",
+        "department":  "FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "ණය නිකුත් කිරීම් සහ තැන්පතු ඉලක්ක පිළිබඳ මාසික සමාලෝචනය සාර්ථකයි. අභ්‍යන්තර පාලන පද්ධතිය ශක්තිමත් කර ඇත."
+    },
+    {
+        "id":  "WLB-0006",
+        "timestamp":  "2025-02-20 15:10",
+        "employeeName":  "Hangili Naidelage Gayan Lahiru Karunathilaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "ක්ෂේත්‍ර රාජකාරි කටයුතු සැලසුම් සහගතව සහ ආරක්ෂිතව ආරම්භ කර සාර්ථකව පවත්වාගෙන යමි."
+    },
+    {
+        "id":  "WLB-0005",
+        "timestamp":  "2025-02-20 14:20",
+        "employeeName":  "Wanninayaka Mudiyanselage Chanuka Prabhath Wanninayaka",
+        "department":  "FLD — ක්ෂේත්‍ර අංශය (Field Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.5,
+        "comments":  "ගම්මානවල සාමාජිකයින් හමුවී දෛනික සහ මාසික තැන්පතු එකතු කිරීම ඉතා සාර්ථකව සිදු විය."
+    },
+    {
+        "id":  "WLB-0004",
+        "timestamp":  "2025-02-20 13:30",
+        "employeeName":  "Dewagiri Arachchilage Kavishka Maduwantha Herath",
+        "department":  "CSD — පාරිභෝගික සේවා අංශය (Customer Service Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "පාරිභෝගික සේවා කවුන්ටරයේ සාමාජිකයින්ට කාරුණික සහ කඩිනම් සේවාවක් සැපයීමට ලැබීම සතුටක්."
+    },
+    {
+        "id":  "WLB-0003",
+        "timestamp":  "2025-02-20 11:45",
+        "employeeName":  "Rathnayaka Mudiyanselage Indunil Gayashan Rathnayaka",
+        "department":  "LRP — ණය අයකර ගැනීම, ප්‍රවර්ධන, සුභසාධන හා තාක්ෂණික අංශය (Loan Recovery, Promotion, Welfare, and Technical Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  4,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.5,
+        "comments":  "ප්‍රවර්ධන වැඩසටහන් සහ ක්ෂේත්‍ර ණය අයකර ගැනීමේ මෙහෙයුම් සැලසුම් සහගතව ක්‍රියාත්මක කෙරේ."
+    },
+    {
+        "id":  "WLB-0002",
+        "timestamp":  "2025-02-20 10:30",
+        "employeeName":  "Thennakoon Mudiyanselage Nisansala Dulanjani Thennakoon",
+        "department":  "LID — ණය නිකුත් කිරීමේ අංශය (Loan Issuance Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  4,
+                        "salaryFairness":  4,
+                        "careerGrowth":  4
+                    },
+        "averageScore":  4.2,
+        "comments":  "ණය ඉල්ලුම්පත් පරීක්ෂාව සහ නිර්දේශ කිරීම් කඩිනමින් සිදු කිරීමට හැකි විය. වැඩ පරිසරය ඉතා සුහදශීලීයි."
+    },
+    {
+        "id":  "WLB-0001",
+        "timestamp":  "2025-02-20 09:15",
+        "employeeName":  "Thennakoon Mudiyanselage Pradeep Tharanga Thennakoon",
+        "department":  "FMD — මූල්‍ය හා කළමනාකරණ අංශය (Finance and Management Division)",
+        "isAnonymous":  false,
+        "ratings":  {
+                        "workEnvironment":  5,
+                        "managementSupport":  5,
+                        "salaryFairness":  4,
+                        "careerGrowth":  5
+                    },
+        "averageScore":  4.8,
+        "comments":  "නව වසරේ මුල් කාර්තුවේ මූල්‍ය හා පාලන කටයුතු සැලසුම් සහගතව ආරම්භ කිරීමට හැකි විය. කාර්ය මණ්ඩලයේ සහයෝගය විශිෂ්ටයි."
+    }
+];

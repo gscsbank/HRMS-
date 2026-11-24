@@ -1144,7 +1144,7 @@ body {
 }
 
 .smart-modal-overlay.active {
-  display: flex;
+  display: flex !important;
 }
 
 .smart-modal-box {
