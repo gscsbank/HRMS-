@@ -239,7 +239,7 @@
         <!-- Anonymous Option -->
         <div class="anon-box" onclick="toggleAnonBox(event)">
           <input type="checkbox" id="chk-anonymous" checked>
-          <label for="chk-anonymous">🔒 මගේ නම හෙළි නොකර නිර්නාමිකව යොමු කරන්න (Anonymous)</label>
+          <label for="chk-anonymous"><i class="fa-solid fa-user-shield" style="margin-right:6px;"></i>මගේ නම හෙළි නොකර නිර්නාමිකව යොමු කරන්න (Anonymous)</label>
         </div>
 
         <!-- Optional Staff Details (shown if not anonymous) -->
@@ -410,7 +410,7 @@
       const dateStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
 
       const isAnon = chkAnon.checked;
-      const empName = isAnon ? '🔒 නිර්නාමික (Anonymous Staff)' : (document.getElementById('inp-staff-name').value || 'කාර්ය මණ්ඩල සාමාජික');
+      const empName = isAnon ? 'නිර්නාමික (Anonymous Staff)' : (document.getElementById('inp-staff-name').value || 'කාර්ය මණ්ඩල සාමාජික');
       const empDept = isAnon ? '' : document.getElementById('inp-staff-dept').value;
       const comments = document.getElementById('inp-comments').value || '';
       const avgScore = Number(((rateWork + rateMgmt + rateSalary + rateGrowth) / 4).toFixed(1));

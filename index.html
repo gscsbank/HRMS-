@@ -83,7 +83,12 @@
 
         <a class="menu-item" data-target="payroll">
           <i class="fa-solid fa-file-invoice-dollar"></i>
-          <span>Payroll & EPF/ETF (වැටුප්)</span>
+          <span>2025 වර්ෂය මාසික වැටුප්, EPF/ETF</span>
+        </a>
+
+        <a class="menu-item" data-target="payroll-2026">
+          <i class="fa-solid fa-calendar-plus"></i>
+          <span>2026 වර්ෂයේ සිට මාසික වැටුප්</span>
         </a>
 
         <a class="menu-item" data-target="appraisals">
@@ -695,10 +700,10 @@
                   <img src="images/gscs_logo.png" alt="GSCS Logo" style="width:100%; height:auto; display:block;">
                 </div>
                 <div>
-                  <h2 style="font-size:18px; font-weight:800; color:#1e1b4b; margin-bottom:2px;">මාසික වැටුප්, EPF/ETF හා නිල පඩිපත් කළමනාකරණය</h2>
-                  <p style="font-size:12.5px; color:#64748b; margin-bottom:4px;">සීමා රහිත ගලපිටියාගම සකසුරුවම් හා ණය ගනුදෙනු පිළිබඳ සමුපකාර සමිතිය (කුලි/395)</p>
+                  <h2 style="font-size:18px; font-weight:800; color:#1e1b4b; margin-bottom:2px;">2025 වර්ෂය මාසික වැටුප්, EPF/ETF හා නිල වාර්තා ලේඛනය</h2>
+                  <p style="font-size:12.5px; color:#64748b; margin-bottom:4px;">සීමා රහිත ගලපිටියාගම සකසුරුවම් හා ණය ගනුදෙනු පිළිබඳ සමුපකාර සමිතිය (කුලි/395) - 2025 වර්ෂයේ වැටුප් ක්‍රමවේදය</p>
                   <div style="font-size:11.5px; color:#7c3aed; font-weight:700;">
-                    <i class="fa-solid fa-scale-balanced" style="margin-right:4px;"></i> 8% සේවක EPF | 12% සේවායෝජක EPF | 3% ETF | 2.5% + 5% විශ්‍රාම අරමුදල
+                    <i class="fa-solid fa-scale-balanced" style="margin-right:4px;"></i> 8% සේවක EPF | 12% සේවායෝජක EPF | 3% ETF | 2.5%, 3%, 6% සේව්‍ය | අතිකාල හා දීමනා (Manual Entry Enabled)
                   </div>
                 </div>
               </div>
@@ -753,10 +758,19 @@
                 <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                   <label style="font-size:12.5px; font-weight:700; color:#1e1b4b;"><i class="fa-solid fa-calendar"></i> අදාළ මාසය:</label>
                   <select id="payroll-month-select" class="form-input-pill" style="width:160px; padding:6px 12px; font-size:12.5px;" onchange="renderPayrollModule()">
-                    <option value="2026-09" selected>2026 සැප්තැම්බර්</option>
-                    <option value="2026-10">2026 ඔක්තෝබර්</option>
-                    <option value="2026-11">2026 නොවැම්බර්</option>
-                    <option value="2026-12">2026 දෙසැම්බර්</option>
+                    <option value="2025-01">2025 ජනවාරි</option>
+                    <option value="2025-02">2025 පෙබරවාරි</option>
+                    <option value="2025-03">2025 මාර්තු</option>
+                    <option value="2025-04">2025 අප්‍රේල්</option>
+                    <option value="2025-05">2025 මැයි</option>
+                    <option value="2025-06">2025 ජූනි</option>
+                    <option value="2025-07">2025 ජූලි</option>
+                    <option value="2025-08">2025 අගෝස්තු</option>
+                    <option value="2025-09">2025 සැප්තැම්බර්</option>
+                    <option value="2025-10">2025 ඔක්තෝබර්</option>
+                    <option value="2025-11">2025 නොවැම්බර්</option>
+                    <option value="2025-12" selected>2025 දෙසැම්බර්</option>
+                    <option value="2025-YEAR">2025 මුළු වර්ෂය (Annual Report)</option>
                   </select>
 
                   <div style="display:inline-flex; background:#f1f5f9; border-radius:10px; padding:3px; gap:4px; margin-left:6px;">
@@ -768,10 +782,13 @@
 
                 <div style="display:flex; gap:10px;">
                   <button class="btn-smart btn-smart-primary" onclick="openAddPayrollEntryModal()">
-                    <i class="fa-solid fa-pen-to-square"></i> + වැටුප් දත්ත ඇතුළත් කරන්න
+                    <i class="fa-solid fa-pen-to-square"></i> + 2025 වැටුප් දත්ත ඇතුළත් කරන්න
                   </button>
                   <button class="btn-smart btn-smart-light" onclick="printForm1OfficialSheet()">
-                    <i class="fa-solid fa-print"></i> Form 1 මුද්‍රණය
+                    <i class="fa-solid fa-print"></i> 2025 Form 1 මුද්‍රණය (Print Preview)
+                  </button>
+                  <button class="btn-smart btn-smart-light" onclick="printAnnual2025Report()" style="border-color:#2563eb; color:#1d4ed8; background:#eff6ff;">
+                    <i class="fa-solid fa-calendar-days"></i> 2025 වාර්ෂික වාර්තාව (Annual Report)
                   </button>
                 </div>
               </div>
@@ -783,7 +800,7 @@
                   <strong id="payroll-stat-basic" style="font-size:14px; color:#1e1b4b;">රු. 0</strong>
                 </div>
                 <div style="background:#f0fdf4; padding:12px; border-radius:12px; border:1px solid #bbf7d0;">
-                  <div style="font-size:11px; color:#166534;">මුළු උපැයීම (Gross Total)</div>
+                  <div style="font-size:11px; color:#166534;">මුළු එකතුව (Gross Total)</div>
                   <strong id="payroll-stat-gross" style="font-size:14px; color:#166534;">රු. 0</strong>
                 </div>
                 <div style="background:#fee2e2; padding:12px; border-radius:12px; border:1px solid #fecaca;">
@@ -791,15 +808,15 @@
                   <strong id="payroll-stat-epf8" style="font-size:14px; color:#dc2626;">රු. 0</strong>
                 </div>
                 <div style="background:#dcfce7; padding:12px; border-radius:12px; border:1px solid #bbf7d0;">
-                  <div style="font-size:11px; color:#16a34a;">සණස EPF (12%)</div>
+                  <div style="font-size:11px; color:#16a34a;">සේව්‍ය EPF (12%)</div>
                   <strong id="payroll-stat-epf12" style="font-size:14px; color:#16a34a;">රු. 0</strong>
                 </div>
                 <div style="background:#fef3c7; padding:12px; border-radius:12px; border:1px solid #fde68a;">
-                  <div style="font-size:11px; color:#d97706;">විශ්‍රාම (2.5% + 5%)</div>
+                  <div style="font-size:11px; color:#d97706;">සේව්‍ය (2.5%, 3%, 6%) & ETF 3%</div>
                   <strong id="payroll-stat-pension" style="font-size:14px; color:#d97706;">රු. 0</strong>
                 </div>
                 <div style="background:#ede9fe; padding:12px; border-radius:12px; border:1px solid #ddd6fe;">
-                  <div style="font-size:11px; color:#7c3aed;">ශුද්ධ වැටුප (Net Payable)</div>
+                  <div style="font-size:11px; color:#7c3aed;">ශුද්ධ වැටුප (Net Total)</div>
                   <strong id="payroll-stat-net" style="font-size:14px; color:#7c3aed;">රු. 0</strong>
                 </div>
               </div>
@@ -807,31 +824,34 @@
 
             <!-- Form 1 Official Table -->
             <div class="card-box data-table-container" style="padding:0; overflow-x:auto;">
-              <table class="smart-table" style="font-size:11.5px; min-width:1300px;">
+              <table class="smart-table" style="font-size:11.5px; min-width:1450px;">
                 <thead>
                   <tr style="background:#f8fafc;">
-                    <th style="width:70px;">සේවා අංකය</th>
-                    <th>සම්පූර්ණ නම & තනතුර</th>
-                    <th>සේවා තත්වය (ගෙවීම් දිනය)</th>
+                    <th style="width:85px;">දිනය</th>
+                    <th>සේවා අංකය සහ නම</th>
                     <th>මූලික වැටුප</th>
-                    <th>පැමිණීමේ දීමනාව</th>
-                    <th>දීමනා</th>
+                    <th>දිරිදීමනා / වැටුප් වර්ධක</th>
+                    <th>දීමනා 01</th>
+                    <th>දීමනා 02</th>
+                    <th>පැමිණීමේ දීමනා</th>
+                    <th>අන්තර් දීමනාව</th>
                     <th style="background:#ede9fe; color:#7c3aed;">එකතුව</th>
                     <th>අර්ථසාධක 20%</th>
-                    <th>EPF 12% (සමිතිය)</th>
-                    <th style="color:#dc2626;">EPF 8% (සේවක)</th>
-                    <th>විශ්‍රාම 2.5%</th>
-                    <th style="color:#dc2626;">විශ්‍රාම 5%</th>
-                    <th>ETF 3%</th>
-                    <th>අත්තිකාරම්</th>
-                    <th>වෙනත් අඩු</th>
-                    <th style="color:#dc2626;">අඩුකිරීම් එකතුව</th>
-                    <th>වෙනත් දීමනා</th>
+                    <th style="color:#16a34a;">සේව්‍ය 12%</th>
+                    <th style="color:#dc2626;">සේවක 8%</th>
+                    <th>සේව්‍ය 2.5%</th>
+                    <th style="color:#7c3aed;">සේව්‍ය 3%</th>
+                    <th style="color:#7c3aed;">සේව්‍ය 6%</th>
+                    <th>අයවැය දීමනා</th>
+                    <th style="color:#0284c7;">සේවක භාරකාර 3%</th>
+                    <th style="color:#dc2626;">අඩු කිරීම් එකතුව</th>
+                    <th>අතිකාල ගෙවීම්</th>
                     <th style="background:#dcfce7; color:#15803d; font-size:12px;">ශුද්ධ වැටුප</th>
-                    <th style="text-align:center;">ක්‍රියාමාර්ග</th>
+                    <th style="text-align:center;">අත්සන / ක්‍රියාමාර්ග</th>
                   </tr>
                 </thead>
                 <tbody id="table-payroll-body"></tbody>
+                <tfoot id="table-payroll-footer"></tfoot>
               </table>
             </div>
           </div>
@@ -846,10 +866,18 @@
                 <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                   <label style="font-size:12.5px; font-weight:700; color:#1e1b4b;"><i class="fa-solid fa-calendar"></i> අදාළ මාසය:</label>
                   <select id="incentive-month-select" class="form-input-pill" style="width:160px; padding:6px 12px; font-size:12.5px;" onchange="renderIncentivesTable()">
-                    <option value="2026-09" selected>2026 සැප්තැම්බර්</option>
-                    <option value="2026-10">2026 ඔක්තෝබර්</option>
-                    <option value="2026-11">2026 නොවැම්බර්</option>
-                    <option value="2026-12">2026 දෙසැම්බර්</option>
+                    <option value="2025-01">2025 ජනවාරි</option>
+                    <option value="2025-02">2025 පෙබරවාරි</option>
+                    <option value="2025-03">2025 මාර්තු</option>
+                    <option value="2025-04">2025 අප්‍රේල්</option>
+                    <option value="2025-05">2025 මැයි</option>
+                    <option value="2025-06">2025 ජූනි</option>
+                    <option value="2025-07">2025 ජූලි</option>
+                    <option value="2025-08">2025 අගෝස්තු</option>
+                    <option value="2025-09">2025 සැප්තැම්බර්</option>
+                    <option value="2025-10">2025 ඔක්තෝබර්</option>
+                    <option value="2025-11">2025 නොවැම්බර්</option>
+                    <option value="2025-12" selected>2025 දෙසැම්බර්</option>
                   </select>
                   <span class="badge-pill badge-purple" style="font-size:11.5px;">
                     <i class="fa-solid fa-clock"></i> සෑම මසකම 10 වන දින ගණනය කෙරේ
@@ -902,16 +930,24 @@
                 <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                   <label style="font-size:12.5px; font-weight:700; color:#1e1b4b;"><i class="fa-solid fa-calendar"></i> අදාළ මාසය:</label>
                   <select id="epf-month-select" class="form-input-pill" style="width:160px; padding:6px 12px; font-size:12.5px;" onchange="renderEpfTrackerModule()">
-                    <option value="2026-09" selected>2026 සැප්තැම්බර්</option>
-                    <option value="2026-10">2026 ඔක්තෝබර්</option>
-                    <option value="2026-11">2026 නොවැම්බර්</option>
-                    <option value="2026-12">2026 දෙසැම්බර්</option>
+                    <option value="2025-01">2025 ජනවාරි</option>
+                    <option value="2025-02">2025 පෙබරවාරි</option>
+                    <option value="2025-03">2025 මාර්තු</option>
+                    <option value="2025-04">2025 අප්‍රේල්</option>
+                    <option value="2025-05">2025 මැයි</option>
+                    <option value="2025-06">2025 ජූනි</option>
+                    <option value="2025-07">2025 ජූලි</option>
+                    <option value="2025-08">2025 අගෝස්තු</option>
+                    <option value="2025-09">2025 සැප්තැම්බර්</option>
+                    <option value="2025-10">2025 ඔක්තෝබර්</option>
+                    <option value="2025-11">2025 නොවැම්බර්</option>
+                    <option value="2025-12" selected>2025 දෙසැම්බර්</option>
                   </select>
 
                   <div style="display:inline-flex; background:#f1f5f9; border-radius:10px; padding:3px; gap:4px;">
                     <button class="btn-smart btn-smart-light" id="btn-filter-epf-all" onclick="filterEpfStatus('all')" style="padding:4px 10px; font-size:11.5px; background:#fff; font-weight:700;">සියලුම සේවකයින්</button>
-                    <button class="btn-smart btn-smart-light" id="btn-filter-epf-pending" onclick="filterEpfStatus('pending')" style="padding:4px 10px; font-size:11.5px; color:#dc2626;">🔴 නොයැවූ පමණක්</button>
-                    <button class="btn-smart btn-smart-light" id="btn-filter-epf-paid" onclick="filterEpfStatus('paid')" style="padding:4px 10px; font-size:11.5px; color:#16a34a;">🟢 යවන ලද පමණක්</button>
+                    <button class="btn-smart btn-smart-light" id="btn-filter-epf-pending" onclick="filterEpfStatus('pending')" style="padding:4px 10px; font-size:11.5px; color:#dc2626; display:inline-flex; align-items:center; gap:5px;"><i class="fa-solid fa-circle-xmark"></i> නොයැවූ පමණක්</button>
+                    <button class="btn-smart btn-smart-light" id="btn-filter-epf-paid" onclick="filterEpfStatus('paid')" style="padding:4px 10px; font-size:11.5px; color:#16a34a; display:inline-flex; align-items:center; gap:5px;"><i class="fa-solid fa-circle-check"></i> යවන ලද පමණක්</button>
                   </div>
                 </div>
 
@@ -970,6 +1006,172 @@
             </div>
           </div>
         </section>
+        <!-- ============================================== -->
+        <!-- VIEW 6B: 2026 ONWARD AUTOMATED PAYROLL VIEW    -->
+        <!-- ============================================== -->
+        <section class="view-section" id="view-payroll-2026">
+          <!-- Official GSCS Header & Policy Rules Notice -->
+          <div class="card-box" style="margin-bottom:20px; border-left:5px solid #2563eb;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+              <div style="display:flex; align-items:center; gap:16px;">
+                <div style="background:#ffffff; border:1.5px solid #e2e8f0; border-radius:14px; padding:6px 12px; width:130px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+                  <img src="images/gscs_logo.png" alt="GSCS Logo" style="width:100%; height:auto; display:block;">
+                </div>
+                <div>
+                  <h2 style="font-size:18px; font-weight:800; color:#1e1b4b; margin-bottom:2px;">2026 වර්ෂයේ සිට මාසික වැටුප් හා EPF/ETF ස්වයංක්‍රීය ක්‍රමවේදය</h2>
+                  <p style="font-size:12.5px; color:#64748b; margin-bottom:4px;">සීමා රහිත ගලපිටියාගම සකසුරුවම් හා ණය ගනුදෙනු පිළිබඳ සමුපකාර සමිතිය - ස්ථිර හා කොන්ත්‍රාත් සේවක වැටුප් ස්වයංක්‍රීයකරණය</p>
+                  <div style="font-size:11.5px; color:#2563eb; font-weight:700;">
+                    <i class="fa-solid fa-wand-magic-sparkles" style="margin-right:4px;"></i> ස්ථිර සේවක: 25 වන දින වැටුප (EPF 20% + විශ්‍රාම 3%/6%) | කොන්ත්‍රාත් සේවක: 10 වන දින වැටුප (EPF 20% + ETF 3% + දින x 1000)
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="btn-smart btn-smart-light" onclick="openPayroll2026CriteriaModal()" style="border:1.5px solid #2563eb; color:#1d4ed8; font-weight:700;">
+                  <i class="fa-solid fa-sliders"></i> සේවක නිර්ණායක පාලනය
+                </button>
+              </div>
+            </div>
+
+            <!-- Policy Schedule Notice Badge Box -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:14px;">
+              <div style="display:flex; gap:10px; align-items:flex-start;">
+                <div style="background:#dcfce7; color:#16a34a; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; flex-shrink:0;">25</div>
+                <div>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <strong style="color:#166534; font-size:13px;">ස්ථිර සේවකයින් (Permanent Staff)</strong>
+                    <span style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:12px; font-size:10px; font-weight:800;">25 වන දින</span>
+                  </div>
+                  <div style="font-size:11.5px; color:#475569; margin-top:4px; line-height:1.5;">
+                    • <strong>උපැයීම්:</strong> මූලික වැටුප + දීමනා 01 + දීමනා 02 + අන්තර් දීමනාව + ලේඛම් දීමනාව + වැටුප් වර්ධකය + අයවැය දීමනාව + අතිකාල<br>
+                    • <strong>අර්ථසාධක (EPF 20%):</strong> (මූලික + අන්තර් + දීමනා 1,2 + ලේඛම් + වර්ධක + අයවැය) මත සේව්‍ය 12% හා සේවක 8%<br>
+                    • <strong>විශ්‍රාම වැටුප:</strong> (මූලික + අන්තර් + දීමනා 1,2 + ලේඛම් + වර්ධක + අයවැය) මත සේව්‍ය 3% හා සේවක 6%<br>
+                    • <strong>අඩුකිරීම්:</strong> සේවක EPF 8% + විශ්‍රාම 6% | දිරි දීමනා 10 වන දින
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex; gap:10px; align-items:flex-start;">
+                <div style="background:#fef3c7; color:#d97706; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; flex-shrink:0;">10</div>
+                <div>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <strong style="color:#92400e; font-size:13px;">කොන්ත්‍රාත් සේවකයින් (Contract Staff)</strong>
+                    <span style="background:#fef3c7; color:#b45309; padding:2px 8px; border-radius:12px; font-size:10px; font-weight:800;">10 වන දින</span>
+                  </div>
+                  <div style="font-size:11.5px; color:#475569; margin-top:4px; line-height:1.5;">
+                    • <strong>උපැයීම්:</strong> මූලික වැටුප + පැමිණීමේ දීමනාව (දින x 1000.00) + දීමනා 01 + දීමනා 02 + අතිකාල<br>
+                    • <strong>අර්ථසාධක (EPF 20%):</strong> (මූලික + පැමිණීමේ) මත සේව්‍ය 12% හා සේවක 8%<br>
+                    • <strong>සේවක භාරකාර (ETF 3%):</strong> (මූලික + පැමිණීමේ) මත සේව්‍ය 3% (සේවකයාගෙන් නැත) | විශ්‍රාම වැටුප් නැත<br>
+                    • <strong>අඩුකිරීම්:</strong> සේවක EPF 8% පමණි
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Controls & Filter Card -->
+          <div class="card-box" style="margin-bottom:18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+              <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <label style="font-size:12.5px; font-weight:700; color:#1e1b4b;"><i class="fa-solid fa-calendar-days" style="color:#2563eb;"></i> අදාළ මාසය:</label>
+                  <select id="payroll2026-month-select" class="form-input-pill" style="width:160px; padding:6px 12px; font-size:12.5px;" onchange="renderPayroll2026Module()">
+                    <option value="2026-01">2026 ජනවාරි</option>
+                    <option value="2026-02">2026 පෙබරවාරි</option>
+                    <option value="2026-03">2026 මාර්තු</option>
+                    <option value="2026-04">2026 අප්‍රේල්</option>
+                    <option value="2026-05">2026 මැයි</option>
+                    <option value="2026-06">2026 ජූනි</option>
+                    <option value="2026-07">2026 ජූලි</option>
+                    <option value="2026-08">2026 අගෝස්තු</option>
+                    <option value="2026-09" selected>2026 සැප්තැම්බර්</option>
+                    <option value="2026-10">2026 ඔක්තෝබර්</option>
+                    <option value="2026-11">2026 නොවැම්බර්</option>
+                    <option value="2026-12">2026 දෙසැම්බර්</option>
+                  </select>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <label style="font-size:12.5px; font-weight:700; color:#1e1b4b;"><i class="fa-solid fa-filter" style="color:#2563eb;"></i> වර්ගය:</label>
+                  <select id="payroll2026-type-filter" class="form-input-pill" style="width:170px; padding:6px 12px; font-size:12.5px;" onchange="renderPayroll2026Module()">
+                    <option value="ALL">සියලු සේවකයින්</option>
+                    <option value="PERMANENT">ස්ථිර සේවකයින් (25)</option>
+                    <option value="CONTRACT">කොන්ත්‍රාත් සේවකයින් (10)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="btn-smart btn-smart-light" onclick="printPayroll2026Register()" style="padding:6px 12px; font-size:12px; border:1px solid #cbd5e1;">
+                  <i class="fa-solid fa-print"></i> ලේඛනය මුද්‍රණය
+                </button>
+                <button class="btn-smart btn-smart-light" onclick="openPayroll2026CriteriaModal()" style="padding:6px 12px; font-size:12px; border:1px solid #cbd5e1;">
+                  <i class="fa-solid fa-gear"></i> නිර්ණායක සකසන්න
+                </button>
+                <button class="btn-smart btn-smart-primary" onclick="openAddPayroll2026EntryModal()" style="padding:6px 14px; font-size:12px;">
+                  <i class="fa-solid fa-plus"></i> නව / අතිකාල ඇතුළත් කිරීම
+                </button>
+              </div>
+            </div>
+
+            <!-- KPI Stats Bar -->
+            <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:10px; margin-top:16px;">
+              <div style="background:#f8fafc; padding:10px; border-radius:10px; border:1px solid #e2e8f0; text-align:center;">
+                <div style="font-size:11px; color:#64748b;">සේවකයින් ගණන</div>
+                <strong id="p2026-stat-count" style="font-size:14px; color:#1e1b4b;">0</strong>
+              </div>
+              <div style="background:#eff6ff; padding:10px; border-radius:10px; border:1px solid #bfdbfe; text-align:center;">
+                <div style="font-size:11px; color:#1d4ed8;">මූලික වැටුප</div>
+                <strong id="p2026-stat-basic" style="font-size:14px; color:#1d4ed8;">රු. 0</strong>
+              </div>
+              <div style="background:#f5f3ff; padding:10px; border-radius:10px; border:1px solid #ddd6fe; text-align:center;">
+                <div style="font-size:11px; color:#6d28d9;">මුළු උපැයීම් (Gross)</div>
+                <strong id="p2026-stat-gross" style="font-size:14px; color:#6d28d9;">රු. 0</strong>
+              </div>
+              <div style="background:#fef2f2; padding:10px; border-radius:10px; border:1px solid #fecaca; text-align:center;">
+                <div style="font-size:11px; color:#dc2626;">සේවක EPF (8%)</div>
+                <strong id="p2026-stat-epf8" style="font-size:14px; color:#dc2626;">රු. 0</strong>
+              </div>
+              <div style="background:#f0fdf4; padding:10px; border-radius:10px; border:1px solid #bbf7d0; text-align:center;">
+                <div style="font-size:11px; color:#15803d;">සේව්‍ය EPF (12%)</div>
+                <strong id="p2026-stat-epf12" style="font-size:14px; color:#15803d;">රු. 0</strong>
+              </div>
+              <div style="background:#fffbeb; padding:10px; border-radius:10px; border:1px solid #fde68a; text-align:center;">
+                <div style="font-size:11px; color:#b45309;">සේව්‍ය විශ්‍රාම/ETF 3%</div>
+                <strong id="p2026-stat-employer-extra" style="font-size:14px; color:#b45309;">රු. 0</strong>
+              </div>
+              <div style="background:#ecfdf5; padding:10px; border-radius:10px; border:1.5px solid #10b981; text-align:center;">
+                <div style="font-size:11px; color:#065f46; font-weight:700;">මුළු ශුද්ධ වැටුප</div>
+                <strong id="p2026-stat-net" style="font-size:14px; color:#047857;">රු. 0</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Official 2026 Payroll Table -->
+          <div class="card-box data-table-container" style="padding:0; overflow-x:auto;">
+            <table class="smart-table" style="font-size:11px; min-width:1650px;">
+              <thead>
+                <tr style="background:#f8fafc;">
+                  <th style="width:65px; text-align:center;">දිනය</th>
+                  <th style="width:180px;">සේවා අංකය සහ නම</th>
+                  <th style="width:95px; text-align:center;">සේවා තත්වය</th>
+                  <th style="text-align:right;">මූලික වැටුප</th>
+                  <th style="min-width:300px;">දීමනා විස්තරය (Allowances)</th>
+                  <th style="text-align:right; color:#7c3aed;">අතිකාල (OT)</th>
+                  <th style="text-align:right; background:#f5f3ff; color:#7c3aed; font-weight:800;">මුළු එකතුව (Gross)</th>
+                  <th style="text-align:right;">EPF පදනම</th>
+                  <th style="text-align:right; color:#16a34a;">සේව්‍ය 12%</th>
+                  <th style="text-align:right; color:#dc2626;">සේවක 8%</th>
+                  <th style="text-align:right; color:#d97706;">සේව්‍ය 3% (විශ්‍රාම/ETF)</th>
+                  <th style="text-align:right; color:#dc2626;">සේවක විශ්‍රාම 6%</th>
+                  <th style="text-align:right; color:#dc2626; background:#fef2f2; font-weight:700;">අඩු කිරීම් එකතුව</th>
+                  <th style="text-align:right; background:#f0fdf4; color:#15803d; font-weight:800; font-size:12px;">ශුද්ධ වැටුප</th>
+                  <th style="text-align:center; width:120px;">ක්‍රියාමාර්ග</th>
+                </tr>
+              </thead>
+              <tbody id="table-payroll2026-body"></tbody>
+              <tfoot id="table-payroll2026-footer"></tfoot>
+            </table>
+          </div>
+        </section>
 
         <!-- ============================================== -->
         <!-- VIEW 7: APPRAISALS                             -->
@@ -1013,9 +1215,9 @@
             </div>
 
             <div class="card-box" style="padding:16px; border-top:3px solid #f59e0b;">
-              <div style="font-size:11.5px; font-weight:700; color:#64748b; text-transform:uppercase;">වැටුප් වර්ධක නිර්දේශිතයි</div>
+              <div style="font-size:11.5px; font-weight:700; color:#64748b; text-transform:uppercase;">වැටුප් වර්ධක / දිරි දීමනා නිර්දේශිතයි</div>
               <div style="font-size:24px; font-weight:900; color:#d97706; margin-top:4px;" id="stat-appraisal-increments">0</div>
-              <div style="font-size:11px; color:#d97706; margin-top:4px;"><i class="fa-solid fa-circle-check"></i> Increment Approved</div>
+              <div style="font-size:11px; color:#d97706; margin-top:4px;"><i class="fa-solid fa-circle-check"></i> Increment / Incentive Approved</div>
             </div>
           </div>
 
@@ -1038,7 +1240,7 @@
                   <th>දිනය</th>
                   <th>KPI ලකුණු (100)</th>
                   <th>ශ්‍රේණිය</th>
-                  <th>වැටුප් වර්ධකය</th>
+                  <th>වැටුප් වර්ධක / දිරි දීමනා</th>
                   <th>කළමනාකාරීත්ව සටහන</th>
                   <th>ක්‍රියාමාර්ග</th>
                 </tr>
@@ -1073,6 +1275,14 @@
               <button class="btn-smart btn-smart-light" style="color:#059669; border-color:#a7f3d0;" onclick="openAddManualSurveyModal()">
                 <i class="fa-solid fa-plus"></i> + සටහනක් එක් කරන්න
               </button>
+              <div style="display:inline-flex; align-items:center; gap:6px; background:#ecfdf5; padding:3px 10px; border-radius:8px; border:1.5px solid #10b981;">
+                <label for="filter-wellbeing-month" style="font-size:12px; font-weight:700; color:#065f46; margin:0; display:inline-flex; align-items:center; gap:5px; white-space:nowrap; cursor:pointer;">
+                  <i class="fa-solid fa-calendar-days" style="color:#059669;"></i> වාර්තා මාසය:
+                </label>
+                <select id="filter-wellbeing-month" style="padding:4px 8px; font-size:12px; font-weight:700; border-radius:6px; border:1px solid #059669; color:#065f46; background:#fff; cursor:pointer; outline:none;" onchange="onWellbeingMonthFilterChange()">
+                  <option value="ALL">සියලුම මාස (All Months)</option>
+                </select>
+              </div>
               <button class="btn-smart btn-smart-light no-print" onclick="printCurrentPageReport()" style="padding:6px 14px; font-size:12px; border:1.5px solid #10b981; color:#059669; background:#f0fdf4; font-weight:700;" title="Print A4 Official Report"><i class="fa-solid fa-print"></i> Print Report</button>
               <button class="btn-smart btn-smart-light" style="color:#dc2626; border-color:#fecaca;" onclick="clearAllSurveys()">
                 <i class="fa-solid fa-trash-can"></i> සියල්ල ඉවත් කරන්න
@@ -1602,9 +1812,10 @@
         <h3><i class="fa-solid fa-user-plus" style="color:#7c3aed;"></i> සේවක තොරතුරු ලියාපදිංචිය</h3>
         <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-smart-employee')">&times;</button>
       </div>
-      <form id="form-smart-employee">
+      <form id="form-smart-employee" onsubmit="saveSmartEmployeeForm(event)">
         <div class="smart-modal-body">
           <input type="hidden" id="emp-mode" value="create">
+          <input type="hidden" id="emp-original-id" value="">
           <input type="hidden" id="emp-photo-data" value="">
           
           <!-- Staff Photo Upload Box -->
@@ -1624,7 +1835,7 @@
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
             <div>
               <label style="font-size:12px; font-weight:700;">සේවක අංකය (EMP ID)</label>
-              <input type="text" id="emp-id-input" class="form-input-pill" required>
+              <input type="text" id="emp-id-input" class="form-input-pill" required placeholder="Y14806 - 01">
             </div>
             <div>
               <label style="font-size:12px; font-weight:700;">ජා.හැ. අංකය (NIC)</label>
@@ -2038,7 +2249,7 @@
 
           <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px; background:#f5f3ff; padding:8px 12px; border-radius:8px;">
             <input type="checkbox" id="edit-grv-isAnonymous" style="width:16px; height:16px; accent-color:#7c3aed;">
-            <label for="edit-grv-isAnonymous" style="font-size:12px; font-weight:700; color:#7c3aed; cursor:pointer;">🔒 නිර්නාමික (Anonymous) — නාමය සංරක්‍ෂිත</label>
+            <label for="edit-grv-isAnonymous" style="font-size:12px; font-weight:700; color:#7c3aed; cursor:pointer;"><i class="fa-solid fa-user-shield" style="margin-right:4px;"></i>නිර්නාමික (Anonymous) — නාමය සංරක්‍ෂිත</label>
           </div>
 
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
@@ -2194,7 +2405,7 @@
         <!-- Share Link Box -->
         <div style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:14px; padding:14px; margin-bottom:16px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <label style="font-size:12px; font-weight:700; color:#1e1b4b;">📱 සමීක්ෂණ පෝරමයේ සබැඳිය (Survey Form URL):</label>
+            <label style="font-size:12px; font-weight:700; color:#1e1b4b;"><i class="fa-solid fa-link" style="color:#2563eb; margin-right:4px;"></i> සමීක්ෂණ පෝරමයේ සබැඳිය (Survey Form URL):</label>
             <button class="btn-smart btn-smart-light" style="padding:3px 10px; font-size:11px;" onclick="copyWellbeingSurveyLink()">
               <i class="fa-solid fa-copy"></i> Link පිටපත් කරන්න
             </button>
@@ -2430,7 +2641,7 @@
           <input type="hidden" id="proj-id" value="">
           <div style="margin-bottom:12px;">
             <label style="font-size:12px; font-weight:700;">ව්‍යාපෘතියේ / රාජකාරියේ නම (Project Title)</label>
-            <input type="text" id="proj-title" class="form-input-pill" required placeholder="උදා: වාර්ෂික ගිණුම් විගණනය">
+            <input type="text" id="proj-title" class="form-input-pill" required>
           </div>
           <div style="margin-bottom:12px;">
             <label style="font-size:12px; font-weight:700;">වගකිවයුතු සේවකයා (Assigned Staff)</label>
@@ -2461,7 +2672,7 @@
           </div>
           <div style="margin-bottom:12px;">
             <label style="font-size:12px; font-weight:700;">විස්තර / අරමුණ (Notes)</label>
-            <textarea id="proj-desc" class="form-input-pill" rows="2" placeholder="ව්‍යාපෘතිය පිළිබඳ කෙටි විස්තරයක්..."></textarea>
+            <textarea id="proj-desc" class="form-input-pill" rows="2"></textarea>
           </div>
           
           <div style="margin-top:14px; background:#f8fafc; padding:12px; border-radius:12px; border:1px solid #e2e8f0;">
@@ -2568,16 +2779,6 @@
             </div>
           </div>
 
-          <div style="display:flex; justify-content:space-between; align-items:center; background:#f0fdf4; padding:12px; border-radius:12px; border:1px solid #bbf7d0; margin-bottom:12px;">
-            <div>
-              <div style="font-size:12px; font-weight:800; color:#166534;">වැටුප් වර්ධක නිර්දේශය (Increment Recommendation)</div>
-              <div style="font-size:11px; color:#15803d;">Grade A හෝ B ලබාගන්නා සේවකයින් සඳහා නිර්දේශ කෙරේ.</div>
-            </div>
-            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:700; color:#166534;">
-              <input type="checkbox" id="appraisal-increment-check" checked style="width:18px; height:18px;">
-              නිර්දේශිතයි (Approved)
-            </label>
-          </div>
 
           <div>
             <label style="font-size:12px; font-weight:700;">කළමනාකාරීත්ව සටහන / ප්‍රතිචාර (Manager Remarks):</label>
@@ -2605,7 +2806,7 @@
           <input type="hidden" id="meet-id" value="">
           <div style="margin-bottom:12px;">
             <label style="font-size:12px; font-weight:700;">රැස්වීමේ නම (Meeting Title)</label>
-            <input type="text" id="meet-title" class="form-input-pill" required placeholder="උදා: අධ්‍යක්ෂ මණ්ඩල මාසික රැස්වීම">
+            <input type="text" id="meet-title" class="form-input-pill" required>
           </div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
             <div>
@@ -2614,20 +2815,20 @@
             </div>
             <div>
               <label style="font-size:12px; font-weight:700;">වේලාව (Time)</label>
-              <input type="text" id="meet-time" class="form-input-pill" placeholder="උදා: 10:00 AM - 11:30 AM" required>
+              <input type="text" id="meet-time" class="form-input-pill" required>
             </div>
           </div>
           <div style="margin-bottom:12px;">
             <label style="font-size:12px; font-weight:700;">ප්‍රධානත්වය / කැඳවුම්කරු (Chair / Lead)</label>
-            <input type="text" id="meet-chair" class="form-input-pill" placeholder="ගරු සභාපතිතුමා">
+            <input type="text" id="meet-chair" class="form-input-pill">
           </div>
           <div style="margin-bottom:12px;">
             <label style="font-size:12px; font-weight:700;">ස්ථානය (Venue)</label>
-            <input type="text" id="meet-venue" class="form-input-pill" placeholder="ප්‍රධාන රැස්වීම් ශාලාව">
+            <input type="text" id="meet-venue" class="form-input-pill">
           </div>
           <div>
             <label style="font-size:12px; font-weight:700;">න්‍යාය පත්‍රය / අරමුණ (Agenda)</label>
-            <textarea id="meet-agenda" class="form-input-pill" rows="3" placeholder="සාකච්ඡා කරනු ලබන කරුණු..."></textarea>
+            <textarea id="meet-agenda" class="form-input-pill" rows="3"></textarea>
           </div>
         </div>
         <div class="smart-modal-footer">
@@ -2676,26 +2877,50 @@
     </div>
   </div>
 
-  <!-- Modal: Form 1 Payroll Entry -->
+  <!-- Modal: 2025 Payroll Manual Entry -->
   <div class="smart-modal-overlay" id="modal-smart-payroll-entry">
-    <div class="smart-modal-box large">
+    <div class="smart-modal-box large" style="max-width:850px;">
       <div class="smart-modal-header">
-        <h3><i class="fa-solid fa-file-invoice-dollar" style="color:#7c3aed;"></i> මාසික වැටුප් දත්ත ඇතුළත් කිරීම (Form 1)</h3>
+        <h3><i class="fa-solid fa-file-invoice-dollar" style="color:#7c3aed;"></i> 2025 වර්ෂයේ මාසික වැටුප් දත්ත ඇතුළත් කිරීම (Manual Entry)</h3>
         <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-smart-payroll-entry')">&times;</button>
       </div>
       <form id="form-smart-payroll-entry" onsubmit="savePayrollEntry(event)">
         <div class="smart-modal-body">
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+          <div style="background:#f5f3ff; border:1px solid #ddd6fe; border-radius:10px; padding:10px 14px; margin-bottom:14px; font-size:12px; color:#5b21b6; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <span><i class="fa-solid fa-circle-info"></i> <strong>2025 වාර්තාව:</strong> සියලුම අගයන් අතින් (Manual) ඇතුළත් කළ හැක. ස්වයංක්‍රීයව වෙනස් නොවේ.</span>
+            <button type="button" class="btn-smart btn-smart-light" onclick="autoFillPayroll2025Values()" style="padding:3px 10px; font-size:11px; background:#fff; border:1px solid #7c3aed; color:#6d28d9; font-weight:700;" title="මූලික වැටුප අනුව සම්මත සූත්‍ර යොදා පිරවීම">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> සම්මත සූත්‍රයෙන් අගයන් පුරවන්න (Optional)
+            </button>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:14px;">
             <div>
-              <label style="font-size:12px; font-weight:700;">සේවකයා තෝරන්න (හෝ අලුතින් ටයිප් කරන්න) *</label>
+              <label style="font-size:12px; font-weight:700;">සේවකයා තෝරන්න *</label>
               <select id="pay-entry-emp" class="form-input-pill" required onchange="onPayrollEntryEmpChange()">
                 <option value="">-- සේවකයෙකු තෝරන්න --</option>
-                <option value="NEW_MANUAL" style="font-weight:bold; color:#7c3aed;">➕ නව සේවකයෙකු අතින් ඇතුළත් කරන්න (Manual Staff Entry)</option>
+                <option value="NEW_MANUAL" style="font-weight:bold; color:#7c3aed;">+ නව සේවකයෙකු අතින් ඇතුළත් කරන්න (Manual Staff)</option>
               </select>
             </div>
             <div>
-              <label style="font-size:12px; font-weight:700;">අදාළ මාසය (Month) *</label>
-              <input type="month" id="pay-entry-month" class="form-input-pill" value="2026-09" required onchange="recalculatePayrollForm1()">
+              <label style="font-size:12px; font-weight:700;">අදාළ මාසය (2025 Month) *</label>
+              <select id="pay-entry-month" class="form-input-pill" required onchange="onPayrollEntryMonthChange()">
+                <option value="2025-01">2025 ජනවාරි</option>
+                <option value="2025-02">2025 පෙබරවාරි</option>
+                <option value="2025-03">2025 මාර්තු</option>
+                <option value="2025-04">2025 අප්‍රේල්</option>
+                <option value="2025-05">2025 මැයි</option>
+                <option value="2025-06">2025 ජූනි</option>
+                <option value="2025-07">2025 ජූලි</option>
+                <option value="2025-08">2025 අගෝස්තු</option>
+                <option value="2025-09">2025 සැප්තැම්බර්</option>
+                <option value="2025-10">2025 ඔක්තෝබර්</option>
+                <option value="2025-11">2025 නොවැම්බර්</option>
+                <option value="2025-12" selected>2025 දෙසැම්බර්</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">දිනය (Date) *</label>
+              <input type="text" id="pay-entry-date" class="form-input-pill" placeholder="උදා: 2025-12-25" required>
             </div>
           </div>
 
@@ -2719,98 +2944,116 @@
               </div>
               <div>
                 <label style="font-size:11px; font-weight:700;">සේවා තත්වය *</label>
-                <select id="pay-manual-type" class="form-input-pill" onchange="onManualEmpTypeChange()">
-                  <option value="ස්ථිර (Permanent)">ස්ථිර (25 වන දින)</option>
-                  <option value="පරිවාස (Probationary)">පරිවාස (10 වන දින)</option>
-                  <option value="කොන්ත්‍රාත් (Contract)">කොන්ත්‍රාත් (10 වන දින)</option>
+                <select id="pay-manual-type" class="form-input-pill">
+                  <option value="ස්ථිර (Permanent)">ස්ථිර</option>
+                  <option value="පරිවාස (Probationary)">පරිවාස</option>
+                  <option value="කොන්ත්‍රාත් (Contract)">කොන්ත්‍රාත්</option>
                 </select>
               </div>
             </div>
           </div>
 
-          <div id="pay-entry-policy-notice" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 14px; margin-bottom:14px; font-size:12px; color:#475569;">
-            කරුණාකර සේවකයෙකු තෝරන්න හෝ අලුතින් ටයිප් කරන්න.
+          <div style="font-size:12px; font-weight:800; color:#1e1b4b; margin-bottom:8px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">
+            <i class="fa-solid fa-money-bill-wave" style="color:#059669;"></i> වැටුප් හා දීමනා (Earnings & Allowances):
           </div>
 
-          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-bottom:16px;">
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-bottom:14px;">
             <div>
               <label style="font-size:12px; font-weight:700;">මූලික වැටුප (Basic Salary) *</label>
-              <input type="number" id="pay-entry-basic" class="form-input-pill" required min="0" value="0" oninput="recalculatePayrollForm1()">
+              <input type="number" step="0.01" id="pay-entry-basic" class="form-input-pill" required value="0">
             </div>
             <div>
-              <label style="font-size:12px; font-weight:700;">පැමිණීමේ දීමනාව (Attendance)</label>
-              <input type="number" id="pay-entry-att" class="form-input-pill" min="0" value="0" oninput="recalculatePayrollForm1()">
+              <label style="font-size:12px; font-weight:700;">දිරිදීමනා / වැටුප් වර්ධක</label>
+              <input type="number" step="0.01" id="pay-entry-incentive" class="form-input-pill" value="0">
             </div>
             <div>
-              <label style="font-size:12px; font-weight:700;">සාමාන්‍ය දීමනා (Allowances)</label>
-              <input type="number" id="pay-entry-allowances" class="form-input-pill" min="0" value="0" oninput="recalculatePayrollForm1()">
+              <label style="font-size:12px; font-weight:700;">දීමනා 01</label>
+              <input type="number" step="0.01" id="pay-entry-allowance1" class="form-input-pill" value="0">
             </div>
             <div>
-              <label style="font-size:12px; font-weight:700;">අත්තිකාරම් (Advance)</label>
-              <input type="number" id="pay-entry-advance" class="form-input-pill" min="0" value="0" oninput="recalculatePayrollForm1()">
+              <label style="font-size:12px; font-weight:700;">දීමනා 02</label>
+              <input type="number" step="0.01" id="pay-entry-allowance2" class="form-input-pill" value="0">
             </div>
             <div>
-              <label style="font-size:12px; font-weight:700;">වෙනත් අඩුකිරීම් 1 (Other Ded 1)</label>
-              <input type="number" id="pay-entry-ded1" class="form-input-pill" min="0" value="0" oninput="recalculatePayrollForm1()">
+              <label style="font-size:12px; font-weight:700;">පැමිණීමේ දීමනා</label>
+              <input type="number" step="0.01" id="pay-entry-att" class="form-input-pill" value="0">
             </div>
             <div>
-              <label style="font-size:12px; font-weight:700;">වෙනත් අඩුකිරීම් 2 (Other Ded 2)</label>
-              <input type="number" id="pay-entry-ded2" class="form-input-pill" min="0" value="0" oninput="recalculatePayrollForm1()">
-            </div>
-            <div style="grid-column:span 3;">
-              <label style="font-size:12px; font-weight:700;">වෙනත් එකතු කිරීම් / දීමනා (Other Additions)</label>
-              <input type="number" id="pay-entry-other-add" class="form-input-pill" min="0" value="0" oninput="recalculatePayrollForm1()">
+              <label style="font-size:12px; font-weight:700;">අන්තර් දීමනාව</label>
+              <input type="number" step="0.01" id="pay-entry-interim" class="form-input-pill" value="0">
             </div>
           </div>
 
-          <div style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:14px; padding:16px;">
-            <div style="font-size:12px; font-weight:800; color:#1e1b4b; margin-bottom:10px; display:flex; justify-content:space-between;">
-              <span>ස්වයංක්‍රීයව ගණනය වන අගයන් (Live Automatic Calculation):</span>
-              <span id="pay-entry-calc-date" class="badge-pill badge-green">ගෙවීම් දිනය: 25 වන දින</span>
+          <div style="background:#f5f3ff; border:1.5px solid #ddd6fe; border-radius:12px; padding:10px 16px; display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div>
+              <label style="font-size:12px; font-weight:800; color:#7c3aed; margin-bottom:2px; display:block;">එකතුව (Total / Gross)</label>
+              <span style="font-size:11px; color:#6b7280;">මූලික වැටුප සහ සියලු දීමනාවල එකතුව (අතින් හෝ ස්වයංක්‍රීයව)</span>
             </div>
-            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; font-size:12px;">
-              <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:8px 10px;">
-                <div style="color:#64748b; font-size:11px;">මුළු උපැයීම (Gross):</div>
-                <strong id="pay-calc-gross" style="color:#166534; font-size:13.5px;">රු. 0</strong>
-              </div>
-              <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:8px 10px;">
-                <div style="color:#64748b; font-size:11px;">අර්ථසාධක 20% (Total):</div>
-                <strong id="pay-calc-epf20" style="color:#7c3aed; font-size:13.5px;">රු. 0</strong>
-              </div>
-              <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:8px 10px;">
-                <div style="color:#64748b; font-size:11px;">සමිතිය 12% EPF:</div>
-                <strong id="pay-calc-epf12" style="color:#16a34a; font-size:13.5px;">රු. 0</strong>
-              </div>
-              <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:8px 10px;">
-                <div style="color:#64748b; font-size:11px;">සේවක 8% EPF:</div>
-                <strong id="pay-calc-epf8" style="color:#dc2626; font-size:13.5px;">රු. 0</strong>
-              </div>
-              <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:8px 10px;">
-                <div style="color:#64748b; font-size:11px;">විශ්‍රාම 2.5%:</div>
-                <strong id="pay-calc-pen25" style="color:#d97706; font-size:13.5px;">රු. 0</strong>
-              </div>
-              <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:8px 10px;">
-                <div style="color:#64748b; font-size:11px;">විශ්‍රාම 5%:</div>
-                <strong id="pay-calc-pen5" style="color:#dc2626; font-size:13.5px;">රු. 0</strong>
-              </div>
-              <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:8px 10px;">
-                <div style="color:#64748b; font-size:11px;">සේවක භාරකාර ETF 3%:</div>
-                <strong id="pay-calc-etf3" style="color:#0284c7; font-size:13.5px;">රු. 0</strong>
-              </div>
-              <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:8px 10px;">
-                <div style="color:#64748b; font-size:11px;">අඩුකිරීම් එකතුව:</div>
-                <strong id="pay-calc-tot-ded" style="color:#dc2626; font-size:13.5px;">රු. 0</strong>
-              </div>
+            <div style="width:200px;">
+              <input type="number" step="0.01" id="pay-entry-gross" class="form-input-pill" style="border-color:#7c3aed; font-size:14px; font-weight:800; color:#6d28d9; text-align:right;" value="0">
             </div>
-            <div style="margin-top:12px; padding-top:10px; border-top:1px dashed #cbd5e1; display:flex; justify-content:space-between; align-items:center;">
-              <span style="font-weight:800; font-size:14px; color:#1e1b4b;">ශුද්ධ වැටුප (Net Payable to Staff):</span>
-              <strong id="pay-calc-net" style="font-size:18px; color:#16a34a; font-family:monospace;">රු. 0</strong>
+          </div>
+
+          <div style="font-size:12px; font-weight:800; color:#1e1b4b; margin-bottom:8px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">
+            <i class="fa-solid fa-shield-halved" style="color:#2563eb;"></i> අර්ථසාධක, විශ්‍රාම හා දායකත්ව (Statutory Contributions):
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:12px; margin-bottom:14px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">අර්ථසාධක 20%</label>
+              <input type="number" step="0.01" id="pay-entry-epf20" class="form-input-pill" value="0">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#16a34a;">සේව්‍ය 12%</label>
+              <input type="number" step="0.01" id="pay-entry-employer12" class="form-input-pill" value="0">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#dc2626;">සේවක 8%</label>
+              <input type="number" step="0.01" id="pay-entry-employee8" class="form-input-pill" value="0">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">සේව්‍ය 2.5%</label>
+              <input type="number" step="0.01" id="pay-entry-employer25" class="form-input-pill" value="0">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#7c3aed;">සේව්‍ය 3%</label>
+              <input type="number" step="0.01" id="pay-entry-employer3" class="form-input-pill" value="0">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#7c3aed;">සේව්‍ය 6%</label>
+              <input type="number" step="0.01" id="pay-entry-employer6" class="form-input-pill" value="0">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">අයවැය දීමනා</label>
+              <input type="number" step="0.01" id="pay-entry-budget" class="form-input-pill" value="0">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#0284c7;">සේවක භාරකාර 3%</label>
+              <input type="number" step="0.01" id="pay-entry-etf3" class="form-input-pill" value="0">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#dc2626;">අඩු කිරීම් එකතුව</label>
+              <input type="number" step="0.01" id="pay-entry-deductions" class="form-input-pill" style="border-color:#fca5a5; font-weight:700;" value="0">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">අතිකාල ගෙවීම්</label>
+              <input type="number" step="0.01" id="pay-entry-ot" class="form-input-pill" value="0">
+            </div>
+          </div>
+
+          <div style="background:#f0fdf4; border:1.5px solid #bbf7d0; border-radius:12px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <label style="font-size:13px; font-weight:800; color:#15803d; margin-bottom:2px; display:block;">ශුද්ධ වැටුප (Net Salary) *</label>
+              <span style="font-size:11px; color:#4b5563;">සේවකයා වෙත ගෙවිය යුතු අවසන් ශුද්ධ මුදල (අතින් ඇතුළත් කළ හැක)</span>
+            </div>
+            <div style="width:200px;">
+              <input type="number" step="0.01" id="pay-entry-net" class="form-input-pill" style="border-color:#16a34a; font-size:15px; font-weight:800; color:#15803d; text-align:right;" value="0" required>
             </div>
           </div>
         </div>
         <div class="smart-modal-footer">
           <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-payroll-entry')">අවලංගු කරන්න</button>
-          <button type="submit" class="btn-smart btn-smart-primary"><i class="fa-solid fa-save"></i> වැටුප් දත්ත සුරකින්න</button>
+          <button type="submit" class="btn-smart btn-smart-primary"><i class="fa-solid fa-save"></i> 2025 වැටුප් දත්ත සුරකින්න</button>
         </div>
       </form>
     </div>
@@ -2834,7 +3077,7 @@
               <label style="font-size:12px; font-weight:700;">ස්ථිර සේවකයා තෝරන්න (හෝ අලුතින් ටයිප් කරන්න) *</label>
               <select id="inc-entry-emp" class="form-input-pill" required onchange="onIncentiveEmpChange()">
                 <option value="">-- ස්ථිර සේවකයෙකු තෝරන්න --</option>
-                <option value="NEW_MANUAL" style="font-weight:bold; color:#7c3aed;">➕ නව ස්ථිර සේවකයෙකු අතින් ඇතුළත් කරන්න (Manual Staff)</option>
+                <option value="NEW_MANUAL" style="font-weight:bold; color:#7c3aed;">+ නව ස්ථිර සේවකයෙකු අතින් ඇතුළත් කරන්න (Manual Staff)</option>
               </select>
             </div>
             <div>
@@ -3008,8 +3251,8 @@
             <div>
               <label style="font-size:12px; font-weight:700;">ගෙවීම් තත්වය (Status) *</label>
               <select id="epf-pay-status" class="form-input-pill" required>
-                <option value="paid">🟢 යවන ලදී / ගෙවන ලදී (Remitted)</option>
-                <option value="pending">🔴 නොයැවූ / හිඟ (Pending)</option>
+                <option value="paid">යවන ලදී / ගෙවන ලදී (Remitted)</option>
+                <option value="pending">නොයැවූ / හිඟ (Pending)</option>
               </select>
             </div>
             <div>
@@ -3047,6 +3290,287 @@
       <div class="smart-modal-footer">
         <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-smart-epf-passbook')">වසන්න</button>
         <button type="button" class="btn-smart btn-smart-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> මුද්‍රණය කරන්න (Print Passbook)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: 2026 ONWARD EMPLOYEE CRITERIA CONFIG    -->
+  <!-- ============================================== -->
+  <div class="smart-modal-overlay" id="modal-payroll2026-criteria">
+    <div class="smart-modal-box large" style="max-width:850px;">
+      <div class="smart-modal-header">
+        <h3><i class="fa-solid fa-sliders" style="color:#2563eb;"></i> සේවක වැටුප් නිර්ණායක හා දීමනා පාලනය (2026 සිට)</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-payroll2026-criteria')">&times;</button>
+      </div>
+      <form id="form-payroll2026-criteria" onsubmit="savePayroll2026Criteria(event)">
+        <div class="smart-modal-body">
+          <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:10px 14px; margin-bottom:14px; font-size:12px; color:#1e40af;">
+            <i class="fa-solid fa-circle-info"></i> <strong>2026 නීති:</strong> සේවකයා අනුව අදාළ දීමනා සක්‍රීය (Enable) / අක්‍රීය (Disable) කිරීමට සහ මුදල වෙනස් කිරීමට හැක. ස්වයංක්‍රීයව EPF සහ විශ්‍රාම/ETF ගණනය වේ.
+          </div>
+
+          <div style="display:grid; grid-template-columns:1.5fr 1fr 1fr; gap:12px; margin-bottom:14px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">සේවකයා තෝරන්න *</label>
+              <select id="p2026-cfg-emp" class="form-input-pill" required onchange="onPayroll2026CfgEmpChange()">
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">සේවා තත්වය (Category) *</label>
+              <select id="p2026-cfg-type" class="form-input-pill" required onchange="onPayroll2026CfgTypeChange()">
+                <option value="PERMANENT">ස්ථිර (Permanent - 25 වන දින)</option>
+                <option value="CONTRACT">කොන්ත්‍රාත් (Contract - 10 වන දින)</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#1e40af;"><i class="fa-solid fa-calendar-check"></i> වලංගු වන ආරම්භක මාසය *</label>
+              <select id="p2026-cfg-effective-month" class="form-input-pill" required onchange="onPayroll2026CfgMonthChange()">
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <label style="font-size:12.5px; font-weight:800; color:#1e1b4b;">මූලික වැටුප (Basic Salary රු.) *</label>
+            <input type="number" step="0.01" id="p2026-cfg-basic" class="form-input-pill" required value="0" style="font-size:14px; font-weight:700;" oninput="updatePayroll2026LivePreview()">
+          </div>
+
+          <!-- Permanent Criteria Panel -->
+          <div id="p2026-cfg-perm-panel" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:14px; margin-bottom:14px;">
+            <div style="font-size:12.5px; font-weight:800; color:#166534; margin-bottom:10px; display:flex; justify-content:space-between;">
+              <span><i class="fa-solid fa-shield-halved"></i> ස්ථිර සේවක දීමනා හා නිර්ණායක (Permanent Allowances):</span>
+              <span style="font-size:11px; font-weight:600; color:#64748b;">ගෙවීම් දිනය: සෑම මසකම 25</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+              <!-- Allowance 1 -->
+              <div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:10px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                <label style="font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="checkbox" id="p2026-cfg-chk-allowance1" onchange="updatePayroll2026LivePreview()"> දීමනාව 01
+                </label>
+                <input type="number" step="0.01" id="p2026-cfg-val-allowance1" class="form-input-pill" style="width:130px; text-align:right;" value="0" oninput="updatePayroll2026LivePreview()">
+              </div>
+
+              <!-- Allowance 2 -->
+              <div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:10px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                <label style="font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="checkbox" id="p2026-cfg-chk-allowance2" onchange="updatePayroll2026LivePreview()"> දීමනාව 02
+                </label>
+                <input type="number" step="0.01" id="p2026-cfg-val-allowance2" class="form-input-pill" style="width:130px; text-align:right;" value="0" oninput="updatePayroll2026LivePreview()">
+              </div>
+
+              <!-- Interim -->
+              <div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:10px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                <label style="font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="checkbox" id="p2026-cfg-chk-interim" onchange="updatePayroll2026LivePreview()"> අන්තර් දීමනාව
+                </label>
+                <input type="number" step="0.01" id="p2026-cfg-val-interim" class="form-input-pill" style="width:130px; text-align:right;" value="0" oninput="updatePayroll2026LivePreview()">
+              </div>
+
+              <!-- Secretary Allowance -->
+              <div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:10px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                <label style="font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="checkbox" id="p2026-cfg-chk-sec" onchange="updatePayroll2026LivePreview()"> ලේඛම් දීමනාව
+                </label>
+                <input type="number" step="0.01" id="p2026-cfg-val-sec" class="form-input-pill" style="width:130px; text-align:right;" value="0" oninput="updatePayroll2026LivePreview()">
+              </div>
+
+              <!-- Salary Increment -->
+              <div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:10px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                <label style="font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="checkbox" id="p2026-cfg-chk-inc" onchange="updatePayroll2026LivePreview()"> වැටුප් වර්ධකය
+                </label>
+                <input type="number" step="0.01" id="p2026-cfg-val-inc" class="form-input-pill" style="width:130px; text-align:right;" value="0" oninput="updatePayroll2026LivePreview()">
+              </div>
+
+              <!-- Budget Allowance -->
+              <div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:10px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                <label style="font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="checkbox" id="p2026-cfg-chk-budget" onchange="updatePayroll2026LivePreview()"> අයවැය දීමනාව
+                </label>
+                <input type="number" step="0.01" id="p2026-cfg-val-budget" class="form-input-pill" style="width:130px; text-align:right;" value="0" oninput="updatePayroll2026LivePreview()">
+              </div>
+            </div>
+            <div style="font-size:11px; color:#64748b; margin-top:8px;">
+              * <strong>අර්ථසාධක (EPF) පදනම:</strong> මූලික + අන්තර් + දීමනා 1 + දීමනා 2 + ලේඛම් + වර්ධක + අයවැය (සේව්‍ය 12% / සේවක 8%)<br>
+              * <strong>විශ්‍රාම වැටුප් පදනම:</strong> මූලික + අන්තර් + දීමනා 1 + දීමනා 2 + ලේඛම් + වර්ධක + අයවැය (සේව්‍ය 3% / සේවක 6%)
+            </div>
+          </div>
+
+          <!-- Contract Criteria Panel -->
+          <div id="p2026-cfg-contract-panel" style="display:none; background:#fffbeb; border:1px solid #fde68a; border-radius:12px; padding:14px; margin-bottom:14px;">
+            <div style="font-size:12.5px; font-weight:800; color:#92400e; margin-bottom:10px; display:flex; justify-content:space-between;">
+              <span><i class="fa-solid fa-briefcase"></i> කොන්ත්‍රාත් සේවක දීමනා හා නිර්ණායක (Contract Allowances):</span>
+              <span style="font-size:11px; font-weight:600; color:#b45309;">ගෙවීම් දිනය: සෑම මසකම 10</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+              <!-- Daily Attendance Rate -->
+              <div style="background:#fff; border:1px solid #fcd34d; border-radius:8px; padding:10px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                <label style="font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="checkbox" id="p2026-cfg-chk-att" checked onchange="updatePayroll2026LivePreview()"> දිනක පැමිණීමේ දීමනාව (රු.)
+                </label>
+                <input type="number" step="0.01" id="p2026-cfg-val-attrate" class="form-input-pill" style="width:120px; text-align:right;" value="1000" oninput="updatePayroll2026LivePreview()">
+              </div>
+
+              <!-- Default Attended Days -->
+              <div style="background:#fff; border:1px solid #fcd34d; border-radius:8px; padding:10px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                <label style="font-size:12px; font-weight:700;">පෙරනිමි පැමිණි දින ගණන:</label>
+                <input type="number" id="p2026-cfg-val-attdays" class="form-input-pill" style="width:100px; text-align:right;" value="25" min="0" max="31" oninput="updatePayroll2026LivePreview()">
+              </div>
+
+              <!-- Contract Allowance 1 -->
+              <div style="background:#fff; border:1px solid #fcd34d; border-radius:8px; padding:10px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                <label style="font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="checkbox" id="p2026-cfg-chk-callw1" onchange="updatePayroll2026LivePreview()"> දීමනාව 01
+                </label>
+                <input type="number" step="0.01" id="p2026-cfg-val-callw1" class="form-input-pill" style="width:120px; text-align:right;" value="0" oninput="updatePayroll2026LivePreview()">
+              </div>
+
+              <!-- Contract Allowance 2 -->
+              <div style="background:#fff; border:1px solid #fcd34d; border-radius:8px; padding:10px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                <label style="font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="checkbox" id="p2026-cfg-chk-callw2" onchange="updatePayroll2026LivePreview()"> දීමනාව 02
+                </label>
+                <input type="number" step="0.01" id="p2026-cfg-val-callw2" class="form-input-pill" style="width:120px; text-align:right;" value="0" oninput="updatePayroll2026LivePreview()">
+              </div>
+            </div>
+            <div style="font-size:11px; color:#92400e; margin-top:8px;">
+              * <strong>පැමිණීමේ දීමනාව:</strong> පැමිණි දින ගණන x 1000.00 | <strong>EPF පදනම:</strong> මූලික + පැමිණීමේ (12% සේව්‍ය / 8% සේවක)<br>
+              * <strong>සේවක භාරකාර (ETF):</strong> 3% සේව්‍යයාගෙන් (සේවකයාගෙන් නැත) | විශ්‍රාම වැටුප් නැත | <strong>අඩුකිරීම්:</strong> 8% EPF පමණි
+            </div>
+          </div>
+
+          <!-- Live Preview Box -->
+          <div style="background:#f0fdf4; border:1.5px solid #86efac; border-radius:12px; padding:12px 16px;">
+            <div style="font-size:12px; font-weight:800; color:#166534; margin-bottom:8px;">
+              <i class="fa-solid fa-calculator"></i> සූත්‍රය අනුව සජීවී පෙරදසුන (Estimated Monthly Calculation):
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:10px; font-size:12px; text-align:center;">
+              <div><span>මුළු උපැයීම් (Gross):</span><br><strong id="p2026-prev-gross" style="color:#7c3aed; font-size:13px;">රු. 0</strong></div>
+              <div><span>EPF සේවක 8%:</span><br><strong id="p2026-prev-epf8" style="color:#dc2626; font-size:13px;">රු. 0</strong></div>
+              <div><span>EPF සේව්‍ය 12%:</span><br><strong id="p2026-prev-epf12" style="color:#16a34a; font-size:13px;">රු. 0</strong></div>
+              <div><span id="p2026-prev-extra-lbl">සේවක විශ්‍රාම 6%:</span><br><strong id="p2026-prev-extra-val" style="color:#d97706; font-size:13px;">රු. 0</strong></div>
+              <div style="background:#dcfce7; border-radius:8px; padding:4px;"><span>ශුද්ධ වැටුප (Net):</span><br><strong id="p2026-prev-net" style="color:#15803d; font-size:14px;">රු. 0</strong></div>
+            </div>
+          </div>
+        </div>
+        <div class="smart-modal-footer">
+          <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-payroll2026-criteria')">අවලංගු කරන්න</button>
+          <button type="submit" class="btn-smart btn-smart-primary"><i class="fa-solid fa-save"></i> මෙම සේවකයාගේ නිර්ණායක සුරකින්න</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: 2026 MONTHLY RECORD & OT ENTRY          -->
+  <!-- ============================================== -->
+  <div class="smart-modal-overlay" id="modal-payroll2026-entry">
+    <div class="smart-modal-box large" style="max-width:850px;">
+      <div class="smart-modal-header">
+        <h3><i class="fa-solid fa-file-invoice-dollar" style="color:#2563eb;"></i> 2026 මාසික වැටුප් හා අතිකාල ඇතුළත් කිරීම</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-payroll2026-entry')">&times;</button>
+      </div>
+      <form id="form-payroll2026-entry" onsubmit="savePayroll2026MonthlyEntry(event)">
+        <div class="smart-modal-body">
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:14px;">
+            <div>
+              <label style="font-size:12px; font-weight:700;">සේවකයා තෝරන්න *</label>
+              <select id="p2026-entry-emp" class="form-input-pill" required onchange="onPayroll2026EntryEmpChange()">
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">අදාළ මාසය (2026 Month) *</label>
+              <select id="p2026-entry-month" class="form-input-pill" required onchange="onPayroll2026EntryEmpChange()">
+                <option value="2026-01">2026 ජනවාරි</option>
+                <option value="2026-02">2026 පෙබරවාරි</option>
+                <option value="2026-03">2026 මාර්තු</option>
+                <option value="2026-04">2026 අප්‍රේල්</option>
+                <option value="2026-05">2026 මැයි</option>
+                <option value="2026-06">2026 ජූනි</option>
+                <option value="2026-07">2026 ජූලි</option>
+                <option value="2026-08">2026 අගෝස්තු</option>
+                <option value="2026-09" selected>2026 සැප්තැම්බර්</option>
+                <option value="2026-10">2026 ඔක්තෝබර්</option>
+                <option value="2026-11">2026 නොවැම්බර්</option>
+                <option value="2026-12">2026 දෙසැම්බර්</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700;">දිනය (Date) *</label>
+              <input type="date" id="p2026-entry-date" class="form-input-pill" required>
+            </div>
+          </div>
+
+          <!-- Variable Monthly Controls: Contract Days vs Overtime -->
+          <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:12px; padding:14px; margin-bottom:14px;">
+            <div style="font-size:12px; font-weight:800; color:#1e1b4b; margin-bottom:8px;">
+              <i class="fa-solid fa-pen-to-square"></i> මාසික වෙනස්කම් හා අතිකාල (Monthly Inputs):
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+              <div id="p2026-entry-attdays-container">
+                <label style="font-size:12px; font-weight:700;">පැමිණි දින ගණන (Attended Days - රු. 1000/දින)</label>
+                <input type="number" id="p2026-entry-attdays" class="form-input-pill" value="25" min="0" max="31" oninput="recalcPayroll2026EntryModal()">
+                <div style="font-size:11px; color:#15803d; font-weight:700; margin-top:3px;" id="p2026-entry-attamount-lbl">= රු. 25,000.00</div>
+              </div>
+              <div>
+                <label style="font-size:12px; font-weight:700;">අතිකාල පැය ගණන / මුදල (OT Amount රු.)</label>
+                <input type="number" step="0.01" id="p2026-entry-ot" class="form-input-pill" value="0" placeholder="0.00" oninput="recalcPayroll2026EntryModal()">
+                <div style="font-size:10.5px; color:#64748b; margin-top:3px;">පැය ගණන අනුව ගණනය කර අතින් ඇතුළත් කරන්න</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Breakdown Result Card -->
+          <div style="background:#f5f3ff; border:1.5px solid #ddd6fe; border-radius:12px; padding:14px; margin-bottom:14px;">
+            <div style="font-size:12.5px; font-weight:800; color:#6d28d9; margin-bottom:10px; display:flex; justify-content:space-between;">
+              <span><i class="fa-solid fa-calculator"></i> ගණනය කිරීම් සාරාංශය (Breakdown Preview):</span>
+              <span id="p2026-entry-type-badge" style="background:#7c3aed; color:#fff; padding:2px 8px; border-radius:12px; font-size:11px;">ස්ථිර</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; font-size:11.5px;">
+              <div><span>මූලික වැටුප:</span><br><strong id="p2026-modal-basic">රු. 0</strong></div>
+              <div><span>දීමනා එකතුව:</span><br><strong id="p2026-modal-allowances">රු. 0</strong></div>
+              <div><span>අතිකාල (OT):</span><br><strong id="p2026-modal-ot">රු. 0</strong></div>
+              <div><span>මුළු උපැයීම් (Gross):</span><br><strong id="p2026-modal-gross" style="color:#7c3aed; font-size:13px;">රු. 0</strong></div>
+              <div><span>EPF පදනම:</span><br><strong id="p2026-modal-epfbase">රු. 0</strong></div>
+              <div><span>සේව්‍ය EPF 12%:</span><br><strong id="p2026-modal-epf12" style="color:#16a34a;">රු. 0</strong></div>
+              <div><span>සේවක EPF 8%:</span><br><strong id="p2026-modal-epf8" style="color:#dc2626;">රු. 0</strong></div>
+              <div><span id="p2026-modal-extra-lbl">විශ්‍රාම 6% (සේවක):</span><br><strong id="p2026-modal-extra" style="color:#d97706;">රු. 0</strong></div>
+            </div>
+          </div>
+
+          <!-- Net Salary Result Bar -->
+          <div style="background:#f0fdf4; border:1.5px solid #86efac; border-radius:12px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <label style="font-size:13px; font-weight:800; color:#15803d; margin-bottom:2px; display:block;">ශුද්ධ වැටුප (Net Salary):</label>
+              <span style="font-size:11px; color:#4b5563;">සේවකයා වෙත ගෙවිය යුතු අවසන් ශුද්ධ මුදල (මුළු උපැයීම් - අඩුකිරීම්)</span>
+            </div>
+            <div style="font-size:20px; font-weight:800; color:#15803d;" id="p2026-modal-net">
+              රු. 0.00
+            </div>
+          </div>
+        </div>
+        <div class="smart-modal-footer">
+          <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-payroll2026-entry')">අවලංගු කරන්න</button>
+          <button type="submit" class="btn-smart btn-smart-primary"><i class="fa-solid fa-save"></i> 2026 වැටුප් දත්ත සුරකින්න</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: 2026 PAYSLIP VIEW                       -->
+  <!-- ============================================== -->
+  <div class="smart-modal-overlay" id="modal-payroll2026-payslip">
+    <div class="smart-modal-box large" style="max-width:750px;">
+      <div class="smart-modal-header no-print">
+        <h3><i class="fa-solid fa-file-invoice" style="color:#2563eb;"></i> 2026 මාසික වැටුප් පත්‍රිකාව (Payslip)</h3>
+        <button style="border:none; background:none; font-size:18px; cursor:pointer;" onclick="closeSmartModal('modal-payroll2026-payslip')">&times;</button>
+      </div>
+      <div class="smart-modal-body" id="payroll2026-payslip-content" style="padding:16px;"></div>
+      <div class="smart-modal-footer no-print">
+        <button type="button" class="btn-smart btn-smart-light" onclick="closeSmartModal('modal-payroll2026-payslip')">වසන්න</button>
+        <button type="button" class="btn-smart btn-smart-primary" onclick="printPayroll2026SinglePayslip()"><i class="fa-solid fa-print"></i> මුද්‍රණය කරන්න (Print Payslip)</button>
       </div>
     </div>
   </div>
@@ -3167,6 +3691,9 @@
   <div id="smart-toast-container"></div>
 
   <script src="js/config.js"></script>
-  <script src="js/app.js?v=5.8"></script>
+  <script src="js/wellbeing_data.js"></script>
+  <script src="js/grievance_data.js"></script>
+  <script src="js/app.js?v=5.9"></script>
 </body>
 </html>
+
