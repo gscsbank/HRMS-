@@ -1737,17 +1737,33 @@
       </div>
       <h2 style="color:#1e3a6e;">ගලපිටියාගම සණස HRMS</h2>
       <p style="color:#881337; font-weight:700; font-size:13px; margin-bottom:4px;">පරිපාලක පිවිසුම (Admin Login)</p>
-      <p style="margin-bottom:18px;">පද්ධතිය කළමනාකරණය සඳහා කරුණාකර පරිපාලක ගිණුමෙන් පිවිසෙන්න.</p>
+      <p style="margin-bottom:14px;">පද්ධතිය කළමනාකරණය සඳහා කරුණාකර පරිපාලක ගිණුමෙන් පිවිසෙන්න.</p>
 
-      <form id="smart-login-form">
+      <!-- Admin Credentials Info Pill with 1-Click Auto Fill -->
+      <div style="background:#eef2ff; border:1.5px solid #c7d2fe; border-radius:14px; padding:10px 14px; margin-bottom:16px; text-align:left; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <i class="fa-solid fa-shield-halved" style="color:#1e3a6e; font-size:22px;"></i>
+          <div>
+            <div style="font-size:12px; font-weight:700; color:#1e3a6e;">පෙරනිමි පරිපාලක ගිණුම (Default Admin)</div>
+            <div style="font-size:11.5px; color:#881337; font-family:monospace; margin-top:2px;">
+              Username: <strong>admin</strong> &nbsp;|&nbsp; Password: <strong>admin123</strong>
+            </div>
+          </div>
+        </div>
+        <button type="button" onclick="fillAdminCredentials()" class="btn-smart" style="padding:4px 8px; font-size:10.5px; background:#e0e7ff; color:#3730a3; border:1px solid #c7d2fe; border-radius:8px; cursor:pointer; font-weight:700; white-space:nowrap;">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> පුරවන්න
+        </button>
+      </div>
+
+      <form id="smart-login-form" onsubmit="handleLoginSubmit(event); return false;">
         <div style="margin-bottom:14px; text-align:left;">
           <label style="font-size:11.5px; font-weight:700; color:#1e3a6e; display:block; margin-bottom:5px;">පරිශීලක නාමය (Username)</label>
-          <input type="text" id="login-username" class="form-input-pill" required placeholder="පරිශීලක නාමය ඇතුළත් කරන්න" autocomplete="username">
+          <input type="text" id="login-username" class="form-input-pill" value="admin" required placeholder="admin" autocomplete="username">
         </div>
         <div style="margin-bottom:20px; text-align:left;">
           <label style="font-size:11.5px; font-weight:700; color:#1e3a6e; display:block; margin-bottom:5px;">මුරපදය (Password)</label>
           <div style="position:relative;">
-            <input type="password" id="login-password" class="form-input-pill" required placeholder="මුරපදය ඇතුළත් කරන්න" autocomplete="current-password">
+            <input type="password" id="login-password" class="form-input-pill" value="admin123" required placeholder="admin123" autocomplete="current-password">
             <i class="fa-solid fa-eye" id="toggle-pwd-btn" style="position:absolute; right:14px; top:12px; color:#94a3b8; cursor:pointer;" onclick="togglePasswordVisibility()"></i>
           </div>
         </div>
@@ -3693,7 +3709,8 @@
   <script src="js/config.js"></script>
   <script src="js/wellbeing_data.js"></script>
   <script src="js/grievance_data.js"></script>
-  <script src="js/app.js?v=5.9"></script>
+  <script src="js/hrms_data_seed.js"></script>
+  <script src="js/app.js?v=6.0"></script>
 </body>
 </html>
 
