@@ -108,9 +108,16 @@ function showLoginModal() {
   const overlay = document.getElementById('login-modal-overlay');
   const uInput = document.getElementById('login-username');
   const pInput = document.getElementById('login-password');
-  if (uInput) uInput.value = '';
-  if (pInput) pInput.value = '';
+  if (uInput && !uInput.value) uInput.value = 'admin';
+  if (pInput && !pInput.value) pInput.value = 'admin123';
   if (overlay) overlay.style.display = 'flex';
+}
+
+function fillAdminCredentials() {
+  const uInput = document.getElementById('login-username');
+  const pInput = document.getElementById('login-password');
+  if (uInput) uInput.value = 'admin';
+  if (pInput) pInput.value = 'admin123';
 }
 
 function hideLoginModal() {
@@ -133,15 +140,27 @@ function togglePasswordVisibility() {
 }
 
 function handleLoginSubmit(e) {
-  e.preventDefault();
-  const username = document.getElementById('login-username').value.trim();
-  const password = document.getElementById('login-password').value.trim();
+  if (e && typeof e.preventDefault === 'function') e.preventDefault();
+  const uInput = document.getElementById('login-username');
+  const pInput = document.getElementById('login-password');
+  const username = (uInput?.value || '').trim();
+  const password = (pInput?.value || '').trim();
 
-  // Validate from registered users or default credentials
-  const usersList = appData?.users || defaultSeedData.users;
-  const foundUser = usersList.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
+  const uLower = username.toLowerCase();
 
-  if (foundUser || (username === 'admin' && (password === 'admin123' || password === 'admin'))) {
+  // Validate from registered users, fallback seed data, or hardcoded default
+  const usersList = (appData && Array.isArray(appData.users) && appData.users.length > 0)
+    ? appData.users
+    : (window.seedHrmsData?.users || defaultSeedData.users);
+
+  const foundUser = usersList.find(u =>
+    (u.username || '').toLowerCase() === uLower && (u.password === password || u.password?.trim() === password)
+  );
+
+  // Accept admin case-insensitively with admin123 or admin
+  const isDefaultAdmin = (uLower === 'admin' && (password === 'admin123' || password === 'admin' || password.toLowerCase() === 'admin123'));
+
+  if (foundUser || isDefaultAdmin) {
     currentUser = {
       username: foundUser ? foundUser.username : 'admin',
       name: foundUser ? foundUser.name : 'ප්‍රධාන පරිපාලක (Administrator)',
@@ -150,12 +169,21 @@ function handleLoginSubmit(e) {
       avatar: (foundUser?.name || 'A').charAt(0)
     };
 
-    localStorage.setItem('sanasa_hrms_user', JSON.stringify(currentUser));
+    try {
+      localStorage.setItem('sanasa_hrms_user', JSON.stringify(currentUser));
+    } catch (err) {}
+
     updateUserSidebarUI();
     hideLoginModal();
-    renderAllViews();
+    try {
+      renderAllViews();
+    } catch (err) {
+      console.warn('renderAllViews error after login:', err);
+    }
+    return false;
   } else {
-    alert(currentLang === 'si' ? 'අවලංගු පරිශීලක තොරතුරු! කරුණාකර නිවැරදි Username සහ Password ඇතුළත් කරන්න.' : 'Invalid Credentials! Please enter valid Username and Password.');
+    alert(currentLang === 'si' ? 'අවලංගු පරිශීලක තොරතුරු! කරුණාකර නිවැරදි Username (admin) සහ Password (admin123) ඇතුළත් කරන්න.' : 'Invalid Credentials! Please enter valid Username (admin) and Password (admin123).');
+    return false;
   }
 }
 
@@ -482,7 +510,11 @@ async function loadApplicationData() {
     } catch (e) {}
 
     if (!appData || !appData.organization) {
-      appData = JSON.parse(JSON.stringify(defaultSeedData));
+      if (window.seedHrmsData && window.seedHrmsData.organization) {
+        appData = JSON.parse(JSON.stringify(window.seedHrmsData));
+      } else {
+        appData = JSON.parse(JSON.stringify(defaultSeedData));
+      }
     }
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appData));
